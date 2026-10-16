@@ -4,11 +4,13 @@ An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation; MicroWeb is the visual and behavioral comparison reference.
 
-**Version 0.1 — private beta candidate.** This release adds display selection, a stable application frame and incremental vertical scrolling: existing pixels move and only the exposed strip is rendered again. It remains an original C implementation built with the native ELKS toolchain. See [0.1 release notes](docs/RELEASE-0.1.md) for exact artifacts, validation and limits. Speed and responsiveness are excluded from the first-beta release decision; no smoothness or timing guarantee is made.
+**Version 0.1 — public-beta preparation; final QA remains open.** This release adds display selection, a stable application frame and incremental vertical scrolling: existing pixels move and only the exposed strip is rendered again. It remains an original C implementation built with the native ELKS toolchain. See [0.1 release notes](docs/RELEASE-0.1.md) for exact artifacts, validation and limits. The owner confirms this exact version runs on both the standard HP 200LX and the owner-identified DS HP 200LX, and reports smoother scrolling on the standard HP. This is owner feedback, not an independently captured hardware benchmark. Speed and responsiveness remain outside the first-beta release decision.
 
-![ELKSWeb 0.1 displaying live 68k.news in QEMU](docs/screenshots/68k-news-0.1-qemu.png)
+![ELKSWeb 0.1 default welcome page in QEMU CGA](docs/screenshots/0.1/welcome-cga-qemu.png)
 
-Version 0.1: actual 640×200 CGA framebuffer from QEMU, 16 October 2026. [Scrolled news viewport](docs/screenshots/68k-news-0.1-qemu-scrolled.png) · [FrogFind mirror](docs/screenshots/frogfind-0.1-qemu.png). These captures exercise the final release image; QEMU uses a 486 CPU for ELKS integration testing. The earlier [build005 Windows 86Box capture](docs/screenshots/68k-news-build005-86box.png) used an Intel 8088 at 4.77 MHz with 640 KB RAM. See the [8088 validation scope](docs/8088-VALIDATION.md), including the guest CPU-label discrepancy.
+Actual default help page and original GIF logo, QEMU CGA, 16 October 2026. [Display selector](docs/screenshots/0.1/selector-qemu.png) · [EGA welcome](docs/screenshots/0.1/welcome-ega-qemu.png) · [VGA welcome](docs/screenshots/0.1/welcome-vga-qemu.png). No-URL startup, the keyboard-help anchor, scrolling, inversion and console restoration passed in all three modes on the refreshed help/logo image.
+
+Additional 0.1 live-site captures: [68k.news homepage](docs/screenshots/68k-news-0.1-qemu.png) · [Scrolled news viewport](docs/screenshots/68k-news-0.1-qemu-scrolled.png) · [FrogFind mirror](docs/screenshots/frogfind-0.1-qemu.png). These captures exercise the validated 0.1 QEMU image, before the later help-page/logo packaging refresh; QEMU uses a 486 CPU for ELKS integration testing. The earlier [build005 Windows 86Box capture](docs/screenshots/68k-news-build005-86box.png) used an Intel 8088 at 4.77 MHz with 640 KB RAM. See the [8088 validation scope](docs/8088-VALIDATION.md), including the guest CPU-label discrepancy.
 
 ## Design
 
@@ -22,7 +24,7 @@ The discussion's C++, networking, graphics-dependency and memory concerns guide 
 ## Tested configuration and requirements
 
 - An ELKS system with graphics-capable console interfaces and a working native network stack.
-- 8088-compatible processor target. Earlier candidates were exercised in 86Box with an Intel 8088 at 4.77 MHz and 640 KB RAM. The owner confirms build006 runs on the physical HP 200LX and keeps the application frame stable; the new 0.1 scrolling path still needs physical retesting.
+- 8088-compatible processor target. Earlier candidates were exercised in 86Box with an Intel 8088 at 4.77 MHz and 640 KB RAM. The owner confirms the exact 0.1 executable runs on the standard HP 200LX and DS HP 200LX, with smoother scrolling reported on the standard HP. Installation identities were verified separately from those owner graphics reports. The final exact-0.1 86Box check remains pending; see the release notes.
 - CGA 640×200, color EGA with at least 128 KB video RAM at 640×350, or VGA at 640×480. All browser modes are monochrome. Mode selection and console restoration are exercised in QEMU and Windows 86Box; 0.1-specific results are recorded in the release notes. [CGA capture](docs/screenshots/frogfind-build004-cga-86box.png) · [EGA capture](docs/screenshots/frogfind-build004-ega-86box.png) · [VGA capture](docs/screenshots/frogfind-build004-vga-86box.png).
 - A writable `/tmp` for page caching.
 - Keyboard navigation; PS/2 mouse support exists but was not tested in the 8088 run.
@@ -31,12 +33,12 @@ The discussion's C++, networking, graphics-dependency and memory concerns guide 
 
 ## Current features
 
-HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, forms, tables, lists, monochrome GIF images and binary downloads. PNG/JPEG dimensions are recognized for layout, but their pixels are not decoded. Features have differing levels of test coverage; see [tests](tests/README.md).
+HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, forms, tables, lists, monochrome GIF images and binary downloads. PNG/JPEG dimensions are recognized for layout, but their pixels are not decoded. JPEG decoding is explicitly outside the 0.1 scope. Features have differing levels of test coverage; see [tests](tests/README.md).
 
 ## Limitations
 
 - 8088 page loads remain slow: the build005 live news viewport was observed roughly eight minutes after launch. Incremental scrolling reduces repeated drawing, but physical timing benchmarks remain pending.
-- History and receive cancellation pass 12 native QEMU checks; the final-image regression and scoped resource-failure checks also pass. Physical hardware and exhaustive feature combinations remain untested.
+- History and receive cancellation pass 12 native QEMU checks; the final-image regression and scoped resource-failure checks also pass. Owner reports cover startup/use on two physical HP systems; exhaustive feature combinations and independently captured physical-hardware QA remain untested.
 - HTTP only; no native TLS, CSS or JavaScript. `HTTP_PROXY` is supported, but HTTPS conversion requires an external service and is not provided here.
 - Adapter detection is conservative: unsupported or unrecognized modes are rejected. EGA image aspect correction is approximate, and displayed images retain a 200-row limit in every mode.
 - Large or complex pages can exceed fixed layout limits. HTML source is capped at 120 KB; layout at 24 KB of text, 1,024 runs and 256 links.
@@ -59,6 +61,8 @@ HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, f
 | F3 | Show/hide browser bars |
 | Escape | Exit; cancel a network load when input is polled |
 
+These navigation shortcuts apply to normal page browsing. In an address or text field, Left/Right, Home/End and Backspace edit the field; select/radio controls use arrows to change choices. Escape first dismisses address editing, an open select list or a download prompt.
+
 ## Command-line options
 
 ```text
@@ -71,7 +75,9 @@ Without `-video`, ELKSWeb displays a text-console selector before entering graph
 
 ## Getting started and building
 
-Version 0.1 is prepared as a private release package containing the native executable, a 2.88 MB QEMU test image, offline FrogFind fixtures, corresponding source archives and checksums. Public release remains subject to owner approval.
+The normal runtime package contains the native executable, its default HTML help page, an original GIF logo and required notices. Install the executable as `/bin/elksweb`, the help page as `/root/welcome.htm`, and the logo as `/root/elksweb.gif`; launching `elksweb` without a URL opens the help page.
+
+Corresponding source is supplied separately. The QEMU test image and offline fixtures are optional testing downloads, not runtime requirements. The project-specific `webfrog` and `webnews` launchers are not part of the normal package. Verify the checksums supplied with the chosen artifact. The repository and draft release remain private until owner approval; final packaging and exact-0.1 86Box validation are being completed. The first 86Box welcome-page run had an unresolved exit anomaly; a narrower retry passed. See [the current QA hold](docs/8088-VALIDATION.md#exact-01-follow-up--incomplete).
 
 See [BUILDING.md](docs/BUILDING.md) for native compilation, optional image packaging and QEMU testing. Emulator boot success must be evaluated separately from slow 8088 behavior.
 
@@ -86,7 +92,7 @@ These projects are credited for their respective work; no endorsement or affilia
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). The scoped candidate visual, functional, resource-recovery and clean-build checks are recorded in STATUS; broader compatibility testing remains valuable. Speed and responsiveness improvements are follow-up work and do not gate the first public beta. The repository remains private during this work.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). The scoped 0.1 visual, functional, resource-recovery and build checks, plus historical clean-build evidence, are recorded in STATUS; broader compatibility testing remains valuable. Speed and responsiveness improvements are follow-up work and do not gate the first public beta. The repository remains private during this work.
 
 ## License and attribution
 

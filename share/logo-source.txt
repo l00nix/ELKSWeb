@@ -1,0 +1,11 @@
+ELKSWeb wordmark and globe
+
+Original artwork generated for this project using OpenAI image generation,
+16 October 2026. Inspired by the italic typography of the ELKS project logo;
+no official ELKS artwork was copied or embedded. This is an ELKSWeb mark,
+not an official ELKS logo or endorsement.
+
+Source: artwork/elksweb-wordmark.png in the corresponding source archive.
+Runtime asset: elksweb.gif, resized and encoded as a two-colour static GIF
+for the browser's monochrome displays. No animation or external font needed.
+Distributed under GPL-2.0-or-later, as is ELKSWeb; see COPYING.

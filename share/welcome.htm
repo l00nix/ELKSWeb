@@ -1,13 +1,32 @@
-<html><head><title>ELKSWeb 0.1</title></head><body>
-<center><h1>ELKSWeb 0.1</h1><p>Browse the web. Keep it simple.</p></center>
+<html><head><title>Welcome to ELKSWeb 0.1</title></head><body>
+<center><img src="elksweb.gif" width="320" height="107" alt="ELKSWeb"><br>
+<b>ELKSWeb 0.1 - a small browser for ELKS</b></center>
 <hr>
-<p><a href="http://68k.news/">68k.news</a> - headlines for classic computers<br>
-<a href="http://frogfind.8088retro.com/">FrogFind!</a> - search the web</p>
-<p><a href="/root/frog/index.htm">Offline FrogFind test</a> - sample pages and GIF images</p>
-<h3>Getting around</h3>
-<p><b>F6 / Ctrl-L</b> Enter an HTTP address or local file path.<br>
-<b>Tab / Shift-Tab</b> Select a link or control. <b>Enter</b> Open it.<br>
-<b>Arrows / Page Up / Page Down</b> Scroll. <b>Home / End</b> Jump.<br>
-<b>Backspace</b> Go back. <b>F5</b> Reload. <b>Escape</b> Exit.</p>
-<p><b>F2</b> Invert the screen. <b>F3</b> Show or hide browser bars.</p>
+<p><b>Start browsing:</b> press <b>F6</b> or <b>Ctrl-L</b>, type an HTTP address,
+then press <b>Enter</b>. Or select a link below with <b>Tab</b> and press <b>Enter</b>.</p>
+<p><a href="http://frogfind.8088retro.com/">FrogFind search</a> |
+<a href="http://68k.news/">68k.news headlines</a> |
+<a href="#keys">Keyboard help</a></p>
+<a name="keys"></a><h3>Keyboard help</h3>
+<p><b>Tab / Shift-Tab</b> Select the next / previous link or control.<br>
+<b>Enter</b> Follow the selected link or activate a control.<br>
+<b>Arrows / Page Up / Page Down</b> Scroll the page.<br>
+<b>Home / End</b> Jump to the beginning / end.<br>
+<b>Backspace</b> Go back. The top-left buttons go back and forward.<br>
+<b>F5</b> Reload. <b>Escape</b> Exit, or cancel a load when input is checked.<br>
+<b>F2</b> Invert black and white. <b>F3</b> Show or hide the browser bars.</p>
+<h3>Local files and display</h3>
+<p>To return here, enter <b>file:/root/welcome.htm</b> in the address field.
+Use <b>file:/path/page.htm</b> to open another local page.</p>
+<p>Starting <b>elksweb</b> without options shows the display selector.
+Choose a listed mode and press Enter. Enter alone chooses CGA; Q quits.
+You can also start with <b>elksweb -video cga</b>, <b>-video ega</b> or <b>-video vga</b>.</p>
+<h3>What to expect</h3>
+<p>ELKSWeb reads HTTP and local HTML or text. GIF images are displayed;
+JPEG and PNG dimensions are used for layout, with placeholders.
+HTTPS, CSS and JavaScript are not supported. Large pages may reach memory
+limits, and loading on an 8088 can take time.</p>
+<p>This help page works offline. The search and news links need a working
+ELKS network connection; their availability depends on the sites.</p>
+<hr><p>Inspired by MicroWeb and the ELKS community. Happy browsing!</p>
 </body></html>

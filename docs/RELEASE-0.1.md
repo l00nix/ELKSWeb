@@ -1,6 +1,6 @@
-# ELKSWeb 0.1 — private beta
+# ELKSWeb 0.1 — public-beta preparation
 
-ELKSWeb is an original C graphical browser for ELKS Linux, built with the native ELKS IA16 toolchain for 8088-compatible processors. Inspired by the ELKS graphical-browser discussion and MicroWeb, it uses native ELKS networking and direct graphics without Microwindows or a C++ runtime. This package remains private for owner review.
+ELKSWeb is an original C graphical browser for ELKS Linux, built with the native ELKS IA16 toolchain for 8088-compatible processors. Inspired by the ELKS graphical-browser discussion and MicroWeb, it uses native ELKS networking and direct graphics without Microwindows or a C++ runtime. The scoped QA and owner hardware feedback support preparing this version for public beta. The repository and release draft remain private pending owner approval; final packaging checks and the exact-0.1 86Box check are still in progress.
 
 ## Included in 0.1
 
@@ -8,15 +8,15 @@ ELKSWeb is an original C graphical browser for ELKS Linux, built with the native
 - A stable application frame, separate address/status updates and incremental vertical scrolling. Existing pixels move; only the newly exposed strip is drawn again. Large jumps, horizontal scrolling and other page changes can still require full viewport painting.
 - HTTP and local HTML/text pages, relative links, redirects, history, forms, tables, GIF images and binary downloads.
 - Version identification through `--version` and the display selector.
-- A 2.88 MB QEMU image with a welcome page and offline FrogFind samples, plus the native executable, corresponding browser/ELKS source archives, notices and checksums.
+- A normal runtime package containing the executable, default HTML help page, original GIF logo and required notices. Corresponding source is separate; the QEMU image and offline fixtures are optional testing artifacts. Project-specific `webfrog` and `webnews` launchers are excluded from the normal package.
 
 ## Installation and testing
 
 Read the package's `README.txt`, then verify it with `sha256sum -c SHA256SUMS`.
 
-For QEMU, install `qemu-system-i386` and mtools, then run `bash toolchain/run-qemu.sh` from the extracted directory. Select a display mode and follow the welcome page's offline FrogFind link. Alternatively, run `bash toolchain/run-qemu.sh http://68k.news/`. The launcher boots a disposable image copy with a 486 CPU for ELKS integration testing; it does not emulate an 8088. Downloads in that temporary session disappear on exit.
+For an existing ELKS installation, install the supplied executable as `/bin/elksweb`, `share/welcome.htm` as `/root/welcome.htm`, and `share/elksweb.gif` as `/root/elksweb.gif`; retain the accompanying notices. A graphics-capable console and writable `/tmp` are required. HTTP browsing additionally requires configured native ELKS networking. Launching without a URL opens the default help page. Neither offline website fixtures nor the project's `webfrog`/`webnews` launchers are needed.
 
-For an existing ELKS installation, install `build/elksweb` as `/bin/elksweb`, `share/welcome.htm` as `/root/welcome.htm`, and the offline fixture files under `/root/frog`. A graphics-capable console and writable `/tmp` are required. HTTP browsing additionally requires configured native ELKS networking.
+For optional QEMU testing, install `qemu-system-i386` and mtools and follow the test artifact's instructions. From a source checkout with its test image prepared, run `bash toolchain/run-qemu.sh`, or `bash toolchain/run-qemu.sh http://68k.news/`. The launcher boots a disposable image copy with a 486 CPU for ELKS integration testing; it does not emulate an 8088. Downloads in that temporary session disappear on exit. Install the optional FrogFind fixtures separately when following the fixture checklist; the normal help page is not a bundled website demo.
 
 On the project's HP 200LX ELKS 3.8 beta 1 setup, use translated keyboard input:
 
@@ -25,14 +25,17 @@ export ELKSWEB_COOKED_KEYS=1
 elksweb -video cga /root/welcome.htm
 ```
 
-The generic floppy image is intended for emulator testing; use the executable on the existing HP installation. The owner confirmed the earlier build006 runs on the HP and preserves the application frame. Physical testing of **0.1's new scrolling path remains pending**.
+The generic floppy image is intended for emulator testing; use the executable on the existing HP installation. The owner confirms the exact **0.1** executable runs on the standard HP 200LX and reports smoother scrolling there; the owner also confirms it works on the DS HP 200LX. These are owner reports, not independently captured graphics tests or timing measurements.
+
+The verified executable is 77,024 bytes with MD5 `9618c7abec60bc79d5ce539b2516b04c` and the SHA256 below. Local installation records are retained in the parent project's `output/elksweb-hp01/` and `output/elksweb-ds01/`. They verify identity and version separately from the later owner feedback; their earlier “graphics test pending” fields describe the installation-time state. The DS machine is identified by the owner; no clock-speed claim is inferred from its name.
 
 ## Validation and identity
 
-Final validation is recorded in `QA-0.1.json` in the browser source documentation. The native application was rebuilt against the prepared toolchain from clean-build001; this was not another fresh compiler/system bootstrap. The QEMU image derives from clean-build005 with the new executable, welcome page and attributed offline fixtures installed.
+Final validation is recorded in `QA-0.1.json` in the browser source documentation. The native application was rebuilt against the prepared toolchain from clean-build001; this was not another fresh compiler/system bootstrap. The validated QEMU image derives from clean-build005 with the new executable, the earlier welcome page and attributed offline fixtures installed. The subsequent default-help/logo packaging refresh does not rebuild or change the executable; its image identity and dedicated welcome-page QA are recorded separately below. Final distribution archive checksums remain pending.
 
 - Executable SHA256: `5c652079e7cc27884091c9e3b1730fea5d37fa3cbeb690535fed94af16dcfce2`.
-- Image SHA256: `7c51c3df6becacbe2ddbe7eb7d446d67e0d57cff89d1be14531e998d844191f5`.
+- Previously validated QEMU image SHA256 (before the help/logo packaging refresh): `7c51c3df6becacbe2ddbe7eb7d446d67e0d57cff89d1be14531e998d844191f5`.
+- Refreshed help/logo image SHA256: `3c865e5edb81f67c50b88554ee0d040f07c474423e1a200313925db37c79711d`.
 - ELKS source: `89d09706f17c123f9e0f5ef7cba2eb6745e8478c`.
 - The package's `PACKAGE.json` pins the complete browser source revision; its source archive contains all files used to build the browser.
 - Native build: no warnings; static 8086 audit passes for 25,970 instructions.
@@ -42,14 +45,20 @@ Final validation is recorded in `QA-0.1.json` in the browser source documentatio
 - Native display selection, cancellation, unsupported-option handling and console restoration pass.
 - Native history and receive cancellation: 12 checks pass.
 
-All 39 native fixture scenarios pass their request/capture assertions. Download bytes, edited filenames, existing-file protection and recovery after save errors pass. Disk-full testing removes the incomplete file and returns to the welcome page. Live FrogFind mirror search/article/Back and 68k.news homepage/scroll/Back were visually checked. The selected news article displays an upstream extraction error, so successful article reading is not claimed. The independent reviewer inspected 59 frames and recomputed all 54 scroll comparisons without finding a visual regression. Details and evidence limits are recorded in the accompanying QA record. Earlier 8088 Windows 86Box and DOS MicroWeb comparisons remain scoped to their recorded builds. No new blind preference vote or physical 8088 timing claim is made for 0.1.
+All 39 native fixture scenarios pass their request/capture assertions. Download bytes, edited filenames, existing-file protection and recovery after save errors pass. Disk-full testing removes the incomplete file and returns to the welcome page. Live FrogFind mirror search/article/Back and 68k.news homepage/scroll/Back were visually checked. The selected news article displays an upstream extraction error, so successful article reading is not claimed. The independent reviewer inspected 59 frames and recomputed all 54 scroll comparisons without finding a visual regression. Details and evidence limits are recorded in the accompanying QA record. Earlier 8088 Windows 86Box and DOS MicroWeb comparisons remain scoped to their recorded builds. The final Windows 86Box run of this exact 0.1 executable is pending. No new blind preference vote or physical 8088 timing claim is made for 0.1.
+
+The refreshed help/logo image passes dedicated QEMU checks in CGA, EGA and VGA: no-URL startup opens `/root/welcome.htm`, the original GIF renders, the third link opens `#keys`, scrolling and Home/End behave correctly, two inversions restore identical pixels, and exit restores the text login screen. Twenty original frames were visually inspected without finding a defect; a separate reviewer inspected 16 frames and found no visual blocker. The full page fits in VGA, so anchor/End movement is correctly clamped. A VGA anchor capture was repeated after the first capture preceded completion of the local reload. This asset-only check does not repeat the baseline 39-case suite. [CGA welcome](screenshots/0.1/welcome-cga-qemu.png) · [Selector](screenshots/0.1/selector-qemu.png).
 
 ## Known limitations
 
-GIF pixels are supported; JPEG/PNG dimensions are recognized but their pixels are not decoded. HTTP only: no native TLS, CSS or JavaScript. Document/layout and form-field limits, accent transliteration and single-line textarea editing remain as described in the main README. Displayed images retain a 200-row limit. EGA requires a color adapter with at least 128 KB video RAM.
+GIF pixels are supported; JPEG/PNG dimensions are recognized but their pixels are not decoded. JPEG decoding is explicitly outside the 0.1 scope. HTTP only: no native TLS, CSS or JavaScript. Document/layout and form-field limits, accent transliteration and single-line textarea editing remain as described in the main README. Displayed images retain a 200-row limit. EGA requires a color adapter with at least 128 KB video RAM.
 
-Scrolling now avoids repeated drawing, but page loading and other operations can still be slow. Speed and responsiveness are excluded from the first-beta decision; smoothness on the HP has not yet been measured for this version. QEMU does not establish physical adapter compatibility or complete MicroWeb parity.
+Scrolling now avoids repeated drawing, but page loading and other operations can still be slow. Speed and responsiveness are excluded from the first-beta decision. The standard HP owner reports smoother scrolling with 0.1, but no controlled timing measurement is claimed. QEMU does not establish physical adapter compatibility or complete MicroWeb parity.
 
-The offline FrogFind pages use fixed sample results with their retained license and provenance. The package uses a live 68k.news link; it does not bundle captured news articles. No MicroWeb executable, proprietary BIOS ROM or physical-disk writing tool is included.
+Optional offline FrogFind fixtures use fixed sample results with their retained license and provenance. They are separate from the normal runtime package. The default help page may link to live sites; the runtime package does not bundle captured news articles. No MicroWeb executable, proprietary BIOS ROM or physical-disk writing tool is included.
 
 The repository and release remain private. Public publication and a discussion announcement await owner approval.
+
+### Current final-QA hold
+
+The exact 0.1 8088 follow-up found an unresolved exit anomaly in its first welcome-page run. A narrower local-FrogFind retry exited and logged in successfully; 640 KB QEMU also passed exit and a shell command. The welcome/scroll retry and live 86Box captures await access to the unlocked host. See [8088 validation](8088-VALIDATION.md). Public release readiness is not signed off while this investigation is incomplete.

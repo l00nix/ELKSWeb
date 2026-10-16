@@ -1,6 +1,6 @@
 # Public-beta preparation
 
-The repository remains private during preparation. A candidate is not beta-ready merely because a screenshot or host test passes.
+ELKSWeb 0.1 is being prepared for public beta on the strength of scoped native QA, independent visual review and owner-confirmed runs on two HP 200LX systems. The repository and release draft remain private until owner approval. Final packaging checks and the exact-0.1 86Box check remain pending; earlier screenshots or host tests alone do not establish readiness.
 
 ## Preparation completed in build005
 
@@ -9,7 +9,13 @@ The repository remains private during preparation. A candidate is not beta-ready
 - Live FrogFind mirror search/image/article checks plus separately attributed local and fixed HTTP fixtures.
 - A fresh native toolchain/system/application build, static ISA and memory checks, native functional/error-recovery QA, and independent visual review.
 
-The exact final candidate and checkpoint decision are recorded in [STATUS.md](STATUS.md). Performance tuning and physical-hardware testing remain follow-up work. Public visibility and release publication still require the owner's approval.
+The 0.1 help/logo refresh also passes dedicated default-page QEMU QA in all three modes, including the local help anchor, scrolling, inversion and readable console return. This asset-only check does not replace the earlier functional suite.
+
+The exact final candidate and checkpoint decision are recorded in [STATUS.md](STATUS.md). The owner confirms exact 0.1 runs on the standard HP and DS HP, with smoother scrolling reported on the standard HP. Independent physical graphics capture, broader hardware coverage and controlled performance measurements remain follow-up work. Public visibility and release publication still require the owner's approval.
+
+## Version 0.1 distribution scope
+
+The normal runtime package contains the executable, default help HTML, original GIF logo and required notices. Corresponding source is supplied separately; the QEMU test image and attributed website fixtures are optional. Project-specific `webfrog`/`webnews` launchers are excluded from normal installation. GIF rendering remains supported; JPEG/PNG dimensions are recognized for layout, and JPEG pixel decoding is explicitly outside 0.1 scope.
 
 ## Release gates
 
@@ -25,3 +31,7 @@ For the first public beta, speed and responsiveness are explicitly excluded from
 ## Checkpoints
 
 At the next hourly checkpoint, finish the current build and report its actual 68k.news screenshot, functional results, comparison votes and unresolved blockers. Wait for user approval before the next iteration, as requested. Do not publish a discussion reply or change repository visibility as part of an intermediate checkpoint.
+
+### Current final-QA hold
+
+The exact 0.1 8088 follow-up found an unresolved exit anomaly in its first welcome-page run. A narrower local-FrogFind retry exited and logged in successfully; 640 KB QEMU also passed exit and a shell command. The welcome/scroll retry and live 86Box captures await access to the unlocked host. See [8088 validation](8088-VALIDATION.md). Public release readiness is not signed off while this investigation is incomplete.

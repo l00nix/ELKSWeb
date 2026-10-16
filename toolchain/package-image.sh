@@ -6,22 +6,30 @@ export TOPDIR="$ELKSWEB_ELKS"
 export PATH="$TOPDIR/elks/tools/bin:$TOPDIR/cross/bin:$PATH"
 app_root=${ELKSWEB_SOURCE:-$(cd "$(dirname "$0")/.." && pwd)}
 template="$TOPDIR/elkscmd/rootfs_template"
+case "${ELKSWEB_TEST_FIXTURES:-0}" in 0|1) ;; *)
+    echo 'ELKSWEB_TEST_FIXTURES must be 0 or 1' >&2; exit 2 ;;
+esac
 install "$app_root/build/elksweb" "$template/bin/elksweb"
 mkdir -p "$template/root"
 install -m 644 "$app_root/share/welcome.htm" "$template/root/welcome.htm"
-mkdir -p "$template/root/frog"
-for fixture in index.htm http.htm results.htm article.htm images.htm frog.gif README.txt COPYING.txt; do
-    install -m 644 "$app_root/tests/fixtures/frogfind/$fixture" "$template/root/frog/$fixture"
-done
-install -m 644 "$app_root/tests/fixtures/frogfind/PROVENANCE.json" "$template/root/frog/source.txt"
+install -m 644 "$app_root/share/elksweb.gif" "$template/root/elksweb.gif"
+install -m 644 "$app_root/share/logo-source.txt" "$template/root/logo-src.txt"
+# Default image is the normal runtime. Fixtures are an explicit test-image option.
+# Remove only paths previously owned by this packager in its isolated template.
+rm -rf "$template/root/frog"
+rm -f "$template/root/test.htm" "$template/bin/webfrog" "$template/bin/webnews" \
+      "$template/root/webfrog" "$template/root/webnews"
+if test "${ELKSWEB_TEST_FIXTURES:-0}" = 1; then
+    mkdir -p "$template/root/frog"
+    for fixture in index.htm http.htm results.htm article.htm images.htm frog.gif README.txt COPYING.txt; do
+        install -m 644 "$app_root/tests/fixtures/frogfind/$fixture" "$template/root/frog/$fixture"
+    done
+    install -m 644 "$app_root/tests/fixtures/frogfind/PROVENANCE.json" "$template/root/frog/source.txt"
+    install -m 644 "$app_root/tests/fixtures/local.htm" "$template/root/test.htm"
+fi
 # Browser appliance needs the TCP client daemon, not FTP/telnet server processes.
 # Only this isolated rootfs template is changed; preserve upstream project images.
 sed -i 's/^netstart=.*/netstart=""/' "$template/etc/net.cfg"
-if test -f "$app_root/tests/fixtures/local.htm"; then
-    cp "$app_root/tests/fixtures/local.htm" "$template/root/test.htm"
-else
-    printf '<html><title>ELKSWeb</title><body><h1>ELKSWeb</h1><p>Native ELKS browser.</p></body></html>\n' > "$template/root/test.htm"
-fi
 printf '%s\n' "${ELKSWEB_URL:-/root/welcome.htm}" > "$template/root/qaurl"
 printf '%s\n' "${ELKSWEB_PROXY:-}" > "$template/root/qaproxy"
 printf '%s\n' "${ELKSWEB_VIDEO:-}" > "$template/root/qavideo"

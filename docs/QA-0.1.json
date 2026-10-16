@@ -712,10 +712,10 @@
     "frogfind.8088retro.com": "Homepage GIF, query, results, article and Back inspected; no visible regression.",
     "68k.news": "Homepage, scrolling, article response and Back inspected; article response displays an extraction error. Article request evidence in the summary is incomplete; successful article reading is not claimed."
   },
-  "hardware_scope": "0.1 native runtime tested in QEMU. Earlier builds tested in Windows 86Box; owner confirms build006 on HP200LX. This exact 0.1 binary has not been tested on physical HP or emulated 8088.",
+  "hardware_scope": "Exact 0.1 runtime independently exercised in QEMU. Owner confirms exact binary runs on standard HP 200LX and owner-identified DS HP 200LX; smoother scrolling reported on standard HP. Installation/version identity verified separately; no independent physical graphics capture or controlled timing measurement. Exact 0.1 Windows 86Box 8088 run pending; earlier build results remain historical.",
   "new_blind_comparison_votes": null,
   "speed_responsiveness_release_gate": false,
-  "raw_evidence_location": "qa/release-0.1 in the private working copy; raw QA artifacts are not tracked in Git or included in the release archive.",
+  "raw_evidence_location": "qa/release-0.1 and qa/welcome-01 in private working copy; HP installation records under parent-project/output/elksweb-hp01 and elksweb-ds01. Raw artifacts are not all tracked in Git or included in release archives.",
   "evidence_sha256": {
     "host-tests.log": "ef71f2e14edc16ff07cde408eb8c96833a3ec2b0bba8c136b89823559ff54a5b",
     "platform-tests.log": "9d01812e75438c0a2a303505b79dc0ff66f248d2963d7c6ad29d99d29a1de61d",
@@ -725,6 +725,272 @@
     "history/result.json": "97a7c2dd455e92c07dcd50d5f7753875392caf60bde058611a1e4ffc415298f8",
     "download/result.json": "808516809e1f15ed69be015bffe3629f9d54af9cdfb172186afbaa4745eb82bf",
     "disk-full/result.json": "8d214c699b395a6ddaf8396717b1269dfaa6727ae3fbfe2b8aeeb6c2e82531ff",
-    "independent-visual-review.json": "af7082720f8b97ef70d260fcf86958dd82ca148b7d1b36f92136fc98d0332871"
+    "independent-visual-review.json": "af7082720f8b97ef70d260fcf86958dd82ca148b7d1b36f92136fc98d0332871",
+    "welcome-qemu-result.json": "e7c6d469ac97d2b321aa5962931fd84374c962fcf941c1b507b9f5b8745a1eda",
+    "welcome-vga-settled-result.json": "b789b52f3c9790fb3f45b2bba23db88a1678d059d46000c945508c5c5bca1d43",
+    "welcome-independent-review.json": "ca614f810827c5eedc557a94d5d74d44c2ee6a3353fc17267f610f0015212564"
+  },
+  "image_sha256_scope": "Original 0.1 image used for full fixtures, scroll, display, history, download, disk-full and live-site QA before help/logo refresh.",
+  "welcome_image_sha256": "3c865e5edb81f67c50b88554ee0d040f07c474423e1a200313925db37c79711d",
+  "welcome_image_scope": "Same exact 0.1 executable with default welcome/help HTML and original GIF logo; separately validated in QEMU, not a repeat of all baseline fixture gates.",
+  "hardware_owner_reports": {
+    "binary_sha256": "5c652079e7cc27884091c9e3b1730fea5d37fa3cbeb690535fed94af16dcfce2",
+    "bytes": 77024,
+    "md5": "9618c7abec60bc79d5ce539b2516b04c",
+    "standard_hp200lx": {
+      "identity_record": "parent-project/output/elksweb-hp01/installed.json",
+      "version_verified": "ELKSWeb 0.1",
+      "owner_report": "Runs successfully; scrolling is smoother.",
+      "independent_graphics_capture": false
+    },
+    "ds_hp200lx": {
+      "identity_record": "parent-project/output/elksweb-ds01/VERIFIED.json",
+      "machine_designation": "DS HP 200LX, as identified by owner",
+      "kernel_report": "ELKS0.9.2-dev hp200lx-3.8-beta1",
+      "owner_report": "Works successfully.",
+      "independent_graphics_capture": false
+    },
+    "chronology": "Installation records originally marked graphics testing pending. Subsequent owner confirmations establish the owner-report status above without rewriting those historical records.",
+    "limits": "Owner reports are not an independent visual audit, full feature qualification, inferred clock-speed specification or timing benchmark."
+  },
+  "welcome_qemu": {
+    "image_sha256": "3c865e5edb81f67c50b88554ee0d040f07c474423e1a200313925db37c79711d",
+    "binary_sha256": "5c652079e7cc27884091c9e3b1730fea5d37fa3cbeb690535fed94af16dcfce2",
+    "default_url": "/root/welcome.htm",
+    "launch_without_url_argument": true,
+    "cases": {
+      "cga": {
+        "status": "pass",
+        "checks": {
+          "mode_geometry": true,
+          "double_invert_exact": true,
+          "home_restores_initial_content": true,
+          "console_geometry_restored": true
+        },
+        "visual_checks": {
+          "logo_renders": true,
+          "help_legible": true,
+          "no_new_clipping_or_overlap": true,
+          "third_link_is_keyboard_help": true,
+          "anchor_url_keys_observed": true,
+          "final_paragraph_accessible": true,
+          "inversion_legible": true,
+          "readable_text_console_restored": true
+        },
+        "help_sha256": "3f21ab83b57af8d1fc30cbac9bdcc27bc7936bb9c5e54b0d84f1786e69a4838f",
+        "logo_sha256": "3c1f77d144ee82f5f18c0ff8ab09c66050f76ff43db2f500f99fb635a12e61c3"
+      },
+      "ega": {
+        "status": "pass",
+        "checks": {
+          "mode_geometry": true,
+          "double_invert_exact": true,
+          "home_restores_initial_content": true,
+          "console_geometry_restored": true
+        },
+        "visual_checks": {
+          "logo_renders": true,
+          "help_legible": true,
+          "no_new_clipping_or_overlap": true,
+          "third_link_is_keyboard_help": true,
+          "anchor_url_keys_observed": true,
+          "final_paragraph_accessible": true,
+          "inversion_legible": true,
+          "readable_text_console_restored": true
+        },
+        "help_sha256": "3f21ab83b57af8d1fc30cbac9bdcc27bc7936bb9c5e54b0d84f1786e69a4838f",
+        "logo_sha256": "3c1f77d144ee82f5f18c0ff8ab09c66050f76ff43db2f500f99fb635a12e61c3"
+      },
+      "vga": {
+        "status": "pass",
+        "checks": {
+          "mode_geometry": true,
+          "double_invert_exact": true,
+          "home_restores_initial_content": true,
+          "console_geometry_restored": true
+        },
+        "visual_checks": {
+          "logo_renders": true,
+          "help_legible": true,
+          "no_new_clipping_or_overlap": true,
+          "third_link_is_keyboard_help": true,
+          "anchor_url_keys_observed": true,
+          "final_paragraph_accessible": true,
+          "inversion_legible": true,
+          "readable_text_console_restored": true
+        },
+        "help_sha256": "3f21ab83b57af8d1fc30cbac9bdcc27bc7936bb9c5e54b0d84f1786e69a4838f",
+        "logo_sha256": "3c1f77d144ee82f5f18c0ff8ab09c66050f76ff43db2f500f99fb635a12e61c3"
+      }
+    },
+    "visual_review": {
+      "reviewer": "field_encoding",
+      "result": "no defect found in reviewed scope",
+      "method": "Full original PNGs inspected; no image resizing or edits. Automated geometry and pixel equality supplement visual inspection.",
+      "inspected": {
+        "cga": [
+          "selector",
+          "initial",
+          "keyboard-help-focused",
+          "keyboard-help-anchor",
+          "end",
+          "inverted",
+          "console-restored"
+        ],
+        "ega": [
+          "initial",
+          "keyboard-help-anchor",
+          "end",
+          "inverted",
+          "console-restored"
+        ],
+        "vga": [
+          "initial",
+          "keyboard-help-focused",
+          "keyboard-help-anchor",
+          "end",
+          "inverted",
+          "console-restored"
+        ]
+      },
+      "scope_limits": [
+        "No live external links opened; the third local help link was exercised.",
+        "VGA shows the complete page so anchor/End scrolling is clamped; #keys appears in the address.",
+        "Still frames and exact inversion/Home equality do not establish performance or every interaction.",
+        "Console restoration means a readable login screen was observed; no login performed."
+      ]
+    },
+    "vga_settled_retry": {
+      "result_file": "../qemu-vga-settled/result.json",
+      "anchor_capture": "../qemu-vga-settled/vga/keyboard-help-anchor.png",
+      "console_capture": "../qemu-vga-settled/vga/console-restored.png",
+      "reason": "The first VGA anchor screenshot preceded completion of the local reload. Retried same image with a 5-second settle; #keys is visible and checks all pass.",
+      "status": "pass",
+      "reviewed": [
+        "keyboard-help-anchor",
+        "console-restored"
+      ]
+    },
+    "source_image_unchanged": true,
+    "temporary_images_only": true,
+    "representative_screenshots": [
+      "screenshots/0.1/welcome-cga-qemu.png",
+      "screenshots/0.1/welcome-ega-qemu.png",
+      "screenshots/0.1/welcome-vga-qemu.png",
+      "screenshots/0.1/selector-qemu.png"
+    ],
+    "record": "qa/welcome-01/qemu/result.json",
+    "additional_record": "qa/welcome-01/qemu-vga-settled/result.json",
+    "scope": "Logo/default help, local third-link anchor, PageDown/End/Home, inversion and readable text-console return; no live external links opened. QEMU uses a 486 and makes no 8088 timing claim.",
+    "independent_visual_review": {
+      "review_id": "welcome-01-independent-qemu-visual-review",
+      "reviewed_utc": "2026-10-16T21:40:40.758641+00:00",
+      "frames_inspected": 16,
+      "record": "qa/welcome-01/independent-review.json",
+      "decision": {
+        "visual_blocker_found": false,
+        "required_visual_change": "None established in the reviewed QEMU frames.",
+        "recommendation": "The new default welcome page and logo are visually suitable within the reviewed CGA/EGA/VGA scope.",
+        "scope": "This is a QEMU visual assessment, not hardware sign-off or a complete functional test of every documented command or external link."
+      },
+      "observations": {
+        "selector": "All three selector captures show ELKSWeb 0.1, mode choices, default CGA and Q-to-quit instructions legibly in the text console.",
+        "logo": "The ELKSWeb wordmark and globe are clear and contained within the page in every mode. No image corruption, missing asset, unintended rectangle or collision with the title/chrome is visible. CGA uses a shorter raster representation consistent with its pixel-aspect treatment; EGA/VGA show a taller logo.",
+        "initial_layout": "Title/address chrome, branding, opening instructions, online links and Keyboard help are readable in each mode. CGA/EGA require scrolling for later sections; VGA displays the complete page, including attribution. No body/chrome overlap or visible lost control is established. Some text is dense and reaches close to the right content boundary, but no actionable missing text is identified.",
+        "cga_anchor": "The address becomes /root/welcome.htm#keys and Keyboard help appears at the top of the content viewport, approximately y22. The keyboard commands remain readable, with the next sections visible below. End exposes the remaining limitations and attribution without repaint residue.",
+        "ega_anchor": "The #keys address is present. The view reaches the bottom scroll limit with Keyboard help visible around y80 and the footer around y318. The heading need not reach the top because less than one viewport of content remains. The anchor and End frames are consistent.",
+        "vga_anchor": "The whole document fits in the initial 640x480 viewport. The focused retry frame visibly highlights Keyboard help and shows /root/welcome.htm#keys in the status row. The anchor and End frames show #keys in the address while retaining the same fully visible layout. The settled retry confirms this appearance; absence of scrolling is not a defect for a page that already fits.",
+        "end": "All three modes expose the footer and explanatory limitations at End. Text remains separated by headings and rules; no overlapping rows or trailing graphics are apparent."
+      },
+      "limits": [
+        "The screenshot sequence and #keys address/focus state support the visible help-navigation outcome; still images alone do not prove the causal key sequence or all input paths.",
+        "Manifest checks for inversion and console restoration were read, but those extra frames were not inspected in this bounded request and no independent runtime pass is claimed for them.",
+        "No timing, responsiveness or transient-flicker conclusion is drawn.",
+        "No 86Box or physical HP screenshots are included in this verdict; subsequent native captures require a separate addition.",
+        "The binary identity is unchanged according to the capture records; this review did not extract or execute the embedded binary."
+      ],
+      "capture_integrity": {
+        "method": "Decoded PNG RGB pixels compared with capture-record normalized RGB SHA256; PNG-file SHA256 is a different representation.",
+        "verified_frames": 16,
+        "matches": 16,
+        "verifier": "field_encoding"
+      }
+    }
+  },
+  "exact_0_1_8088": {
+    "status": "pending",
+    "scope": "Root final Windows 86Box run; do not infer completion from earlier build005 evidence."
+  },
+  "jpeg_decoding_scope": "Explicitly outside version 0.1. GIF pixels render; JPEG/PNG dimensions only are recognized.",
+  "welcome_640k_validation": {
+    "record": "qa/welcome-01/qemu640K/result.json",
+    "image_sha256": "3c865e5edb81f67c50b88554ee0d040f07c474423e1a200313925db37c79711d",
+    "memory": "640K",
+    "checks": {
+      "mode_geometry": true,
+      "double_invert_exact": true,
+      "home_restores_initial_content": true,
+      "console_geometry_restored": true,
+      "login_prompt_visible": true,
+      "root_login_and_echo_command_visible": true
+    },
+    "scope": "QEMU486; welcome/scroll/invert/exit/login and typed shell command; does not reproduce initial86Box exit anomaly or establish its cause."
+  },
+  "exact_8088_followup": {
+    "source_image_sha256": "3c865e5edb81f67c50b88554ee0d040f07c474423e1a200313925db37c79711d",
+    "staged_image_sha256": "3751924dd62a3cd2f77c7f44e10136be61e46a85f17cde8e69ff874d48a1a774",
+    "browser_sha256": "5c652079e7cc27884091c9e3b1730fea5d37fa3cbeb690535fed94af16dcfce2",
+    "modifications": [
+      "86BoxNE2000byte-transferbootopts",
+      "welcome/defaultselector",
+      "nc/nf/nmQAshortcuts"
+    ],
+    "binary_modified": false,
+    "date": "2026-10-16",
+    "emulator": "86Box 4.2.1 build 6130",
+    "machine": "IBM XT (1986)",
+    "configured_cpu": "Intel 8088",
+    "cpu_hz": 4772728,
+    "ram_kib": 640,
+    "display": "CGA 640x200 monochrome",
+    "network": "NE2000 8-bit, SLiRP, IO 0x300 IRQ3, guest flags0x92",
+    "observations": {
+      "interactive_supported_mode_selector": "pass: CGA only on CGA adapter",
+      "welcome_html_and_gif": "pass: complete page and logo visually observed",
+      "page_down": "pass: lower help visible",
+      "clean_exit": "FAIL first run: after ELKSWeb closed, floppy BIOS INT40 initialization banner appears and no login/input response. Cause unresolved; no-scroll retry underway.",
+      "local_frog_navigation": "pending",
+      "live_news": "pending",
+      "live_frog_mirror": "pending"
+    },
+    "scope": "Focused exact-binary 8088 emulator run; speed excluded; not physical8088 or complete browser qualification",
+    "new_blind_votes": null,
+    "screenshots": [
+      {
+        "path": "native/Monitor_1_20261016-174041-805.png",
+        "sha256": "cbd2b0360594685f59153593530390cb0cef74178ee3d48576c26b2f0fd335ff"
+      },
+      {
+        "path": "native/Monitor_1_20261016-174300-884.png",
+        "sha256": "5151dfe94936cb2319b6e6bec546bb98973f5396b56df564d12be83b739e2d33"
+      },
+      {
+        "path": "native/Monitor_1_20261016-174333-866.png",
+        "sha256": "75cd25bc09b3f8091af0462b87d4e5375d54e399ef68a25cad691a57866ac206"
+      },
+      {
+        "path": "native/Monitor_1_20261016-174611-473.png",
+        "sha256": "b8d057179b2661f513a8439ff405cbd775fdaf1d60172bff0724e868bcb7042c"
+      }
+    ],
+    "retry_no_scroll": {
+      "image_sha256": "3af036d5b64a36b5737ea53f0a0524d1a0b2e9eafa28b553ddf10c3612ef00b0",
+      "local_frog_gif": "pass",
+      "exit_to_login": "pass",
+      "input_note": "Windows on-screen keyboard entered root; login succeeded and shell relaunched elksweb. Direct CUA letter input did not reach emulator."
+    },
+    "repeat_welcome_scroll_exit": "Pending: Mac locked during shell relaunch; user unlock requested.",
+    "status": "incomplete; initial exit anomaly unresolved",
+    "record": "qa/86box-release01/result.json"
   }
 }

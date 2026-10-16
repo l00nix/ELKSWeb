@@ -1,6 +1,6 @@
 # Building and running
 
-The application uses ELKS's IA16 GCC toolchain, not the host C compiler or a DOS C++ toolchain. The current private beta-preparation candidate was built with ia16-elf-gcc 6.3.0 and exercised on ELKS 0.9.2-dev. The source bootstrap below was validated on 2026-10-16 in a new Ubuntu 22.04 container, including a freshly compiled toolchain, libc, kernel and image. See [the clean-build record](CLEAN-BUILD-001.md) for pins, hashes, the dependency correction and remaining reproducibility limits.
+The application uses ELKS's IA16 GCC toolchain, not the host C compiler or a DOS C++ toolchain. Version 0.1 was built with ia16-elf-gcc 6.3.0 and exercised on ELKS 0.9.2-dev. The source bootstrap below was validated on 2026-10-16 in a new Ubuntu 22.04 container, including a freshly compiled toolchain, libc, kernel and image. See [the clean-build record](CLEAN-BUILD-001.md) for pins, hashes, the dependency correction and remaining reproducibility limits.
 
 ## Native application
 
@@ -72,7 +72,7 @@ bash toolchain/build-app.sh
 
 The script targets `-march=i8086 -mtune=i8086 -mcmodel=small -melks-libc`. Outputs go to `build/`, including the executable, retained ELF, linker map, compiler identity, disassembly, stack report and static ISA audit. The ISA audit is not a substitute for runtime testing.
 
-Copy `build/elksweb` into `/bin/elksweb` on a suitable ELKS test installation and `share/welcome.htm` into `/root/welcome.htm`. Start ELKS networking using its documented configuration before loading HTTP pages. The browser needs a writable `/tmp` and a graphics-capable controlling console. It opens a text-mode display selector by default. Press 1/2/3 and Enter, or Q and Enter to cancel. Available modes are genuine monochrome CGA 640×200, EGA 640×350 and VGA 640×480; EGA requires a color display and at least 128 KB video RAM. Detection rejects unavailable modes before changing the console. QEMU validation does not certify physical adapters.
+Install `build/elksweb` as executable `/bin/elksweb`, `share/welcome.htm` as `/root/welcome.htm`, and `share/elksweb.gif` as `/root/elksweb.gif` on a suitable ELKS installation. Retain the logo provenance from `share/logo-source.txt` as `/root/logo-src.txt`, and keep the supplied browser, font and ELKS/libc notices with redistributed packages. Running `elksweb` without a URL opens this local help page; website fixtures are not required. Start ELKS networking using its documented configuration before loading HTTP pages. The browser needs a writable `/tmp` and a graphics-capable controlling console. It opens a text-mode display selector by default. Press 1/2/3 and Enter, or Q and Enter to cancel. Available modes are genuine monochrome CGA 640×200, EGA 640×350 and VGA 640×480; EGA requires a color display and at least 128 KB video RAM. Detection rejects unavailable modes before changing the console. QEMU validation does not certify physical adapters.
 
 For an explicit mode, including unattended tests:
 
@@ -82,20 +82,28 @@ elksweb -video ega http://68k.news/
 elksweb -video vga -noimages http://frogfind.8088retro.com/
 ```
 
-Full CLI: `elksweb [-video cga|ega|vga] [-invert] [-noimages] [http://URL or local-file]`.
+Full CLI: `elksweb [-video cga|ega|vga] [-invert] [-noimages] [http://URL or local-file]`. `--version` prints the version without entering graphics.
+
+For the project's HP 200LX ELKS 3.8 beta 1 keyboard setup, set `ELKSWEB_COOKED_KEYS=1` before launching. The owner confirms the exact 0.1 executable runs on the standard HP and DS HP; this feedback is distinct from independently captured QEMU tests. See [release notes](RELEASE-0.1.md).
 
 ## Optional test image
 
 `toolchain/package-image.sh` modifies the specified ELKS checkout's root filesystem template and creates a 2.88 MB FAT test disk. It installs browser autostart and disables unrelated network daemons in that template. Use a dedicated disposable ELKS checkout, not a production installation or an unrelated work tree. ELKS kernel/root filesystem/image prerequisites must already be built.
 
 ```sh
-# Interactive default: the guest opens the display selector.
+# Interactive default: help/logo installed, no website fixtures.
 bash toolchain/package-image.sh
 bash toolchain/run-qemu.sh http://68k.news/
 
-# Unattended QA image: bypass the selector with CGA.
-ELKSWEB_VIDEO=cga bash toolchain/package-image.sh
+# Optional fixture-enabled test image; still interactive by default.
+ELKSWEB_TEST_FIXTURES=1 bash toolchain/package-image.sh
+bash toolchain/run-qemu.sh /root/frog/index.htm
+
+# Unattended fixture QA: bypass the selector with CGA.
+ELKSWEB_TEST_FIXTURES=1 ELKSWEB_VIDEO=cga bash toolchain/package-image.sh
 ```
+
+`ELKSWEB_TEST_FIXTURES` defaults to `0`; only `0` and `1` are accepted. Repackaging removes fixture/helper paths previously owned by this packager before optionally installing the test content. Neither `webfrog` nor `webnews` is part of the normal runtime. The default help page links to live sites and its own keyboard help, not to optional fixtures.
 
 Packaging writes `${ELKSWEB_VIDEO:-}` to guest `/root/qavideo`. An empty value means the interactive selector; `cga`, `ega` or `vga` makes autostart pass the corresponding `-video` argument. The QEMU launcher uses that image setting; setting `ELKSWEB_VIDEO` only when launching QEMU does not alter an already packaged image.
 
@@ -103,7 +111,7 @@ The QEMU launcher needs `qemu-system-i386` and mtools `mcopy`. It boots a dispos
 
 ## Repeatable FrogFind fixtures
 
-The live QA mirror is `http://frogfind.8088retro.com/`. The fixed fixtures are separate: copy the HTML and GIF files from `tests/fixtures/frogfind/` into guest `/root/frog`, then run `elksweb -video cga /root/frog/index.htm`. Version 0.1 packaging installs these fixtures under `/root/frog` and links them from the welcome page. The fixture QA harness also injects them into its disposable image. File-mode sample navigation works without PHP or networking; sample results are not live search results.
+The live QA mirror is `http://frogfind.8088retro.com/`. The fixed fixtures are separate: copy the HTML and GIF files from `tests/fixtures/frogfind/` into guest `/root/frog`, then run `elksweb -video cga /root/frog/index.htm`. Opt in with `ELKSWEB_TEST_FIXTURES=1` when packaging a test image to install them under `/root/frog`; the default image omits them. Open the fixture path explicitly. The normal help page does not link to these optional files. The fixture QA harness also injects them into its disposable image. File-mode sample navigation works without PHP or networking; sample results are not live search results.
 
 For a local HTTP fixture server on the QEMU host:
 
@@ -115,9 +123,30 @@ elksweb -video cga http://10.0.2.2:18787/http.htm
 
 See the fixture [instructions](../tests/fixtures/frogfind/README.txt), [provenance](../tests/fixtures/frogfind/PROVENANCE.json) and retained license. `mirror.htm` is the captured original homepage and is not an offline working search page.
 
+## Separate distribution artifacts
+
+`toolchain/package-release.py` assembles archives without building, publishing or changing repository visibility. Choose `--kind runtime`, `--kind source`, or `--kind test-image`. The runtime contains the approved executable, help HTML, original GIF logo and notices; offer the corresponding-source archive alongside it. The optional test-image archive includes the QEMU image, fixture resources and sources. No `webfrog`/`webnews` helpers are needed for normal installation.
+
+The packager requires committed browser source, the pinned ELKS source archive and its SHA256, release notes, and a new output filename. Runtime/test-image packaging also checks the supplied executable, retained ELF and matching ISA report. It rejects compiled-source changes relative to the approved binary revision. For example, with the documented variables set:
+
+```sh
+: "${ELKSWEB_RELEASE_REV:?Set the full committed release revision}"
+: "${ELKSWEB_ELKS_ARCHIVE:?Set the pinned ELKS Git archive path}"
+: "${ELKSWEB_ELKS_ARCHIVE_SHA256:?Set its verified SHA256}"
+python3 toolchain/package-release.py --kind runtime \
+  --revision "$ELKSWEB_RELEASE_REV" --build-dir build \
+  --elks-source "$ELKSWEB_ELKS_ARCHIVE" \
+  --elks-source-sha256 "$ELKSWEB_ELKS_ARCHIVE_SHA256" \
+  --notes docs/RELEASE-0.1.md --output ELKSWeb-0.1-runtime.tar.gz
+```
+
+For corresponding source, use `--kind source` and a distinct output filename; no `--build-dir` is required. For the optional image, use `--kind test-image`, a fixture-enabled image under the build directory, and `--image-sha256` with that exact validated image hash. Keep its `/root/qavideo` empty for interactive display selection. Run `--help` for all arguments. Verify each extracted artifact with its `SHA256SUMS` and retain `PACKAGE.json`; archive assembly and checksum verification do not replace runtime QA.
+
 ## 86Box 8088 configuration
 
-Clean build005 passed CGA startup selection, local FrogFind GIF/link navigation, console restoration, live 68k.news rendering and Page Down in the following setup. Build004 separately exercised EGA and VGA; clean005 repeated all three modes in QEMU. Speed and responsiveness are excluded from this first-beta decision. The setup uses 86Box 4.2.1 build 6130, IBM XT (1986), Intel 8088 at 4.772728 MHz, 640 KB RAM, CGA, a Monster FDC with Multi-Floppy BIOS 2.7, and a 2.88 MB drive A. BIOS setup selects type 6 for logical/physical drive 0, disables other drives, and uses the Floppy BIOS IPL. Obtain required ROMs separately; none are bundled.
+Historical clean build005 passed CGA startup selection, local FrogFind GIF/link navigation, console restoration, live 68k.news rendering and Page Down in the following setup. Build004 separately exercised EGA and VGA; clean005 repeated all three modes in QEMU. Speed and responsiveness are excluded from this first-beta decision. The setup uses 86Box 4.2.1 build 6130, IBM XT (1986), Intel 8088 at 4.772728 MHz, 640 KB RAM, CGA, a Monster FDC with Multi-Floppy BIOS 2.7, and a 2.88 MB drive A. BIOS setup selects type 6 for logical/physical drive 0, disables other drives, and uses the Floppy BIOS IPL. Obtain required ROMs separately; none are bundled.
+
+The exact 0.1 executable passes the QEMU checks documented in [QA-0.1.json](QA-0.1.json), including all three modes with the refreshed default help/logo. Its final Windows 86Box 8088 run remains pending; the build005 observations above do not substitute for it.
 
 Network: NE2000 Compatible 8-bit, SLiRP, I/O 0x300, IRQ 3; disable conflicting serial ports. Guest address 10.0.2.15, gateway 10.0.2.2, mask 255.255.255.0. In a separate 86Box image copy, set:
 
