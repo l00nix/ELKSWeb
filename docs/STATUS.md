@@ -1,6 +1,6 @@
 # Private beta-preparation status — 16 October 2026
 
-ELKSWeb remains private and is **not ready for public beta**. The current candidate adds a text-mode display selector, genuine CGA/EGA/VGA monochrome backends and a local-file history fix. Source-cache and parsing changes reduce avoidable work, but a current-candidate 8088 timing result and a reproducible clean build are still pending.
+ELKSWeb remains private and is **not ready for public beta**. The current candidate adds a text-mode display selector, genuine CGA/EGA/VGA monochrome backends and a local-file history fix. Speed and responsiveness are excluded from the first public beta decision by the project owner. Slow loads and delayed input remain documented limitations; clean-build and remaining functional/resource-failure validation are still pending.
 
 ## Current candidate
 
@@ -57,7 +57,7 @@ The README now leads with the newer build003 Windows CGA live68k capture and lin
 
 ## Before a public beta
 
-Complete the current-candidate 8088 measurements and usability checks; broaden visual and image regression coverage; improve progress/cancellation where necessary; repeat resource-failure QA; validate a clean build/install workflow; and publish a scoped compatibility matrix. The tested [kernel configuration](config/elks-generic.config) is preserved, but a reproducible clean build is still unverified. No full MicroWeb parity, physical hardware certification or public release is claimed.
+Complete remaining functional and visual checks; repeat resource-failure QA; validate a clean build/install workflow; and publish a scoped compatibility matrix. Speed, redraw/input latency and delayed cancellation are accepted first-beta limitations, not release blockers. Further timing measurements and responsiveness improvements are deferred follow-up work; preserve existing observations in release notes. The tested [kernel configuration](config/elks-generic.config) is preserved, but a reproducible clean build is still unverified. No full MicroWeb parity, physical hardware certification or public release is claimed.
 
 The earlier source-package manifest and [screenshot checksums](candidate-provenance.json) describe the historical candidate, not the modified build004 sources. That package previously passed 224 core tests, five framebuffer tests, 13 font tests, 24 GIF cases with truncations/1,000 mutations, and 16 dimension fixtures with prefixes/5,000 random inputs. Preserve those records as historical evidence; they do not replace current-candidate verification.
 

@@ -4,11 +4,11 @@ An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation; MicroWeb is the visual and behavioral comparison reference.
 
-**Private beta preparation — not ready for public beta.** The current candidate adds display selection and fixes local-file history. Native QEMU checks pass; an 8088 rerun still takes minutes, and clean-build validation remains pending. See [known issues and test evidence](docs/STATUS.md).
+**Private beta preparation — not ready for public beta.** The current candidate adds display selection and fixes local-file history. Native QEMU checks pass; clean-build and remaining functional validation are pending. Speed and responsiveness are accepted limitations for the first beta, not release blockers. See [known issues and test evidence](docs/STATUS.md).
 
 ![ELKSWeb displaying live 68k.news on an emulated 8088](docs/screenshots/68k-news-build003-86box.png)
 
-Build003: actual 640×200 CGA framebuffer from Windows 86Box, 16 October 2026. Intel 8088 at 4.77 MHz, 640 KB RAM. The first live 68k.news viewport was first observed roughly 5–9 minutes after launch; Page Down responded and completed by the next observation. This remains too slow for beta. Build004 subsequently fixes reduced GIF rendering; its [latest 68k.news capture](docs/screenshots/68k-news-build004-qemu.png) and [FrogFind mirror capture](docs/screenshots/frogfind-build004-qemu.png) are from QEMU, not 8088 timing tests. Earlier [scrolled view](docs/screenshots/68k-page-down.png) and [footer](docs/screenshots/68k-footer.png) remain historical evidence.
+Build003: actual 640×200 CGA framebuffer from Windows 86Box, 16 October 2026. Intel 8088 at 4.77 MHz, 640 KB RAM. The first live 68k.news viewport was first observed roughly 5–9 minutes after launch; Page Down responded and completed by the next observation. This is a documented first-beta limitation. Build004 subsequently fixes reduced GIF rendering; its [latest 68k.news capture](docs/screenshots/68k-news-build004-qemu.png) and [FrogFind mirror capture](docs/screenshots/frogfind-build004-qemu.png) are from QEMU, not 8088 timing tests. Earlier [scrolled view](docs/screenshots/68k-page-down.png) and [footer](docs/screenshots/68k-footer.png) remain historical evidence.
 
 ## Design
 
@@ -85,7 +85,7 @@ These projects are credited for their respective work; no endorsement or affilia
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Current priorities are measuring the revised 8088 path, completing current-candidate visual and functional review, improving progress/cancellation, and validating a reproducible build/install before broader testing. The repository remains private during this work.
+See [CONTRIBUTING.md](CONTRIBUTING.md). First-beta priorities are completing current-candidate visual and functional review, resource-failure validation, and a clean build/install check. Speed and responsiveness improvements are follow-up work and do not gate the first public beta. The repository remains private during this work.
 
 ## License and attribution
 
