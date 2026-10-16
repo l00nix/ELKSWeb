@@ -14,12 +14,14 @@ SHIM=r'''
 #undef ew_fillrect
 #undef ew_vline
 #include "elks_platform.h"
-static unsigned count,bad;
+#include <string.h>
+static unsigned count;
+static unsigned char frame[200][640];
 static int clip_top,clip_bottom;
 void ew_pixel(int x,int y,int color) {
-  (void)color;
-  if(x<0 || x>=640 || y<0 || y>=200 || y<clip_top || y>=clip_bottom)++bad;
-  else ++count;
+  /* Match actual platform clipping: rejected calls are not framebuffer stores. */
+  if(x<0 || x>=640 || y<0 || y>=200 || y<clip_top || y>=clip_bottom)return;
+  ++count;frame[y][x]=color ? 2 : 1;
 }
 void ew_fillrect(int x,int y,int w,int h,int color) {
   int row,col;
@@ -35,10 +37,17 @@ int alt_point(unsigned i,int x,int y,unsigned *mx,unsigned *my) {
 }
 unsigned alt_flags(unsigned i) {return ew_doc.links[i].flags;}
 unsigned alt_render(unsigned i,int x,int y,int top,int bottom) {
-  count=bad=0;clip_top=top<0?0:top;clip_bottom=bottom>200?200:bottom;
+  count=0;memset(frame,0,sizeof(frame));
+  clip_top=top<0?0:top;clip_bottom=bottom>200?200:bottom;
   ew_image_draw(&ew_doc.runs[i],x,y,top,bottom,0);return count;
 }
-unsigned alt_bad_pixels(void) {return bad;}
+unsigned alt_bad_pixels(void) {
+  unsigned bad=0;int x,y;
+  for(y=0;y<200;y++)for(x=0;x<640;x++)
+    if((y<clip_top || y>=clip_bottom) && frame[y][x])++bad;
+  return bad;
+}
+const unsigned char *alt_pixels(void) {return &frame[0][0];}
 '''
 
 class ImageAlt(unittest.TestCase):
@@ -54,7 +63,7 @@ class ImageAlt(unittest.TestCase):
                         '-I'+str(ROOT/'src'),'-I'+str(ROOT/'platform'),*map(str,sources),'-o',str(lib)],
                        check=True,capture_output=True)
         cls.lib=C.CDLL(str(lib));cls.lib.ew_parse.argtypes=[C.c_char_p,C.c_char_p]
-        cls.lib.alt_value.restype=C.c_char_p;cls.lib.alt_point.argtypes=[C.c_uint,C.c_int,C.c_int,C.c_void_p,C.c_void_p]
+        cls.lib.alt_pixels.restype=C.c_void_p;cls.lib.alt_value.restype=C.c_char_p;cls.lib.alt_point.argtypes=[C.c_uint,C.c_int,C.c_int,C.c_void_p,C.c_void_p]
 
     @classmethod
     def tearDownClass(cls):
@@ -121,5 +130,16 @@ class ImageAlt(unittest.TestCase):
                                (0,18,22,192),(0,185,22,192),(0,-20,0,200)):
             self.assertGreater(self.lib.alt_render(i,x,y,top,bottom),0)
             self.assertEqual(self.lib.alt_bad_pixels(),0,(x,y,top,bottom))
+
+    def test_partial_label_pixels_equal_crop_of_full_label(self):
+        i=self.parse('<img src="missing.gif" width=150 height=120 alt="Clipped label">')[0]
+        self.lib.alt_render(i,0,22,0,200)
+        full=C.string_at(self.lib.alt_pixels(),640*200)
+        for top,bottom in ((25,192),(0,28),(25,28),(26,27)):
+            self.lib.alt_render(i,0,22,top,bottom)
+            clipped=C.string_at(self.lib.alt_pixels(),640*200)
+            expected=bytes(640*top)+full[640*top:640*bottom]+bytes(640*(200-bottom))
+            self.assertEqual(clipped,expected,(top,bottom))
+            self.assertEqual(self.lib.alt_bad_pixels(),0)
 
 if __name__=='__main__':unittest.main()

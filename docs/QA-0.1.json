@@ -1,0 +1,730 @@
+{
+  "version": "0.1",
+  "binary_sha256": "5c652079e7cc27884091c9e3b1730fea5d37fa3cbeb690535fed94af16dcfce2",
+  "image_sha256": "7c51c3df6becacbe2ddbe7eb7d446d67e0d57cff89d1be14531e998d844191f5",
+  "elks_commit": "89d09706f17c123f9e0f5ef7cba2eb6745e8478c",
+  "production_source_sha256": {
+    "src/html.c": "d03103c0580306791b1b52129efa38a36925f0625a95b65f107a82942aead0cd",
+    "src/images.c": "e02d72e76f51c75dea1300111b18ce719396f200933bf6babe2543abcbd52e19",
+    "src/main.c": "3cd52dbb522e56c8d9161394fb396226a5f216952a5cc29643451404328b4846",
+    "src/memory.c": "cec9340af373b2771f2333c452e58d0bb91357ff7c2987993f8a8ed5e057f8a2",
+    "src/net.c": "c24c36e04c7ef6d61f567e2476855c98c6e159bafc35abaac45f285ad8776293",
+    "src/url.c": "ebe9d3161e7cd128221f29d1bd67e47e1f965e5cf0cc4e844a165ce9f0301c66",
+    "src/elksweb.h": "7527fecef25d2403087c0824eca10e4de7a2d62a069cfc8f0e4cf809a094c080",
+    "src/latin.h": "66d3584f05931d35d1ec3b014d77570ba7eeeed1e891f8f9e45e9b304acfacf4",
+    "src/version.h": "052cdbf0880857b024073c8ff6616380f3fde8a8fdbf9a45c11fbc5948b65dd1",
+    "platform/elks_keys.c": "d69d097be1389ddc10b20e8c015ed0bba6a80c42206cf0de260660a8e9cf09dc",
+    "platform/elks_mouse.c": "2b89556217a68d19b2aebb4dee376eafc16cb2277d8e4f1c4c3d10d27b77e98e",
+    "platform/elks_mouse_packet.c": "c05fcc623faa95569dbf06de98994b11c42d827f862441551822b9ca739136d4",
+    "platform/elks_platform.c": "daa40986ac44a1fb89c68a327e4c27b8c8ade9621af82f700d3c32d4b31d5650",
+    "platform/elks_keys.h": "88da90d5ee23a8d54f139596c609376a82e044b72289970d48fb57c928ebfb38",
+    "platform/elks_mouse.h": "b749f329f5889ffe8b8c57fa32c7a1cae25701ffea85c2a41dd18132e13b73be",
+    "platform/elks_platform.h": "20fc1b5531cc6b73ad74b736ab2897c5cf25890e17597e863e87596dd45e1965",
+    "font/body_font.c": "61d626f68babf89946811441c22a019eba8710dfcedbbf554ea6d67ba7399043",
+    "font/font.c": "a79b188987c8f5644871cb0adc2f6137222e16f74f154b61910c44e4fda88bb8",
+    "font/body_font.h": "3315d14cae0f97886090dbd39c591582e3aaab066170817892358a33444c4aec",
+    "font/font.h": "eff5b069c04b729c148dab0cc9bc4ca6232590817982ae351e69bec74f76f5b1",
+    "image/dimensions.c": "c64a93b167b44d8cf637b73d01e11c4dd7400f87c3951b332c28f56d5c1f4e28",
+    "image/gif.c": "d67d113222a4816c0bc266d90b76eb82b0c25178c83f915ef4e1db62bd17039a",
+    "image/dimensions.h": "1cc01fa7b762a119269354c5eec53c484f39c781980543aae3308c29b6fe2b80",
+    "image/gif.h": "7b6629ead481436a085431966a4a00c7c69040f91fe9e3ba007c32b7610afa5b"
+  },
+  "build": "Native ELKS IA16 application rebuild against clean-build001 prepared toolchain; image derived from clean005 with new browser, welcome and offline fixtures.",
+  "validation_date": "2026-10-16",
+  "distribution": "private draft prerelease; publication requires owner approval",
+  "native_audit": {
+    "executable_sha256": "5c652079e7cc27884091c9e3b1730fea5d37fa3cbeb690535fed94af16dcfce2",
+    "elf_sha256": "85a4fc6e2c27cd2bf0ee8109001b18b8228ff03eab8cf2561dfaf2f0655975f4",
+    "instructions": 25970,
+    "code_sections": {
+      ".text": {
+        "bytes": 64816,
+        "decoded_bytes": 64816,
+        "linker_zero_padding_bytes": 1,
+        "uncovered_bytes": 0
+      }
+    },
+    "isa_static_pass": true,
+    "forbidden_instructions": [],
+    "ambiguities": [],
+    "memory": {
+      "header_bytes": 32,
+      "header_version": 1,
+      "text_bytes": 64816,
+      "data_bytes": 12176,
+      "bss_bytes": 38448,
+      "header_heap_bytes": 0,
+      "header_stack_bytes": 0,
+      "effective_heap_bytes": 4096,
+      "effective_stack_bytes": 4096,
+      "near_static_bytes": 50624,
+      "near_total_before_arguments_environment": 58816,
+      "remaining_before_arguments_environment": 6704,
+      "minimum_argument_environment_reserve": 1024,
+      "memory_gate_pass": true,
+      "note": "Zero header heap/stack fields select ELKS INIT_HEAP/INIT_STACK defaults of 4096 each. argv/envp also consume near space."
+    },
+    "real_8088_execution": "not verified",
+    "limits": "Linear decoding of ELF executable sections; inline data in executable sections requires manual review if rejected. Static ISA compatibility does not prove timing, BIOS compatibility or actual 8088 execution."
+  },
+  "host_tests": {
+    "passed": 288,
+    "platform_passed": 7,
+    "scope": "Complete host suite and platform suite after final production changes"
+  },
+  "native_fixtures": {
+    "passed": 39,
+    "total": 39,
+    "cases": {
+      "frogfind_http": true,
+      "frogfind_images": true,
+      "frogfind_local": true,
+      "auto_columns": true,
+      "tablewidth": true,
+      "alt": true,
+      "fontsizes": true,
+      "charset": true,
+      "tables": true,
+      "wide": true,
+      "plain_text": true,
+      "direct_gif": true,
+      "direct_png": true,
+      "binary_prompt": true,
+      "radio_action": true,
+      "textarea_action": true,
+      "select_action": true,
+      "form_inventory": true,
+      "field_limits": true,
+      "anchors": true,
+      "entities_link": true,
+      "entities_form": true,
+      "embedded_url": true,
+      "typography": true,
+      "local": true,
+      "http": true,
+      "redirect": true,
+      "relative_redirect": true,
+      "missing": true,
+      "navigation": true,
+      "forms": true,
+      "controls": true,
+      "post_edit_checkbox": true,
+      "chunked": true,
+      "truncated": true,
+      "malformed": true,
+      "redirect_loop": true,
+      "large": true,
+      "proxy": true
+    },
+    "scope": "Fixture request presence, specified exact request assertions and capture completion; not proof of all rendered content."
+  },
+  "native_scroll": {
+    "cga": {
+      "00-down": true,
+      "01-down": true,
+      "02-down": true,
+      "03-down": true,
+      "04-up": true,
+      "05-pgdn": true,
+      "06-pgup": true,
+      "07-end": true,
+      "08-down": true,
+      "09-home": true,
+      "10-f3": true,
+      "11-down": true,
+      "12-f2": true,
+      "13-down": true,
+      "14-up": true,
+      "15-f3": true,
+      "16-tab": true,
+      "17-down": true
+    },
+    "ega": {
+      "00-down": true,
+      "01-down": true,
+      "02-down": true,
+      "03-down": true,
+      "04-up": true,
+      "05-pgdn": true,
+      "06-pgup": true,
+      "07-end": true,
+      "08-down": true,
+      "09-home": true,
+      "10-f3": true,
+      "11-down": true,
+      "12-f2": true,
+      "13-down": true,
+      "14-up": true,
+      "15-f3": true,
+      "16-tab": true,
+      "17-down": true
+    },
+    "vga": {
+      "00-down": true,
+      "01-down": true,
+      "02-down": true,
+      "03-down": true,
+      "04-up": true,
+      "05-pgdn": true,
+      "06-pgup": true,
+      "07-end": true,
+      "08-down": true,
+      "09-home": true,
+      "10-f3": true,
+      "11-down": true,
+      "12-f2": true,
+      "13-down": true,
+      "14-up": true,
+      "15-f3": true,
+      "16-tab": true,
+      "17-down": true
+    }
+  },
+  "native_display": {
+    "cga": {
+      "geometry_pass": true,
+      "text_geometry_restored": true,
+      "status": "captured"
+    },
+    "ega": {
+      "geometry_pass": true,
+      "text_geometry_restored": true,
+      "status": "captured"
+    },
+    "vga": {
+      "geometry_pass": true,
+      "text_geometry_restored": true,
+      "status": "captured"
+    },
+    "cancel": {
+      "cancel_geometry_preserved": true,
+      "status": "captured"
+    },
+    "invalid": {
+      "status": "captured"
+    }
+  },
+  "native_history": {
+    "http_back_to_local_no_request": true,
+    "http_back_to_local_content": true,
+    "local_forward_to_http": true,
+    "backspace": true,
+    "toolbar_forward": true,
+    "branch_discards_forward": true,
+    "failed_back_requested_previous": true,
+    "failed_back_preserves_index": true,
+    "cancel_requested_stalled_response": true,
+    "cancel_preserves_rendered_document": true,
+    "navigation_after_cancel": true,
+    "eight_entry_limit": true
+  },
+  "download": {
+    "disk_full_lane": false,
+    "navigation_after_save_errors": true,
+    "download_file_exists": true,
+    "saved_bytes_exact": true,
+    "edited_filename_bytes_exact": true,
+    "preexisting_distinct_bytes_preserved": true
+  },
+  "disk_full": {
+    "disk_full_lane": true,
+    "download_file_exists": false,
+    "partial_file_removed": true,
+    "preexisting_distinct_bytes_preserved": true
+  },
+  "recovery_visual_review": {
+    "reviewer": "root",
+    "save_failure_status_visible": true,
+    "disk_full_welcome_recovery_visible": true,
+    "navigation_after_save_errors_visible": true,
+    "scope": "Original final-image screenshots inspected; disk-full incomplete file removal and preexisting bytes also checked by harness."
+  },
+  "independent_visual_review": {
+    "review_id": "release-0.1-independent-visual-review",
+    "updated_utc": "2026-10-16T18:53:08.989597+00:00",
+    "status": "complete_for_scroll_display_alt_and_live_scope",
+    "binary_sha256_reported_by_parent": "5c652079e7cc27884091c9e3b1730fea5d37fa3cbeb690535fed94af16dcfce2",
+    "image_sha256_from_capture_records": "7c51c3df6becacbe2ddbe7eb7d446d67e0d57cff89d1be14531e998d844191f5",
+    "method": "Visual-only regression assessment with full original PNG inspection through tools.view_image and independent RGB pixel comparison. No reference preference vote. No source edits, builds, emulator starts, HP access or RDP.",
+    "scroll": {
+      "visually_inspected_frames": [
+        "qa/release-0.1/scroll/cga/initial.png",
+        "qa/release-0.1/scroll/cga/03-down.png",
+        "qa/release-0.1/scroll/cga/03-down-full.png",
+        "qa/release-0.1/scroll/cga/04-up.png",
+        "qa/release-0.1/scroll/cga/05-pgdn.png",
+        "qa/release-0.1/scroll/cga/11-down.png",
+        "qa/release-0.1/scroll/cga/13-down.png",
+        "qa/release-0.1/scroll/cga/13-down-full.png",
+        "qa/release-0.1/scroll/cga/16-tab.png",
+        "qa/release-0.1/scroll/cga/17-down.png",
+        "qa/release-0.1/scroll/cga/17-down-full.png",
+        "qa/release-0.1/scroll/ega/initial.png",
+        "qa/release-0.1/scroll/ega/03-down.png",
+        "qa/release-0.1/scroll/ega/03-down-full.png",
+        "qa/release-0.1/scroll/ega/04-up.png",
+        "qa/release-0.1/scroll/ega/05-pgdn.png",
+        "qa/release-0.1/scroll/ega/11-down.png",
+        "qa/release-0.1/scroll/ega/13-down.png",
+        "qa/release-0.1/scroll/ega/13-down-full.png",
+        "qa/release-0.1/scroll/ega/16-tab.png",
+        "qa/release-0.1/scroll/ega/17-down.png",
+        "qa/release-0.1/scroll/ega/17-down-full.png",
+        "qa/release-0.1/scroll/vga/initial.png",
+        "qa/release-0.1/scroll/vga/03-down.png",
+        "qa/release-0.1/scroll/vga/03-down-full.png",
+        "qa/release-0.1/scroll/vga/04-up.png",
+        "qa/release-0.1/scroll/vga/05-pgdn.png",
+        "qa/release-0.1/scroll/vga/11-down.png",
+        "qa/release-0.1/scroll/vga/13-down.png",
+        "qa/release-0.1/scroll/vga/13-down-full.png",
+        "qa/release-0.1/scroll/vga/16-tab.png",
+        "qa/release-0.1/scroll/vga/17-down.png",
+        "qa/release-0.1/scroll/vga/17-down-full.png"
+      ],
+      "visual_observations": [
+        "Initial text, table borders, GIFs, missing-image placeholders, fields and links are readable in all three modes.",
+        "Down, Up and page-jump samples show coherent content movement and clean clipping at the viewport boundaries, without smeared GIFs, duplicated row fragments, border damage or page content painted into chrome.",
+        "Missing-image ALT labels are shortened to fit their boxes; the displayed fragment stays inside the placeholder. Clipping of partially visible images/placeholders at the viewport edge is coherent.",
+        "With bars hidden the content uses the exposed screen area. Inversion changes foreground/background consistently, including images and placeholders. Restored bars and focused input borders remain distinguishable.",
+        "Focused-field scrolling does not visibly lose the focus outline or leave stale pixels in the inspected states."
+      ],
+      "pixel_oracle": "Every available numbered incremental screenshot was compared independently against its same-action -full PNG. The harness describes the latter as the state after two F2 toggles. The reviewer did not execute that action sequence.",
+      "comparisons": [
+        {
+          "mode": "cga",
+          "state": "00-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "01-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "02-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "03-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "04-up",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "05-pgdn",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "06-pgup",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "07-end",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "08-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "09-home",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "10-f3",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "11-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "12-f2",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "13-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "14-up",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "15-f3",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "16-tab",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "cga",
+          "state": "17-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "00-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "01-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "02-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "03-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "04-up",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "05-pgdn",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "06-pgup",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "07-end",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "08-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "09-home",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "10-f3",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "11-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "12-f2",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "13-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "14-up",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "15-f3",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "16-tab",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "ega",
+          "state": "17-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "00-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "01-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "02-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "03-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "04-up",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "05-pgdn",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "06-pgup",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "07-end",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "08-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "09-home",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "10-f3",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "11-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "12-f2",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "13-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "14-up",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "15-f3",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "16-tab",
+          "different_pixels": 0,
+          "difference_bbox": null
+        },
+        {
+          "mode": "vga",
+          "state": "17-down",
+          "different_pixels": 0,
+          "difference_bbox": null
+        }
+      ],
+      "equal_pairs": 54,
+      "total_pairs": 54,
+      "oracle_limit": "Equality shows agreement with this renderer after forced full repaint, not independent correctness of page layout, image decoding, field behavior, or all scroll distances."
+    },
+    "display": {
+      "visually_inspected_frames": [
+        "qa/release-0.1/display/cga/startup.png",
+        "qa/release-0.1/display/cga/selected.png",
+        "qa/release-0.1/display/cga/restored.png",
+        "qa/release-0.1/display/ega/startup.png",
+        "qa/release-0.1/display/ega/selected.png",
+        "qa/release-0.1/display/ega/restored.png",
+        "qa/release-0.1/display/vga/startup.png",
+        "qa/release-0.1/display/vga/selected.png",
+        "qa/release-0.1/display/vga/restored.png",
+        "qa/release-0.1/display/cancel/selected.png"
+      ],
+      "observations": [
+        "The startup selector visibly identifies ELKSWeb 0.1 and lists the display choices; version wording is an intentional change.",
+        "Selected CGA/EGA/VGA frames remain legible and match repaint006 selected frames pixel for pixel.",
+        "Restored frames show the readable text login screen without graphic residue. The cancel frame shows q followed by the login screen. Keyboard usability after return is not proved by a still image."
+      ],
+      "selected_comparison_to_repaint006": [
+        {
+          "mode": "cga",
+          "different_pixels": 0
+        },
+        {
+          "mode": "ega",
+          "different_pixels": 0
+        },
+        {
+          "mode": "vga",
+          "different_pixels": 0
+        }
+      ]
+    },
+    "live": {
+      "status": "complete",
+      "reviewed_frames": [
+        "qa/release-0.1/live/candidate/frogfind/early.png",
+        "qa/release-0.1/live/candidate/frogfind/final.png",
+        "qa/release-0.1/live/candidate/frogfind/mirror-query-entered.png",
+        "qa/release-0.1/live/candidate/frogfind/mirror-search-results.png",
+        "qa/release-0.1/live/candidate/frogfind/mirror-first-article-focused.png",
+        "qa/release-0.1/live/candidate/frogfind/mirror-article-result.png",
+        "qa/release-0.1/live/candidate/frogfind/mirror-back-to-results.png",
+        "qa/release-0.1/live/candidate/68k/early.png",
+        "qa/release-0.1/live/candidate/68k/final.png",
+        "qa/release-0.1/live/candidate/68k/news-page2.png",
+        "qa/release-0.1/live/candidate/68k/news-end.png",
+        "qa/release-0.1/live/candidate/68k/news-first-article-focused.png",
+        "qa/release-0.1/live/candidate/68k/news-article-result.png",
+        "qa/release-0.1/live/candidate/68k/news-back-to-home.png"
+      ],
+      "frogfind": "Homepage and frog GIF, entered elks linux query, search results, focused first result, readable ELKS article and return to results are coherent. Titles, address, focus highlight, form borders and body text remain legible, without apparent stale content or overlap. The result record also lists homepage/GIF/query/read.php requests.",
+      "news": "Homepage, changed viewport, footer, focused first headline, article response and return homepage are coherent and readable. No apparent image/text smearing, stale title, dirty chrome, or scroll-boundary artifact is present. The live headlines differ from earlier runs, so cross-run content equality is not claimed.",
+      "article_limit": "The article frame displays the site extraction-error wording: Failed to get the article and Invalid or incomplete HTML. This is not successful article reading.",
+      "request_evidence_limit": "The 68k result.json for this run lists only GET / in request_lines_observed. The screenshot visibly shows an article.php address and error document, but the manifest alone does not independently establish the article request. No full pcap audit was performed.",
+      "image_identity": "Both live result records identify image 7c51c3df6becacbe2ddbe7eb7d446d67e0d57cff89d1be14531e998d844191f5, matching scroll/display records."
+    },
+    "findings": [],
+    "decision": {
+      "visual_regression_found_in_reviewed_scope": false,
+      "required_visual_fix": "None established in the reviewed scroll, display, ALT and live frames.",
+      "release_boundary": "This completes the requested bounded visual review. It is not complete functional qualification, independent correctness of the full-redraw renderer, or physical-HP validation. Download/disk-full recovery is outside this review and remains in the root reviewer lane.",
+      "reference_votes": "None added or changed."
+    },
+    "limits": [
+      "Only the listed representative scroll frames were inspected visually; all 54 paired states were additionally checked pixelwise.",
+      "No timing or responsiveness gate is applied. Still images cannot establish input latency, transient tearing/flicker, or every interaction path.",
+      "QEMU and RGB-frame equality do not establish physical CGA/EGA/VGA or HP200LX behavior.",
+      "No DOS/reference quality vote is produced; previous review scores retain their original scope."
+    ],
+    "alt_fixture": {
+      "reviewed_frames": [
+        "qa/release-0.1/fixtures/candidate/alt/initial.png",
+        "qa/beta-gates-005/clean/fixtures/candidate/alt/initial.png"
+      ],
+      "observation": "Readable missing-image and PNG-dimensions placeholders remain contained by their borders. Following text begins below each box; no spill or overlap is visible. Layout agrees with clean005; address ports differ."
+    },
+    "counts": {
+      "visually_inspected_scroll_frames": 33,
+      "visually_inspected_display_frames": 10,
+      "visually_inspected_alt_frames_including_one_prior_reference": 2,
+      "visually_inspected_live_frames": 14,
+      "total_visual_inspections": 59,
+      "independently_compared_scroll_pairs": 54,
+      "scroll_pairs_equal": 54,
+      "selected_display_pairs_equal_to_repaint006": 3
+    }
+  },
+  "live_sites": {
+    "frogfind.8088retro.com": "Homepage GIF, query, results, article and Back inspected; no visible regression.",
+    "68k.news": "Homepage, scrolling, article response and Back inspected; article response displays an extraction error. Article request evidence in the summary is incomplete; successful article reading is not claimed."
+  },
+  "hardware_scope": "0.1 native runtime tested in QEMU. Earlier builds tested in Windows 86Box; owner confirms build006 on HP200LX. This exact 0.1 binary has not been tested on physical HP or emulated 8088.",
+  "new_blind_comparison_votes": null,
+  "speed_responsiveness_release_gate": false,
+  "raw_evidence_location": "qa/release-0.1 in the private working copy; raw QA artifacts are not tracked in Git or included in the release archive.",
+  "evidence_sha256": {
+    "host-tests.log": "ef71f2e14edc16ff07cde408eb8c96833a3ec2b0bba8c136b89823559ff54a5b",
+    "platform-tests.log": "9d01812e75438c0a2a303505b79dc0ff66f248d2963d7c6ad29d99d29a1de61d",
+    "fixtures/summary.json": "4744e6b418b2bfd39d11ea9ceeb671edf05afbae3905f1eb11c49b5c0ae8ced2",
+    "scroll/result.json": "39d2efe9f5d78eeeba4fd095c5d3c97863228b691bca8162eada300faf9ba49c",
+    "display/result.json": "8bf17519f51d51557bbff23583b4d1fdc446dde63d3c989bea1547b78653676e",
+    "history/result.json": "97a7c2dd455e92c07dcd50d5f7753875392caf60bde058611a1e4ffc415298f8",
+    "download/result.json": "808516809e1f15ed69be015bffe3629f9d54af9cdfb172186afbaa4745eb82bf",
+    "disk-full/result.json": "8d214c699b395a6ddaf8396717b1269dfaa6727ae3fbfe2b8aeeb6c2e82531ff",
+    "independent-visual-review.json": "af7082720f8b97ef70d260fcf86958dd82ca148b7d1b36f92136fc98d0332871"
+  }
+}

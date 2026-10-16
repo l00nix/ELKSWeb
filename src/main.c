@@ -4,6 +4,7 @@
 #include "../font/font.h"
 #include "elks_platform.h"
 #include "elksweb.h"
+#include "version.h"
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +15,7 @@
 
 static char current[EW_URL], address[EW_URL], status[96];
 static char EW_FAR *history[EW_HISTORY];
-static short scroll, hscroll;
+static short scroll, hscroll, painted_scroll;
 static int page_width, hovered = -1;
 static int focused = -1, editing = 0, selectall = 0, inverse = 0, chrome = 1;
 /* Independent damage regions: ordinary page painting never erases chrome. */
@@ -24,6 +25,7 @@ static int focused = -1, editing = 0, selectall = 0, inverse = 0, chrome = 1;
 #define DRAW_TITLE 8
 #define DRAW_FRAME 16
 #define DRAW_ALL 31
+#define DRAW_SCROLL 32
 static int hcount = 0, hpos = -1, dirty = DRAW_ALL;
 static unsigned field_pos, address_pos;
 static int mouse_active, mouse_x = 320, mouse_y = 100, scroll_drag, drag_offset;
@@ -179,6 +181,7 @@ static void centered_text(int y, const char *s, unsigned style) {
 static void draw(void) {
   unsigned i;
   int x, y, f = fg(), b = bg(), t = top(), bot = bottom(), active;
+  int paint_top = t, paint_bottom = bot, delta = scroll - painted_scroll;
   struct ew_run EW_FAR *r;
   struct ew_link *l;
   char temp[81];
@@ -187,18 +190,26 @@ static void draw(void) {
     ew_clear(b);
     dirty |= DRAW_ALL;
   }
-  if (dirty & DRAW_PAGE) {
-    ew_clip(624, t, bot);
-    ew_fillrect(0, t, 624, bot - t, b);
+  if ((dirty & (DRAW_PAGE | DRAW_SCROLL)) == DRAW_SCROLL) {
+    if (!delta) dirty &= ~DRAW_SCROLL;
+    else if (select_open < 0 && !download_edit && delta < bot-t && delta > t-bot) {
+      ew_scroll(t, bot, delta);
+      if (delta > 0) paint_top = bot-delta;
+      else paint_bottom = t-delta;
+    } else dirty |= DRAW_PAGE;
+  }
+  if (dirty & (DRAW_PAGE | DRAW_SCROLL)) {
+    ew_clip(624, paint_top, paint_bottom);
+    ew_fillrect(0, paint_top, 624, paint_bottom - paint_top, b);
     for (i = 0; !download_edit && i < ew_doc.run_count; i++) {
       r = &ew_doc.runs[i];
       x = r->x - hscroll;
       y = t + r->y - scroll;
       if (r->kind == EW_RUN_IMAGE) {
-        ew_image_draw(r, x, y, t, bot, inverse);
+        ew_image_draw(r, x, y, paint_top, paint_bottom, inverse);
         continue;
       }
-      if (y + run_height(r) <= t || y >= bot)
+      if (y + run_height(r) <= paint_top || y >= paint_bottom)
         continue;
       active = !editing && r->link && (int)r->link == focused + 1;
       if (r->kind == EW_RUN_TEXT) {
@@ -269,6 +280,7 @@ static void draw(void) {
         }
       }
     }
+    painted_scroll = scroll;
     ew_clip(640, 0, EW_SCREEN_HEIGHT);
     ew_fillrect(625, t + 1, 14, bot - t - 2, b);
     if (dirty & DRAW_FRAME) ew_rect(624, t, 16, bot - t, f);
@@ -928,7 +940,7 @@ static void key(int k) {
     max = 0;
   if (scroll > max)
     scroll = max;
-  dirty |= DRAW_PAGE | DRAW_STATUS;
+  dirty |= DRAW_SCROLL;
 }
 static void mouse_event(const struct ew_mouse_event *event) {
   unsigned i;
@@ -1009,7 +1021,7 @@ static void mouse_event(const struct ew_mouse_event *event) {
       scroll = 0;
     if (scroll > max)
       scroll = max;
-    dirty |= DRAW_PAGE | DRAW_STATUS;
+    dirty |= DRAW_SCROLL;
     return;
   }
   if (!(event->pressed & EW_MOUSE_LEFT)) {
@@ -1088,14 +1100,17 @@ int main(int argc, char **argv) {
   int k, i;
   struct ew_mouse_event event;
   for (i = 1; i < argc; i++) {
-    if (!strcmp(argv[i], "-invert"))
+    if (!strcmp(argv[i], "--version")) {
+      puts("ELKSWeb " EW_VERSION);
+      return 0;
+    } else if (!strcmp(argv[i], "-invert"))
       inverse = 1;
     else if (!strcmp(argv[i], "-video") && i+1<argc)
       video_mode=argv[++i];
     else if (!strcmp(argv[i], "-noimages"))
       load_images = 0;
     else if (!strcmp(argv[i], "-help") || !strcmp(argv[i], "--help")) {
-      puts("Usage: elksweb [-video cga|ega|vga] [-invert] [-noimages] [http://URL or file]\n"
+      puts("ELKSWeb " EW_VERSION "\nUsage: elksweb [-video cga|ega|vga] [-invert] [-noimages] [http://URL or file]\n"
            "F6/Ctrl-L address  Tab links  Enter activate  F5 reload\n"
            "F2 invert  F3 hide bars  arrows/PgUp/PgDn scroll  Esc exit");
       return 0;
@@ -1113,7 +1128,7 @@ int main(int argc, char **argv) {
   }
   signal(SIGINT, stopped);
   signal(SIGTERM, stopped);
-  strcpy(ew_doc.title, "ELKSWeb");
+  strcpy(ew_doc.title, "ELKSWeb " EW_VERSION);
   strcpy(status, "Starting...");
   draw();
   load(url, NULL, 1);

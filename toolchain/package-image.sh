@@ -9,6 +9,11 @@ template="$TOPDIR/elkscmd/rootfs_template"
 install "$app_root/build/elksweb" "$template/bin/elksweb"
 mkdir -p "$template/root"
 install -m 644 "$app_root/share/welcome.htm" "$template/root/welcome.htm"
+mkdir -p "$template/root/frog"
+for fixture in index.htm http.htm results.htm article.htm images.htm frog.gif README.txt COPYING.txt; do
+    install -m 644 "$app_root/tests/fixtures/frogfind/$fixture" "$template/root/frog/$fixture"
+done
+install -m 644 "$app_root/tests/fixtures/frogfind/PROVENANCE.json" "$template/root/frog/source.txt"
 # Browser appliance needs the TCP client daemon, not FTP/telnet server processes.
 # Only this isolated rootfs template is changed; preserve upstream project images.
 sed -i 's/^netstart=.*/netstart=""/' "$template/etc/net.cfg"

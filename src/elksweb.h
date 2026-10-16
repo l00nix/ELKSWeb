@@ -107,6 +107,7 @@ const char EW_FAR *ew_image_alt(const struct ew_run EW_FAR *run);
 int ew_image_is_map(const struct ew_run EW_FAR *run);
 int ew_image_map_point(const struct ew_run EW_FAR *run, int x, int y,
                        unsigned *map_x, unsigned *map_y);
+/* Caller must set the display clip to the viewport or exposed scroll strip. */
 void ew_image_draw(const struct ew_run EW_FAR *run, int x, int y, int top, int bottom,
                    int inverse);
 void ew_parse(const char EW_FAR *html, const char *base);

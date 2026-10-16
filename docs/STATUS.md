@@ -1,5 +1,7 @@
 # Private beta preparation — 16 October 2026
 
+**ELKSWeb 0.1:** the current private release candidate includes incremental vertical scrolling and versioned packaging. See [0.1 release notes](RELEASE-0.1.md) for its final checks and artifact identities. The historical build005/006 results below remain scoped to those binaries.
+
 **Later HP feedback:** the owner confirms build005 runs on the physical HP 200LX. A subsequent frame-repaint correction is documented in [REPAINT-006.md](REPAINT-006.md); the build005 qualification record below remains specific to its original binary. The correction is now installed on the HP with its checksum verified and build005 retained as `/root/elksweb.005`; owner repaint testing is pending.
 
 The repository remains private. This iteration closes the scoped functional, visual and resource-recovery checks on build004, fixes an inaccurate failed-download cleanup message, and validates a fresh build of the resulting browser. **The fresh build and scoped final-artifact QEMU gates pass. The final Windows 8088 run also passes its scoped checks. Work is paused for owner review; publication remains unapproved.** Speed and responsiveness are excluded from the first-beta decision, as requested.

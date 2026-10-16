@@ -9,9 +9,20 @@ int ew_screen_height=200, ew_pixel_aspect=2;
 static unsigned writes[480][640];
 static unsigned char pixels[480][640];
 static int clip_right=640, clip_top, clip_bottom=200;
-static unsigned clears;
+static unsigned clears, scroll_copies;
+static int last_scroll_top, last_scroll_bottom, last_scroll_delta;
 void ew_clip(int right,int top_y,int bottom_y) {
   clip_right=right;clip_top=top_y;clip_bottom=bottom_y;
+}
+/* Independent logical-pixel implementation. The separate driver test verifies
+ * that the real CGA/planar byte copies implement this same operation. */
+void ew_scroll(int first,int last,int delta) {
+  int y,x,step=delta>0?1:-1;
+  ++scroll_copies;last_scroll_top=first;last_scroll_bottom=last;
+  last_scroll_delta=delta;
+  for(y=delta>0?first:last-1;y>=first && y<last;y+=step)
+    if(y+delta>=first && y+delta<last)
+      for(x=0;x<624;x++)pixels[y][x]=pixels[y+delta][x];
 }
 void ew_pixel(int x,int y,int color) {
   if(x<0 || x>=640 || y<0 || y>=ew_screen_height ||
@@ -48,7 +59,7 @@ const char *ew_platform_error(void) {return "";}
 int ew_getkey(void) {return 0;}
 int ew_mouse_present(void) {return 0;}
 int ew_mouse_read(struct ew_mouse_event *event) {(void)event;return 0;}
-void qa_repaint_writes_reset(void) {memset(writes,0,sizeof(writes));clears=0;}
+void qa_repaint_writes_reset(void) {memset(writes,0,sizeof(writes));clears=scroll_copies=0;}
 unsigned long qa_repaint_writes(int x0,int y0,int x1,int y1) {
   unsigned long n=0;int x,y;
   for(y=y0;y<y1;y++)for(x=x0;x<x1;x++)n+=writes[y][x];
@@ -123,4 +134,34 @@ int qa_repaint_editing(void) {return editing;}
 unsigned qa_repaint_full_equivalence(void) {
   qa_repaint_snapshot();dirty=31;draw();
   return qa_repaint_difference(0,0,640,ew_screen_height);
+}
+
+/* Scroll tests can queue independent UI damage before flushing the renderer. */
+void qa_scroll_move(int target) {scroll=target;dirty|=DRAW_SCROLL;}
+void qa_scroll_flush(void) {if(dirty)draw();}
+void qa_scroll_queue_key(int which) {
+  static const int codes[]={EW_KEY_DOWN,EW_KEY_UP,EW_KEY_PGDN,EW_KEY_PGUP,
+    EW_KEY_TAB,EW_KEY_F6,EW_KEY_ESC,EW_KEY_F2,EW_KEY_F3,EW_KEY_RIGHT};
+  key(which>=0 && which<10?codes[which]:which);
+}
+int qa_scroll_position(void) {return scroll;}
+int qa_scroll_copies(void) {return scroll_copies;}
+int qa_scroll_delta(void) {return last_scroll_delta;}
+int qa_scroll_top(void) {return last_scroll_top;}
+int qa_scroll_bottom(void) {return last_scroll_bottom;}
+void qa_scroll_open_select(void) {
+  unsigned i;for(i=0;i<ew_doc.link_count;i++)
+    if(ew_doc.links[i].kind==EW_RUN_SELECT){focused=i;activate();break;}
+}
+void qa_scroll_drag_step(int amount) {
+  int y,height;struct ew_mouse_event e;
+  thumb(&y,&height);memset(&e,0,sizeof(e));e.x=630;e.y=y+height/2;
+  e.buttons=e.pressed=EW_MOUSE_LEFT;mouse_event(&e);
+  e.pressed=0;e.y+=amount;mouse_event(&e);
+  e.buttons=0;mouse_event(&e);
+}
+int qa_scroll_loaded_images(void) {
+  unsigned i;int count=0;
+  for(i=0;i<ew_doc.run_count;i++)if(ew_doc.runs[i].kind==EW_RUN_IMAGE && ew_doc.runs[i].style!=255)count++;
+  return count;
 }

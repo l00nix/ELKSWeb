@@ -4,6 +4,7 @@
 #include "elks_platform.h"
 #include "elks_keys.h"
 #include "elks_mouse.h"
+#include "../src/version.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -78,7 +79,7 @@ static int video_choose(const char *name, unsigned caps)
     int mode;
     if (!name) {
         if (!isatty(0)) { last_error="Use -video cga, ega or vga without a terminal"; return -1; }
-        puts("ELKSWeb display (monochrome):");
+        puts("ELKSWeb " EW_VERSION " display (monochrome):");
         if (caps&1) puts("  1 CGA 640x200 (default)");
         if (caps&2) puts("  2 EGA 640x350");
         if (caps&4) puts("  3 VGA 640x480");
@@ -227,6 +228,24 @@ static unsigned scan_offset(int x, int y)
 {
     if (ew_screen_height!=200) return (unsigned)y*80U+((unsigned)x>>3);
     return ((unsigned)y & 1) * 8192U + ((unsigned)y >> 1) * 80U + ((unsigned)x >> 3);
+}
+
+/* Scroll the byte-aligned content viewport, preserving chrome and padding.
+ * Positive delta moves pixels up. Row order protects overlapping source data,
+ * including odd scanline shifts across the CGA interleaved banks. */
+void ew_scroll(int top, int bottom, int delta)
+{
+    int y, end, step;
+    unsigned from, to, n;
+    if (top < 0 || bottom > EW_SCREEN_HEIGHT || top >= bottom || !delta ||
+        delta >= bottom - top || delta <= top - bottom) return;
+    if (delta > 0) { y=top; end=bottom-delta; step=1; }
+    else { y=bottom-1; end=top-delta-1; step=-1; }
+    for (; y!=end; y+=step) {
+        from=scan_offset(0,y+delta);
+        to=scan_offset(0,y);
+        for (n=0; n<78; ++n) video[to+n]=video[from+n];
+    }
 }
 
 void ew_clip(int right, int top, int bottom)

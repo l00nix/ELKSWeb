@@ -103,7 +103,7 @@ The QEMU launcher needs `qemu-system-i386` and mtools `mcopy`. It boots a dispos
 
 ## Repeatable FrogFind fixtures
 
-The live QA mirror is `http://frogfind.8088retro.com/`. The fixed fixtures are separate: copy the HTML and GIF files from `tests/fixtures/frogfind/` into guest `/root/frog`, then run `elksweb -video cga /root/frog/index.htm`. The fixture QA harness injects these files into its disposable image; ordinary packaging does not install them automatically. File-mode sample navigation works without PHP or networking; sample results are not live search results.
+The live QA mirror is `http://frogfind.8088retro.com/`. The fixed fixtures are separate: copy the HTML and GIF files from `tests/fixtures/frogfind/` into guest `/root/frog`, then run `elksweb -video cga /root/frog/index.htm`. Version 0.1 packaging installs these fixtures under `/root/frog` and links them from the welcome page. The fixture QA harness also injects them into its disposable image. File-mode sample navigation works without PHP or networking; sample results are not live search results.
 
 For a local HTTP fixture server on the QEMU host:
 
@@ -138,7 +138,7 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 python3 -m unittest discover -s platform/tests -p 'test_*.py'
 ```
 
-The latest full `tests/` run passed 264 tests using the bundled Python environment with Pillow available. The display tests include actual driver memory operations against simulated BIOS/console I/O, all three framebuffer layouts, clipped drawing/cursor restoration, unsupported adapters, menu cancellation and image geometry. Nine driver scenarios also passed ASan/UBSan.
+The 0.1 full `tests/` run passed 288 tests using the bundled Python environment with Pillow available. Seven additional platform tests cover drawing, cursor restoration and bank-safe scrolling. The display tests include actual driver memory operations against simulated BIOS/console I/O, all three framebuffer layouts, clipped drawing/cursor restoration, unsupported adapters, menu cancellation and image geometry. Nine driver scenarios also passed ASan/UBSan.
 
 Host tests do not validate 16-bit ABI, far pointers or 8088 timing. For actual-reference comparison, see [tests/README.md](../tests/README.md). Supply a separately obtained MicroWeb reference image explicitly; it is not bundled.
 

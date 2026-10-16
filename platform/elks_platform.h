@@ -55,6 +55,9 @@ void ew_cursor_shape(int hand);
 /* Restrict subsequent primitives to [0,right) x [top,bottom).
  * Restore the full screen before chrome or software-cursor drawing. */
 void ew_clip(int right, int top, int bottom);
+/* Move x=0..623 inside [top,bottom); positive delta moves pixels up.
+ * Caller hides the cursor and repaints the exposed strip. No clipping applied. */
+void ew_scroll(int top, int bottom, int delta);
 void ew_clear(int white);
 void ew_pixel(int x, int y, int white);
 void ew_hline(int x, int y, int width, int white);
