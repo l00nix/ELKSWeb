@@ -24,6 +24,8 @@ static unsigned qa_io_fail;
 void qa_io_reset(unsigned failure) { qa_io_fail = failure; }
 static int qa_fault_open(const char *path, int flags, unsigned mode)
 { if (qa_io_fail & 1) { errno=EACCES; return -1; } return open(path,flags,mode); }
+static FILE *qa_fault_fdopen(int fd,const char *mode)
+{ if (qa_io_fail & 32) { errno=ENOMEM;return NULL; } return fdopen(fd,mode); }
 static int qa_fault_putc(int c,FILE *stream)
 { if (qa_io_fail & 2) { errno=ENOSPC;return EOF; } return fputc(c,stream); }
 static int qa_fault_seek(FILE *stream,long offset,int origin)
@@ -33,6 +35,7 @@ static size_t qa_fault_read(void *p,size_t n,size_t count,FILE *stream)
 static int qa_fault_flush(FILE *stream)
 { if (qa_io_fail & 16) { errno=ENOSPC;return EOF; } return fflush(stream); }
 #define open qa_fault_open
+#define fdopen qa_fault_fdopen
 #define fputc qa_fault_putc
 #define fseek qa_fault_seek
 #define fread qa_fault_read
@@ -40,3 +43,6 @@ static int qa_fault_flush(FILE *stream)
 #define malloc qa_fault_malloc
 #define free qa_fault_free
 #include "../src/memory.c"
+/* Share allocation accounting with the GIF decoder in recovery tests. */
+void *qa_resource_malloc(size_t size) { return qa_fault_malloc(size); }
+void qa_resource_free(void *p) { qa_fault_free(p); }

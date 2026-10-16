@@ -637,8 +637,8 @@ static void key(int k) {
       }
       if (close(out)) failed = 1;
       if (failed) {
-        unlink(download_name);
-        message("Save failed or cancelled; incomplete file removed");
+        message(unlink(download_name) ? "Save failed; incomplete file remains" :
+                "Save failed or cancelled; incomplete file removed");
       } else { download_edit = 0; message("File saved"); }
     } else if (download_button) { /* Typing does not edit an unfocused field. */ }
     else if (k == EW_KEY_HOME) download_pos = 0;
