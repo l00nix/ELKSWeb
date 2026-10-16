@@ -16,7 +16,7 @@ try:
    with tempfile.TemporaryDirectory(prefix='elksweb-mouse-') as tmp:
     work=pathlib.Path(tmp);image=work/'candidate.img';shutil.copyfile(a.image,image)
     page='auto-columns' if case=='auto_columns' else case
-    for name,value in [('qaurl',f'http://10.0.2.2:{a.port}/{page}.htm\n'),('qaproxy','\n')]:
+    for name,value in [('qaurl',f'http://10.0.2.2:{a.port}/{page}.htm\n'),('qaproxy','\n'),('qavideo','cga\n')]:
      f=work/name;f.write_text(value);subprocess.run(['mcopy','-o','-i',str(image),str(f),'::/root/'+name],check=True,capture_output=True)
     manifest=json.loads((pathlib.Path(__file__).parent/'candidate.example.json').read_text());argv=[v.format(image=image,qmp=work/'qmp.sock') for v in manifest['argv']]
     (out/'command.json').write_text(json.dumps(argv,indent=2)+'\n');machine=Machine(argv,work/'qmp.sock',out/'qemu.log')

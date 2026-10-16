@@ -17,8 +17,10 @@ def navigate(path):
 try:
  with tempfile.TemporaryDirectory(prefix='elksweb-download-') as tmp:
   work=pathlib.Path(tmp);image=work/'candidate.img';shutil.copyfile(a.image,image)
-  for name,value in [('qaurl',f'http://10.0.2.2:{a.port}'+('/download-large.bin' if a.disk_full else '/literal.txt')+'\n'),('qaproxy','\n')]:
+  for name,value in [('qaurl',f'http://10.0.2.2:{a.port}'+('/download-large.bin' if a.disk_full else '/literal.txt')+'\n'),('qaproxy','\n'),('qavideo','cga\n')]:
    f=work/name;f.write_text(value);subprocess.run(['mcopy','-o','-i',str(image),str(f),'::/root/'+name],check=True,capture_output=True)
+  sentinel=work/'keep.bin';sentinel.write_bytes(b'PREEXISTING FILE MUST SURVIVE\0')
+  subprocess.run(['mcopy','-o','-i',str(image),str(sentinel),'::/root/keep.bin'],check=True,capture_output=True)
   if a.disk_full:
    import re
    listing=subprocess.check_output(['mdir','-i',str(image),'::'],text=True)
@@ -34,6 +36,8 @@ try:
   time.sleep(20 if a.disk_full else 4);snap('initial')
   if a.disk_full:
    key('ret');time.sleep(10);snap('disk-full-save-result');key('esc');time.sleep(.3)
+   key('ctrl-l');text('/root/welcome.htm');key('ret');time.sleep(3);snap('local-recovery-after-disk-full')
+   results['disk_full_recovery_review']='Verify welcome page is visible after the save failure, before browser exit.'
   else:
    navigate('/image.gif');snap('direct-gif')
    navigate('/direct.png');snap('direct-png')
@@ -43,6 +47,13 @@ try:
    navigate('/download.bin');key('home');key('delete');key('slash');key('end')
    for _ in range(3):key('backspace')
    text('dat');key('left');key('right');snap('filename-edited');key('ret');time.sleep(2);snap('edited-filename-saved')
+  if not a.disk_full:
+   for path,label in [('/root/keep.bin','sentinel-existing'),('/missing/save.bin','unwritable-destination')]:
+    navigate('/download.bin');key('home')
+    for _ in range(len('/root/download.bin')):key('delete')
+    text(path);key('ret');time.sleep(1);snap(label+'-error');key('esc');time.sleep(.3)
+   navigate('/next.htm?recovery=1');snap('navigation-after-save-errors')
+   results['navigation_after_save_errors']=any(q['path']=='/next.htm?recovery=1' for q in s.requests)
   # Exit to login, enter the documented empty-password generic QA root account,
   # and sync FAT buffers before reading the isolated image from the host.
   key('esc');time.sleep(1);text('root');key('ret');time.sleep(1);text('sync');key('ret');time.sleep(2);snap('synced-shell')
@@ -57,6 +68,8 @@ try:
    edited=a.output/'download.dat';second=subprocess.run(['mcopy','-i',str(image),'::/root/download.dat',str(edited)],capture_output=True,text=True)
    results['edited_filename_bytes_exact']=second.returncode==0 and edited.read_bytes()==expected
   else:results['partial_file_removed']=copy.returncode!=0
+  kept=a.output/'keep.bin';keep_copy=subprocess.run(['mcopy','-i',str(image),'::/root/keep.bin',str(kept)],capture_output=True)
+  results['preexisting_distinct_bytes_preserved']=keep_copy.returncode==0 and kept.read_bytes()==sentinel.read_bytes()
   results['file_read_stderr']=copy.stderr;results['requests']=s.requests;results['status']='completed_input_sequence'
 except Exception as exc:results['status']='error';results['error']=str(exc)
 finally:

@@ -104,6 +104,7 @@ class FixtureServer:
     def __init__(self,port):
         self.requests=[]
         self.fail_paths=set()
+        self.stalled_paths={}
         outer=self
         class Handler(http.server.BaseHTTPRequestHandler):
             protocol_version='HTTP/1.0'
@@ -117,6 +118,11 @@ class FixtureServer:
                 self.send_response_only(200);self.send_header('Content-Type','text/html');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
             def do_GET(self):
                 path=self.path.split('?',1)[0]
+                if self.path in outer.stalled_paths:
+                    outer.requests.append({'method':'GET','path':self.path,'status':200,'injected_fault':'stalled_body'})
+                    self.connection.sendall(b'HTTP/1.0 200 OK\r\nContent-Type: text/html\r\nContent-Length: 999\r\n\r\n')
+                    outer.stalled_paths[self.path].wait(20)
+                    self.close_connection=True;return
                 if self.path in outer.fail_paths:
                     body=b'Injected truncated fixture'
                     outer.requests.append({'method':'GET','path':self.path,'status':200,'body_sha256':hashlib.sha256(body).hexdigest(),'injected_fault':'truncated_body'})
@@ -225,6 +231,8 @@ def run_case(args,lane,case,server,manifest):
                     candidate_image=work/'candidate.img';shutil.copyfile(manifest['image'],candidate_image)
                     result['boot_image_sha256']=digest(candidate_image)
                     values['image']=str(candidate_image)
+                    video_file=work/'qavideo';video_file.write_text('cga\n')
+                    subprocess.run(['mcopy','-o','-i',str(candidate_image),str(video_file),'::/root/qavideo'],check=True,capture_output=True)
                     local_guest=manifest.get('local_fixture_path','/root/local.htm')
                     if spec.get('local_folder'):
                         install_frog_fixture(candidate_image,'/root/frog')

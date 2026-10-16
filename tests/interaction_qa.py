@@ -6,7 +6,7 @@ import argparse,json,pathlib,shutil,tempfile,time,subprocess
 from parity import FixtureServer,Machine,digest
 from live_qa import capture
 
-p=argparse.ArgumentParser(description=__doc__);p.add_argument('--image',type=pathlib.Path,required=True);p.add_argument('--output',type=pathlib.Path,required=True);p.add_argument('--port',type=int,default=18788);p.add_argument('--relaunch',action='store_true');p.add_argument('--link-x',type=int,default=15);p.add_argument('--link-y',type=int,default=59);a=p.parse_args();a.output=a.output.resolve();a.output.mkdir(parents=True,exist_ok=False)
+p=argparse.ArgumentParser(description=__doc__);p.add_argument('--image',type=pathlib.Path,required=True);p.add_argument('--output',type=pathlib.Path,required=True);p.add_argument('--port',type=int,default=18788);p.add_argument('--relaunch',action='store_true');p.add_argument('--link-x',type=int,default=15);p.add_argument('--link-y',type=int,default=66);a=p.parse_args();a.output=a.output.resolve();a.output.mkdir(parents=True,exist_ok=False)
 s=FixtureServer(a.port);machine=None;results={'image_sha256':digest(a.image),'mouse_target':[a.link_x,a.link_y],'captures':[]}
 def key(k):machine.command('human-monitor-command',{'command-line':'sendkey '+k+' 25'});time.sleep(.06)
 def text(value):
@@ -16,7 +16,7 @@ def snap(name):results['captures'].append(capture(machine,a.output,name))
 try:
  with tempfile.TemporaryDirectory(prefix='elksweb-input-') as tmp:
     work=pathlib.Path(tmp);image=work/'candidate.img';shutil.copyfile(a.image,image)
-    for name,value in [('qaurl',f'http://10.0.2.2:{a.port}/parity.htm\n'),('qaproxy','\n')]:
+    for name,value in [('qaurl',f'http://10.0.2.2:{a.port}/parity.htm\n'),('qaproxy','\n'),('qavideo','cga\n')]:
         f=work/name;f.write_text(value);subprocess.run(['mcopy','-o','-i',str(image),str(f),'::/root/'+name],check=True,capture_output=True)
     argv=[shutil.which('qemu-system-i386'),'-machine','isapc','-cpu','486','-m','8M','-accel','tcg,one-insn-per-tb=on','-display','none','-monitor','none','-serial','none','-qmp',f'unix:{work}/qmp.sock,server=on,wait=off','-drive',f'file={image},if=floppy,format=raw,snapshot=on','-boot','a','-netdev','user,id=net0','-device','ne2k_isa,netdev=net0,irq=3,iobase=0x300','-vga','std','-snapshot']
     (a.output/'command.json').write_text(json.dumps(argv,indent=2)+'\n');machine=Machine(argv,work/'qmp.sock',a.output/'qemu.log')
@@ -32,6 +32,11 @@ try:
     results['address_edit_expected_path']='/next.htm?edit=axc';results['address_edit_pass']=any(r['path']=='/next.htm?edit=axc' for r in s.requests[before:])
     key('ctrl-l');time.sleep(.15);url=f'http://10.0.2.2:{a.port}/next.htm?long='+'x'*280;text(url);snap('long-address');before=len(s.requests);key('ret');time.sleep(2);snap('long-address-loaded')
     results['long_address_typed_length']=len(url);results['long_address_expected_path']=url.split(f':{a.port}',1)[1];results['long_address_requests']=s.requests[before:];results['long_address_exact']=any(r['path']==results['long_address_expected_path'] for r in s.requests[before:])
+    before=len(s.requests);key('ctrl-l');text('file:/root/welcome.htm');key('ret');time.sleep(2);snap('http-to-explicit-local')
+    results['explicit_file_navigation_no_http']=len(s.requests)==before
+    results['explicit_file_review']='Verify actual local welcome content and file URL; no request alone is insufficient.'
+    before=len(s.requests);key('backspace');time.sleep(2);snap('explicit-local-back-to-http')
+    results['explicit_local_back_exact_http']=any(r['path']==results['long_address_expected_path'] for r in s.requests[before:])
     key('esc');time.sleep(1);snap('after-exit');results['exit_review']='Inspect text-mode screenshot and subsequent shell response; no automatic terminal-restoration pass asserted.'
     if a.relaunch:
         # Generic QA image explicitly has root with an empty password in /etc/passwd.

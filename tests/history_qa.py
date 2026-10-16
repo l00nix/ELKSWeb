@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Actual native Backspace/toolbar history, branching, failed back and eight-entry limit."""
-import argparse,json,pathlib,shutil,subprocess,tempfile,time
+import argparse,json,pathlib,shutil,subprocess,tempfile,time,threading
 from parity import FixtureServer,Machine,digest,read_ppm,normalize
 from live_qa import capture
-p=argparse.ArgumentParser();p.add_argument('--image',type=pathlib.Path,required=True);p.add_argument('--output',type=pathlib.Path,required=True);p.add_argument('--port',type=int,default=18796);a=p.parse_args();a.output=a.output.resolve();a.output.mkdir(parents=True,exist_ok=False)
+p=argparse.ArgumentParser();p.add_argument('--image',type=pathlib.Path,required=True);p.add_argument('--output',type=pathlib.Path,required=True);p.add_argument('--port',type=int,default=18796);p.add_argument('--cancel-receive',action='store_true');a=p.parse_args();a.output=a.output.resolve();a.output.mkdir(parents=True,exist_ok=False)
 s=FixtureServer(a.port);machine=None;r={'image_sha256':digest(a.image),'checks':{},'captures':[]};mouse=(320,100)
 def key(k):machine.command('human-monitor-command',{'command-line':'sendkey '+k+' 25'});time.sleep(.05)
 def text(t):
@@ -22,7 +22,7 @@ def last():return s.requests[-1]['path']
 try:
  with tempfile.TemporaryDirectory(prefix='elksweb-history-') as tmp:
   w=pathlib.Path(tmp);im=w/'candidate.img';shutil.copyfile(a.image,im)
-  for name,value in [('qaurl','/root/welcome.htm\n'),('qaproxy','\n')]:
+  for name,value in [('qaurl','/root/welcome.htm\n'),('qaproxy','\n'),('qavideo','cga\n')]:
    f=w/name;f.write_text(value);subprocess.run(['mcopy','-o','-i',str(im),str(f),'::/root/'+name],check=True,capture_output=True)
   manifest=json.loads((pathlib.Path(__file__).parent/'candidate.example.json').read_text());argv=[v.format(image=im,qmp=w/'qmp.sock') for v in manifest['argv']]
   (a.output/'command.json').write_text(json.dumps(argv,indent=2)+'\n');machine=Machine(argv,w/'qmp.sock',a.output/'qemu.log')
@@ -42,6 +42,18 @@ try:
   back();navigate('branch');n=len(s.requests);forward();r['checks']['branch_discards_forward']=len(s.requests)==n;snap('branch-no-forward')
   back();s.fail_paths.add(path(0));back();r['checks']['failed_back_requested_previous']=last()==path(0) and s.requests[-1].get('injected_fault')=='truncated_body';snap('failed-back')
   s.fail_paths.clear();forward();r['checks']['failed_back_preserves_index']=last()==path('branch');snap('forward-after-failure')
+  if a.cancel_receive:
+   # Keep the pointer wholly in chrome, so its tail cannot contaminate content equality.
+   machine.command('human-monitor-command',{'command-line':f'mouse_move {630-mouse[0]} {-mouse[1]}'})
+   mouse=(630,0);time.sleep(.2)
+   snap('before-cancel');before=normalize(read_ppm((a.output/'before-cancel.ppm').read_bytes()))
+   release=threading.Event();s.stalled_paths[path('stall')]=release;n=len(s.requests)
+   navigate('stall');snap('receiving-before-escape');key('esc');time.sleep(1);snap('cancelled-receive')
+   after=normalize(read_ppm((a.output/'cancelled-receive.ppm').read_bytes()))
+   r['checks']['cancel_requested_stalled_response']=len(s.requests)==n+1 and s.requests[-1].get('injected_fault')=='stalled_body'
+   r['checks']['cancel_preserves_rendered_document']=before[2][22*640*3:192*640*3]==after[2][22*640*3:192*640*3]
+   release.set();s.stalled_paths.clear();navigate('recovered');snap('recovered-after-cancel')
+   r['checks']['navigation_after_cancel']=last()==path('recovered')
   for i in range(3,12):navigate(i)
   n=len(s.requests)
   for _ in range(8):back()

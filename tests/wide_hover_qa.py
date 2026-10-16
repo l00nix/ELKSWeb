@@ -14,7 +14,7 @@ def move(x,y):
 try:
  with tempfile.TemporaryDirectory(prefix='elksweb-wide-') as tmp:
   w=pathlib.Path(tmp);im=w/'candidate.img';shutil.copyfile(a.image,im)
-  for name,value in [('qaurl',f'http://10.0.2.2:{a.port}/wide.htm\n'),('qaproxy','\n')]:
+  for name,value in [('qaurl',f'http://10.0.2.2:{a.port}/wide.htm\n'),('qaproxy','\n'),('qavideo','cga\n')]:
    f=w/name;f.write_text(value);subprocess.run(['mcopy','-o','-i',str(im),str(f),'::/root/'+name],check=True,capture_output=True)
   manifest=json.loads((pathlib.Path(__file__).parent/'candidate.example.json').read_text());argv=[v.format(image=im,qmp=w/'qmp.sock') for v in manifest['argv']]
   (a.output/'command.json').write_text(json.dumps(argv,indent=2)+'\n');machine=Machine(argv,w/'qmp.sock',a.output/'qemu.log')

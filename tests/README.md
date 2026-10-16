@@ -12,11 +12,11 @@ python3 tests/parity.py --output qa/reference-NEW
 python3 tests/parity.py --candidate tests/candidate.example.json --output qa/comparison-NEW
 ```
 
-Output directories must be new. Reference-only runs exit **2**, explicitly indicating `candidate_pending`; failed prerequisites/scenarios/comparisons exit **1**. Exit **0** means only measured fixture parity passed. `release_pass` remains false because ISA, memory, timing and hardware gates are outside this harness.
+Output directories must be new. Reference-only runs exit **2**, explicitly indicating `candidate_pending`; failed prerequisites/scenarios/comparisons exit **1**. Exit **0** means only measured fixture parity passed. `release_pass` remains false because build/ISA, resource recovery, compatibility and release review are outside this strict comparison measurement. Speed and responsiveness are explicitly excluded from the first-beta decision; differing original font pixels do not by themselves fail that decision.
 
 ## Candidate integration
 
-The example manifest expects `build/elksweb.img`, a FAT floppy image with an autorun startup script that reads `/root/qaurl` and executes `/bin/elksweb "$url"` after networking starts. ELKS `ne0` must use IRQ 3, I/O port 0x300. Its local file loader must accept `/root/local.htm` (lowercase is significant to ELKS FAT lookup). Every scenario copies the candidate image to a temporary directory, writes its URL file and identical local HTML using `mcopy`, then boots with QEMU snapshot mode. Original images are never edited.
+The example manifest expects `build/elksweb.img`, a FAT floppy image with an autorun startup script that reads `/root/qaurl` and executes `/bin/elksweb -video "$video" "$url"` after networking starts when `/root/qavideo` is nonempty. Automated scenarios write `cga` to that file in their isolated image copy; ordinary packaged images may retain the interactive selector. ELKS `ne0` must use IRQ 3, I/O port 0x300. Its local file loader must accept `/root/local.htm` (lowercase is significant to ELKS FAT lookup). Every scenario copies the candidate image to a temporary directory, writes its URL file and identical local HTML using `mcopy`, then boots with QEMU snapshot mode. Original images are never edited.
 
 Manifest image paths resolve relative to the manifest. Arguments can contain `{image}`, `{qmp}`, `{url}`, `{port}`, `{case}`, `{fixture_dir}` and `{output}`. Custom launcher scripts may be supplied in `argv` for other image formats, provided they expose the QMP socket and exit when their QEMU exits. Without `image`, the manifest controls its own isolated setup. QMP must be enabled with the provided socket, graphics must be 640x200 CGA, and startup must open the requested URL automatically. CPU is deliberately marked 486, never misrepresented as 8088.
 
@@ -38,7 +38,7 @@ Normalization accepts 640x200 unchanged or proves every adjacent row in 640x400 
 
 Successful HTTP requests do not establish correct rendering. Successful capture does not establish that local startup reached the browser: inspect baseline evidence and pixel comparisons. Fixed settle delays make the lane reproducible on this machine, but a slow candidate may need a longer explicit `--settle` or `--boot-timeout`; do not hide transient rendering defects by choosing flattering captures. Blink phases may produce real pixel mismatches which must be documented before any proposed masking change.
 
-This is an initial deterministic corpus, not complete browser coverage. Editing every form control, exhaustive malformed/chunked/truncated responses, slow/disconnecting servers, complete proxy behavior, measured low-memory recovery, large/animated/interlaced GIFs, history/drag/mouse interactions and exhaustive HTML remain additional gates. Fixed-window captures of a stalled or partially parsed reference page do not prove completion. QEMU does not validate8088 opcodes/timing or Hornet/HP peripherals. A true8088 execution lane, compiled binary ISA audit, memory/stack measurements and physical HP tests are required independently. No HP serial port is opened by this harness.
+This is an initial deterministic corpus, not complete browser coverage. Editing every form control, exhaustive malformed/chunked/truncated responses, slow/disconnecting servers, complete proxy behavior, measured low-memory recovery, large/animated/interlaced GIFs, history/drag/mouse interactions and exhaustive HTML remain additional gates. Fixed-window captures of a stalled or partially parsed reference page do not prove completion. QEMU does not validate8088 opcodes/timing or Hornet/HP peripherals. An 8088 execution lane and compiled binary ISA audit are required independently. Physical HP tests are required before claiming HP compatibility, not for the scoped general-ELKS first beta. No HP serial port is opened by this harness.
 
 Every owned QEMU process is quit and waited for on completion, terminated on exceptions, and killed only if its own termination times out. HTTP server is localhost-only and shuts down. The reference may make additional network requests only as directed by the deterministic fixtures, all hosted on the local machine.
 
@@ -83,7 +83,7 @@ The horizontal-line test compares 14,256 clipped CGA byte-buffer cases against a
 
 ## Reference setup
 
-Download the reference image separately from upstream MicroWeb and supply `--reference-image /absolute/path/to/freedos.boot.disk.720K.img` to parity.py or live_qa.py. The optional default is reference/freedos.boot.disk.720K.img. No MicroWeb executable, source, BIOS ROM or captured website HTML is included in this repository. Historical examples require a separately built candidate image.
+Download the reference image separately from upstream MicroWeb and supply `--reference-image /absolute/path/to/freedos.boot.disk.720K.img` to parity.py or live_qa.py. The optional default is reference/freedos.boot.disk.720K.img. No MicroWeb executable, source or BIOS ROM is included in this repository. The separately attributed FrogFind fixture does include a captured mirror homepage. Historical examples require a separately built candidate image.
 
 ## FrogFind mirror and deterministic local fixture
 
@@ -96,4 +96,21 @@ python3 -m unittest discover -s tests -p test_frogfind_fixture.py -v
 python3 tests/parity.py --candidate tests/candidate.example.json --reference-image /path/to/freedos.boot.disk.720K.img --cases frogfind_http frogfind_images frogfind_local --output qa/frogfind-NEW
 ```
 
-The optional Pillow oracle independently checks every first-frame opaque pixel and transparency against the actual C decoder. Without Pillow that pixel test is explicitly skipped. Local image installation additionally requires mtools `mmd` and `mdir`. Automated candidate image startup must invoke `elksweb -video cga` to bypass the interactive display selector; `toolchain/package-image.sh` supplies this. Reference MicroWeb startup arguments remain unchanged.
+The optional Pillow oracle independently checks every first-frame opaque pixel and transparency against the actual C decoder. Without Pillow that pixel test is explicitly skipped. Local image installation additionally requires mtools `mmd` and `mdir`. Automated candidate image startup must invoke `elksweb -video cga` to bypass the interactive display selector; the native harnesses write `cga` into `/root/qavideo` in their temporary image copies. Packaging defaults remain interactive. Reference MicroWeb startup arguments remain unchanged.
+
+## Functional recovery and live navigation
+
+`history_qa.py --cancel-receive` adds a deterministic stalled HTTP body. Escape is sent while the socket receive loop polls input; captures verify that the old rendered document remains, and a subsequent request proves recovery. This does not claim cancellation during parsing or bound cancellation latency.
+
+`mime_download_qa.py` verifies exact binary bytes (including NUL), filename editing, cancellation, distinct preexisting-file preservation, an invalid destination and successful later navigation. Its `--disk-full` lane fills only a disposable FAT image, checks removal of the failed partial download, and captures local-page recovery and text-console restoration. A missing output file alone is insufficient: inspect the saved error/recovery captures too.
+
+`live_qa.py --exercise-frogfind --exercise-news` performs a real mirror search for `elks linux`, follows its first result and returns, and exercises 68k.news scrolling, an article and Back. The mirror result order and 68k headline focus must be checked in the captured frames and packet request lines. Dynamic responses, upstream article errors and unavailable sites are reported separately from deterministic fixture results. No local page substitutes for a failed live request.
+
+```sh
+python3 tests/history_qa.py --image build/elksweb.img --cancel-receive --output qa/history-NEW
+python3 tests/mime_download_qa.py --image build/elksweb.img --output qa/download-NEW
+python3 tests/mime_download_qa.py --image build/elksweb.img --disk-full --output qa/diskfull-NEW
+python3 tests/live_qa.py --candidate-image build/elksweb.img --reference-image /path/to/freedos.boot.disk.720K.img --exercise-frogfind --exercise-news --output qa/live-NEW
+```
+
+While viewing HTTP, an address beginning `/path` resolves on the current HTTP origin. Use `file:/root/welcome.htm` to switch explicitly to a local file. `interaction_qa.py` verifies this explicit transition without an HTTP request, the rendered local welcome page, and Back to the exact prior HTTP URL.
