@@ -32,6 +32,13 @@ enum ew_gif_result {
  * Decodes one frame, with interlace, local palettes and transparency.
  */
 int ew_gif_decode(const unsigned char EW_GIF_FAR *data, unsigned length, struct ew_gif *out);
+/* Keep the stored dimensions unchanged, but phase monochrome dithering for
+ * the display's natural vertical reduction: 1 for square pixels, 2 for CGA.
+ * This avoids discarding half the Bayer rows when CGA samples every other row.
+ * Arbitrary HTML resizes still use nearest-neighbor sampling, not area filtering.
+ */
+int ew_gif_decode_aspect(const unsigned char EW_GIF_FAR *data, unsigned length,
+                         struct ew_gif *out, unsigned pixel_aspect);
 void ew_gif_free(struct ew_gif *image);
 /* Each destination, when non-NULL, needs image->stride bytes (at most 80).
  * Returns stride, or zero for a row outside the image.

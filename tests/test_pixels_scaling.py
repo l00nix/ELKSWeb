@@ -1,4 +1,4 @@
-"""Pixel-identical image scaling against an independent division-based oracle.
+"""Image scaling against independent division/coverage pixel oracles.
 
 The test translation unit includes production images.c unchanged so synthetic
 bitmaps can enter its private cache without involving GIF encoding or HTTP.
@@ -16,6 +16,7 @@ SHIM = r'''
 #include <string.h>
 #include "IMAGES_SOURCE"
 struct ew_document ew_doc;
+int ew_screen_height=200, ew_pixel_aspect=2;
 uint32_t ew_source_length;
 static unsigned char frame[640*200], reference[640*200];
 static unsigned calls, outside;
@@ -55,6 +56,7 @@ void pixels_prepare(unsigned width,unsigned height,int transparent) {
   }
 }
 int pixels_compare(unsigned width,unsigned height,int x,int y,int top,int bottom,int inverse) {
+  static const unsigned char ordered[16]={0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5};
   unsigned row,col,sx,sy,at,mask,i;
   struct ew_run r;
   struct ew_gif *g=&images[0];
@@ -69,16 +71,59 @@ int pixels_compare(unsigned width,unsigned height,int x,int y,int top,int bottom
       long dx=(long)x+col;
       if(dx<0 || dx>=640)continue;
       sx=(unsigned)((unsigned long)col*g->width/width);
-      at=sy*g->stride+sx/8;mask=128>>(sx&7);
-      if(!g->opacity || (g->opacity[at]&mask))
-        reference[dy*640+dx]=!!(g->pixels[at]&mask)^inverse;
+      if(g->width>width || g->height/(unsigned)ew_pixel_aspect>height) {
+        unsigned ex=(unsigned)((unsigned long)(col+1)*g->width/width);
+        unsigned ey=(unsigned)((unsigned long)(row+1)*g->height/height);
+        unsigned xx,yy,white=0,opaque=0,area;
+        double threshold=(ordered[(row%4)*4+col%4]+0.5)/16.0;
+        if(ex==sx)++ex;
+        if(ey==sy)++ey;
+        area=(ex-sx)*(ey-sy);
+        for(yy=sy;yy<ey;++yy)for(xx=sx;xx<ex;++xx) {
+          at=yy*g->stride+xx/8;mask=128>>(xx&7);
+          if(!g->opacity || (g->opacity[at]&mask)) {
+            ++opaque;
+            if(g->pixels[at]&mask)++white;
+          }
+        }
+        if((double)opaque/area>threshold)
+          reference[dy*640+dx]=((double)white/area>threshold)^inverse;
+      } else {
+        at=sy*g->stride+sx/8;mask=128>>(sx&7);
+        if(!g->opacity || (g->opacity[at]&mask))
+          reference[dy*640+dx]=!!(g->pixels[at]&mask)^inverse;
+      }
     }
   }
   if(outside)return -1;
   for(i=0;i<sizeof(frame);++i)if(frame[i]!=reference[i])return (int)i+1;
   return 0;
 }
+
 unsigned pixels_calls(void) { return calls; }
+void pixels_pattern(unsigned kind) {
+  unsigned x,y,at,mask;
+  struct ew_gif *g=&images[0];
+  pixels_prepare(16,32,kind>=3);
+  memset(g->pixels,0,g->stride*g->height);
+  if(g->opacity)memset(g->opacity,0,g->stride*g->height);
+  for(y=0;y<g->height;++y)for(x=0;x<g->width;++x) {
+    at=y*g->stride+x/8;mask=128>>(x&7);
+    if(kind==1 || (kind==2 && x%2==0) || (kind==3 && y%4==0))g->pixels[at]|=mask;
+    if(kind==3 && y%4<2)g->opacity[at]|=mask;
+  }
+}
+unsigned pixels_color_count(unsigned color) {
+  unsigned i,count=0;
+  for(i=0;i<sizeof(frame);++i)if(frame[i]==color)++count;
+  return count;
+}
+int pixels_decode(const unsigned char *blob,unsigned length,unsigned aspect) {
+  ew_images_clear();image_count=1;ew_pixel_aspect=aspect;
+  return ew_gif_decode_aspect(blob,length,&images[0],aspect);
+}
+const unsigned char *pixels_frame(void) { return frame; }
+
 '''
 
 class PixelScaling(unittest.TestCase):
@@ -132,6 +177,27 @@ class PixelScaling(unittest.TestCase):
         self.lib.pixels_prepare(640,480,0)
         self.compare(616,200,-610,0,22,192,0)
         self.assertEqual(self.lib.pixels_calls(),6*170)
+
+    def test_reduced_gray_and_transparent_coverage(self):
+        for pattern,white,black,opaque in ((0,0,64,64),(1,64,0,64),(2,32,32,64),(3,16,16,32),(4,0,0,0)):
+            self.lib.pixels_pattern(pattern)
+            self.compare(8,8,0,0,0,200,0)
+            self.assertEqual(self.lib.pixels_calls(),opaque)
+            self.assertEqual(self.lib.pixels_color_count(1),white)
+            self.assertEqual(self.lib.pixels_color_count(0),black)
+            self.compare(8,8,0,0,0,200,1)
+            self.assertEqual(self.lib.pixels_color_count(1),black)
+            self.assertEqual(self.lib.pixels_color_count(0),white)
+
+    def test_square_pixel_reduction_and_cga_natural_size(self):
+        aspect=C.c_int.in_dll(self.lib,'ew_pixel_aspect')
+        try:
+            for ratio in (1,2):
+                aspect.value=ratio
+                self.lib.pixels_prepare(32,32,1)
+                self.compare(32,32//ratio,0,0,0,200,0)
+                self.compare(16,16//ratio,-3,-2,0,200,0)
+        finally:aspect.value=2
 
     def test_deterministic_random_scaling(self):
         rng=random.Random(8088)

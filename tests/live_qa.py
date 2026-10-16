@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Separate live-site evidence. Never substitutes a local fixture or proxy.
 
-FrogFind failures/timeouts are skipped for this run only and always retried
+The supplied FrogFind mirror is used; original frogfind.com is skipped.
+Mirror failures/timeouts are skipped for this run only and always retried
 on the next invocation. No dynamic screenshots enter deterministic parity.
 """
 import argparse, datetime, hashlib, json, pathlib, re, shutil, subprocess, tempfile, time
@@ -9,7 +10,7 @@ from parity import Machine, prepare_reference, read_ppm, normalize, png, digest
 
 HERE=pathlib.Path(__file__).resolve().parent
 ROOT=HERE.parent.parent
-SITES={'frogfind':'http://frogfind.com/','68k':'http://68k.news/'}
+SITES={'frogfind':'http://frogfind.8088retro.com/','68k':'http://68k.news/'}
 
 def capture(machine,directory,name):
     raw=directory/(name+'.ppm');machine.capture(raw);pic=read_ppm(raw.read_bytes())
@@ -88,7 +89,7 @@ def main():
     for lane in a.lanes:
         for name in a.sites:
             result=run(a,lane,name,SITES[name]);results.append(result);print(lane,name,result['status'],flush=True)
-    summary={'kind':'separate_live_site_evidence','deterministic_parity':False,'results':results,'policy':'Always retry FrogFind in the next run; a failed/timed-out current run is skipped only for this invocation. No fixture substitution, no HTTP proxy, no synthetic pages.'}
+    summary={'kind':'separate_live_site_evidence','deterministic_parity':False,'results':results,'skipped_original_site':{'url':'http://frogfind.com/','reason':'User reports original offline and supplied frogfind.8088retro.com mirror; original is not probed.'},'policy':'Always retry the supplied FrogFind mirror in the next run; a failed/timed-out current run is skipped only for this invocation. No fixture substitution, no HTTP proxy, no synthetic pages.'}
     (a.output/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
     return 0
 if __name__=='__main__':raise SystemExit(main())

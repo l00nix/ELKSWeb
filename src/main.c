@@ -30,7 +30,7 @@ static int download_button;
 static volatile int stopping;
 extern int ew_fetch_truncated;
 static int top(void) { return chrome ? 22 : 0; }
-static int bottom(void) { return chrome ? 192 : 200; }
+static int bottom(void) { return EW_SCREEN_HEIGHT - (chrome ? 8 : 0); }
 static int fg(void) { return inverse ? 1 : 0; }
 static int bg(void) { return inverse ? 0 : 1; }
 static int text_field(unsigned kind) {
@@ -301,8 +301,8 @@ static void draw(void) {
                           address_pos > start ? address_pos - start : 0, 0),
                  9, 10, f);
     }
-    ew_fillrect(0, 192, 640, 8, b);
-    ew_hline(0, 192, 640, f);
+    ew_fillrect(0, EW_SCREEN_HEIGHT - 8, 640, 8, b);
+    ew_hline(0, EW_SCREEN_HEIGHT - 8, 640, f);
     {
       const char EW_FAR *s = status;
       if (!status[0] && !editing && hovered >= 0)
@@ -310,7 +310,7 @@ static void draw(void) {
       else if (!status[0] && !editing && focused >= 0 && ew_doc.links[focused].kind == 0)
         s = ew_doc.links[focused].url;
       ew_copy_from_far(temp, s, 80);
-      textn(0, 193, temp, strlen(temp), f, b, EW_SMALL);
+      textn(0, EW_SCREEN_HEIGHT - 7, temp, strlen(temp), f, b, EW_SMALL);
     }
   }
   if (select_open >= 0) {
@@ -409,7 +409,9 @@ static int load(const char *url, const char *post, int add_history) {
   static char target[EW_URL], resolved[EW_URL], err[96];
   int32_t n;
   int history_limited = 0;
-  if (ew_resolve_url(current, url, target, sizeof(target))) {
+  /* History and reload already contain resolved identities. In particular,
+   * a saved local /path must not inherit the current HTTP origin. */
+  if (ew_resolve_url(add_history ? current : "", url, target, sizeof(target))) {
     message("Address is too long");
     return 0;
   }
@@ -439,6 +441,8 @@ static int load(const char *url, const char *post, int add_history) {
   strcpy(current, resolved);
   strcpy(address, resolved);
   ew_images_clear();
+  message("Parsing...");
+  draw();
   if (ew_document_type == EW_CONTENT_TEXT) ew_parse_text_source(current);
   else if (ew_document_type == EW_CONTENT_IMAGE) {
     ew_images_load_document(current);
@@ -459,8 +463,13 @@ static int load(const char *url, const char *post, int add_history) {
   {
     int html_truncated = ew_fetch_truncated;
     if (load_images && ew_document_type == EW_CONTENT_HTML) {
-      ew_images_load();
-      ew_parse_source(current);
+      unsigned image_run;
+      for (image_run = 0; image_run < ew_doc.run_count; ++image_run)
+        if (ew_doc.runs[image_run].kind == EW_RUN_IMAGE) break;
+      if (image_run < ew_doc.run_count) {
+        ew_images_load();
+        ew_parse_source(current);
+      }
     }
     ew_fetch_truncated = html_truncated;
   }
@@ -1037,16 +1046,18 @@ static void mouse_event(const struct ew_mouse_event *event) {
   dirty = 1;
 }
 int main(int argc, char **argv) {
-  const char *url = "/root/welcome.htm";
+  const char *url = "/root/welcome.htm", *video_mode=NULL;
   int k, i;
   struct ew_mouse_event event;
   for (i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "-invert"))
       inverse = 1;
+    else if (!strcmp(argv[i], "-video") && i+1<argc)
+      video_mode=argv[++i];
     else if (!strcmp(argv[i], "-noimages"))
       load_images = 0;
     else if (!strcmp(argv[i], "-help") || !strcmp(argv[i], "--help")) {
-      puts("Usage: elksweb [-invert] [-noimages] [http://URL or file]\n"
+      puts("Usage: elksweb [-video cga|ega|vga] [-invert] [-noimages] [http://URL or file]\n"
            "F6/Ctrl-L address  Tab links  Enter activate  F5 reload\n"
            "F2 invert  F3 hide bars  arrows/PgUp/PgDn scroll  Esc exit");
       return 0;
@@ -1056,10 +1067,11 @@ int main(int argc, char **argv) {
     } else
       url = argv[i];
   }
-  if (ew_platform_init()) {
-    fprintf(stderr, "ELKSWeb: %s\n", ew_platform_error());
+  k=ew_platform_init(video_mode);
+  if (k) {
+    if (k<0) fprintf(stderr, "ELKSWeb: %s\n", ew_platform_error());
     ew_source_free();
-    return 1;
+    return k<0 ? 1 : 0;
   }
   signal(SIGINT, stopped);
   signal(SIGTERM, stopped);

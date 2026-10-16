@@ -1,4 +1,5 @@
 #include "../font/body_font.h"
+#include "../platform/elks_platform.h"
 #include "../font/font.h"
 #include "elksweb.h"
 #include "latin.h"
@@ -1638,7 +1639,8 @@ static void parse_document(const char *base, int plain_mode) {
           width = scaled > 616 ? 616 : (int)scaled;
         }
         /* CGA's 640x200 pixels are twice as tall as they are wide. */
-        height = height > 0 ? height / 2 + (height & 1) : 1;
+        if (ew_pixel_aspect == 2) height = height / 2 + (height & 1);
+        if (height < 1) height = 1;
         if (width < 1)
           width = 1;
         if (width > 616)
@@ -1787,6 +1789,7 @@ void ew_parse_text_source(const char *base) {
 void ew_parse_image_source(const char *url) {
   struct ew_run EW_FAR *r;
   unsigned width = 0, height = 0, len = strlen(url) + 1;
+  unsigned limit = 200U * ew_pixel_aspect;
   int image = ew_image_lookup(url, &width, &height);
   if (ew_document_reset()) return;
   anchor_count = merge_start = 0;
@@ -1796,12 +1799,12 @@ void ew_parse_image_source(const char *url) {
     height = (unsigned)((unsigned long)height * 616 / width);
     width = 616;
   }
-  if (height > 400) {
-    width = (unsigned)((unsigned long)width * 400 / height);
-    height = 400;
+  if (height > limit) {
+    width = (unsigned)((unsigned long)width * limit / height);
+    height = limit;
     if (!width) width = 1;
   }
-  height = (height + 1UL) / 2;
+  if (ew_pixel_aspect == 2) height = (height + 1UL) / 2;
   if (!height) height = 1;
   r = &ew_doc.runs[0];
   ew_zero_far(r, sizeof(*r));

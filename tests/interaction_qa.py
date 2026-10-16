@@ -36,7 +36,7 @@ try:
     if a.relaunch:
         # Generic QA image explicitly has root with an empty password in /etc/passwd.
         text('root');key('ret');time.sleep(1);snap('after-root-login')
-        before=len(s.requests);text('/bin/elksweb '+f'http://10.0.2.2:{a.port}/next.htm?relaunch=1');key('ret');time.sleep(3);snap('relaunched')
+        before=len(s.requests);text('/bin/elksweb -video cga '+f'http://10.0.2.2:{a.port}/next.htm?relaunch=1');key('ret');time.sleep(3);snap('relaunched')
         results['relaunch_exact_request']=any(r['path']=='/next.htm?relaunch=1' for r in s.requests[before:])
         key('esc');time.sleep(1);snap('after-second-exit')
     results['requests']=s.requests;results['status']='completed_input_sequence'

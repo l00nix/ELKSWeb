@@ -3,7 +3,11 @@
 #define ELKSWEB_PLATFORM_H
 
 #define EW_SCREEN_WIDTH 640
-#define EW_SCREEN_HEIGHT 200
+extern int ew_screen_height, ew_pixel_aspect;
+#define EW_SCREEN_HEIGHT ew_screen_height
+#define EW_VIDEO_CGA 6
+#define EW_VIDEO_EGA 16
+#define EW_VIDEO_VGA 18
 #define EW_FONT_WIDTH 8
 #define EW_FONT_HEIGHT 8
 
@@ -21,11 +25,10 @@ enum ew_key {
     EW_KEY_F6, EW_KEY_F7, EW_KEY_F8, EW_KEY_F9, EW_KEY_F10
 };
 
-/* Requires a PC CGA-compatible display and an ELKS console. Returns 0 or -1.
- * The default uses ELKS's scancode keyboard. Set ELKSWEB_COOKED_KEYS=1
- * for firmware configured with BIOS keyboard polling (fewer keys available).
- */
-int ew_platform_init(void);
+/* A null mode asks on the text console; cga/ega/vga bypass the prompt.
+ * Returns0 on success,1 on user cancellation,-1 on failure. An unsupported
+ * adapter is rejected before changing video mode or console settings. */
+int ew_platform_init(const char *mode);
 const char *ew_platform_error(void);
 void ew_platform_shutdown(void);
 int ew_getkey(void);                 /* Nonblocking; zero means no key. */
@@ -55,10 +58,5 @@ void ew_hline(int x, int y, int width, int white);
 void ew_vline(int x, int y, int height, int white);
 void ew_fillrect(int x, int y, int width, int height, int white);
 void ew_rect(int x, int y, int width, int height, int white);
-void ew_bitmap(int x, int y, int width, int height,
-               const unsigned char *bits, int stride, int fg, int bg);
-void ew_glyph(int x, int y, unsigned char character, int fg, int bg);
-void ew_glyph_scaled(int x, int y, unsigned char character, int fg, int bg, int scale);
-void ew_text(int x, int y, const char *text, int fg, int bg);
 
 #endif

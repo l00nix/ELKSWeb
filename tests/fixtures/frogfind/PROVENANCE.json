@@ -1,0 +1,26 @@
+{
+  "original_project": "https://github.com/ActionRetro/FrogFind",
+  "original_commit": "d70edb9f2e6c098db3f44943cd671ddcf3088ff9",
+  "image_source": "https://github.com/Henkdetenk12345/FrogFindPlusPlus/blob/2ac209c7ee954715192f166a3ac7bd47b817aabb/assets/frogfind.gif",
+  "image_sha256": "5d3b8b4a97fc3b18f56c43e2190f50e445e7eaadd2eaef128cd3cd52d7f56deb",
+  "image_modified": false,
+  "source_repository_license": "GPL-3.0; copy retained as COPYING.txt",
+  "image_dimensions": [
+    174,
+    80
+  ],
+  "image_frames": 2,
+  "fixture": "Local pages adapted from the captured mirror homepage with forms/navigation changed to fixed sample results. mirror.htm preserves the received homepage unmodified.",
+  "network_required": "No network for index.htm sample actions; mirror.htm is an unmodified live snapshot and its forms/links are not an offline test.",
+  "mirror": {
+    "homepage_url": "http://frogfind.8088retro.com/",
+    "homepage_capture_file": "mirror.htm",
+    "homepage_sha256": "98ab24a0e3f5dd34b0a482bff2ff72554285a679a5f63a266bc51feefd54fbc7",
+    "image_url": "http://frogfind.8088retro.com/frog.gif",
+    "image_http_status": 200,
+    "image_sha256": "5d3b8b4a97fc3b18f56c43e2190f50e445e7eaadd2eaef128cd3cd52d7f56deb",
+    "image_matches_original_fixture": true,
+    "verified_utc": "2026-10-16T14:47:26.064652+00:00",
+    "homepage_capture_note": "Homepage bytes supplied by root from direct HTTP capture in this session; no claim of live search success."
+  }
+}

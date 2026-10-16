@@ -1,5 +1,6 @@
 /* Host test adapters only. Compile the actual native browser core unchanged. */
 #include "elksweb.h"
+int ew_screen_height=200, ew_pixel_aspect=2;
 int ew_net_progress(const char *message) { (void)message; return 0; }
 void ew_pixel(int x, int y, int color) { (void)x; (void)y; (void)color; }
 void ew_fillrect(int x, int y, int w, int h, int color) { (void)x; (void)y; (void)w; (void)h; (void)color; }

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Actual native Backspace/toolbar history, branching, failed back and eight-entry limit."""
 import argparse,json,pathlib,shutil,subprocess,tempfile,time
-from parity import FixtureServer,Machine,digest
+from parity import FixtureServer,Machine,digest,read_ppm,normalize
 from live_qa import capture
 p=argparse.ArgumentParser();p.add_argument('--image',type=pathlib.Path,required=True);p.add_argument('--output',type=pathlib.Path,required=True);p.add_argument('--port',type=int,default=18796);a=p.parse_args();a.output=a.output.resolve();a.output.mkdir(parents=True,exist_ok=False)
 s=FixtureServer(a.port);machine=None;r={'image_sha256':digest(a.image),'checks':{},'captures':[]};mouse=(320,100)
@@ -22,14 +22,22 @@ def last():return s.requests[-1]['path']
 try:
  with tempfile.TemporaryDirectory(prefix='elksweb-history-') as tmp:
   w=pathlib.Path(tmp);im=w/'candidate.img';shutil.copyfile(a.image,im)
-  for name,value in [('qaurl',f'http://10.0.2.2:{a.port}'+path(0)+'\n'),('qaproxy','\n')]:
+  for name,value in [('qaurl','/root/welcome.htm\n'),('qaproxy','\n')]:
    f=w/name;f.write_text(value);subprocess.run(['mcopy','-o','-i',str(im),str(f),'::/root/'+name],check=True,capture_output=True)
   manifest=json.loads((pathlib.Path(__file__).parent/'candidate.example.json').read_text());argv=[v.format(image=im,qmp=w/'qmp.sock') for v in manifest['argv']]
   (a.output/'command.json').write_text(json.dumps(argv,indent=2)+'\n');machine=Machine(argv,w/'qmp.sock',a.output/'qemu.log')
+  time.sleep(10);snap('initial-local')
+  initial=normalize(read_ppm((a.output/'initial-local.ppm').read_bytes()))
+  navigate(0)
   deadline=time.monotonic()+30
   while not s.requests and time.monotonic()<deadline:time.sleep(.1)
   if not s.requests:raise TimeoutError('No initial request')
-  time.sleep(2);navigate(1);navigate(2);back();r['checks']['backspace']=last()==path(1);snap('back-to-one')
+  time.sleep(2);n=len(s.requests);back();snap('back-to-local')
+  returned=normalize(read_ppm((a.output/'back-to-local.ppm').read_bytes()))
+  r['checks']['http_back_to_local_no_request']=len(s.requests)==n
+  r['checks']['http_back_to_local_content']=initial[2][22*640*3:192*640*3]==returned[2][22*640*3:192*640*3]
+  n=len(s.requests);forward();r['checks']['local_forward_to_http']=len(s.requests)==n+1 and last()==path(0)
+  navigate(1);navigate(2);back();r['checks']['backspace']=last()==path(1);snap('back-to-one')
   forward();r['checks']['toolbar_forward']=last()==path(2);snap('forward-to-two')
   back();navigate('branch');n=len(s.requests);forward();r['checks']['branch_discards_forward']=len(s.requests)==n;snap('branch-no-forward')
   back();s.fail_paths.add(path(0));back();r['checks']['failed_back_requested_previous']=last()==path(0) and s.requests[-1].get('injected_fault')=='truncated_body';snap('failed-back')

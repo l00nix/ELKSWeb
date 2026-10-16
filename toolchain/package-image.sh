@@ -19,6 +19,7 @@ else
 fi
 printf '%s\n' "${ELKSWEB_URL:-/root/welcome.htm}" > "$template/root/qaurl"
 printf '%s\n' "${ELKSWEB_PROXY:-}" > "$template/root/qaproxy"
+printf '%s\n' "${ELKSWEB_VIDEO:-}" > "$template/root/qavideo"
 # Drop any previous browser startup block before appending it again.
 sed -i '/^# ELKSWEB_AUTORUN/,$d' "$template/etc/rc.sys"
 cat >> "$template/etc/rc.sys" <<'RC'
@@ -26,6 +27,8 @@ cat >> "$template/etc/rc.sys" <<'RC'
 HTTP_PROXY=`cat /root/qaproxy`
 if test "$HTTP_PROXY" != ""; then export HTTP_PROXY; else unset HTTP_PROXY; fi
 url=`cat /root/qaurl`
+video=`cat /root/qavideo`
+if test "$video" != ""; then exec /bin/elksweb -video "$video" "$url"; fi
 exec /bin/elksweb "$url"
 RC
 cat > "$template/bootopts" <<'BOOT'

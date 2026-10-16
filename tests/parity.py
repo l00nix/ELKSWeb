@@ -13,7 +13,15 @@ ROOT=HERE.parent.parent
 FIXTURES=HERE/'fixtures'
 # Fixed 16x16 black/white checker with a minimal, valid GIF LZW stream.
 GIF=(FIXTURES/'image.gif').read_bytes()
+FROG_FILES=('index.htm','http.htm','results.htm','article.htm','images.htm','frog.gif')
 CASES={
+    'frogfind_http': {'path':'/frogfind/http.htm','requests':['/frogfind/http.htm','/frogfind/frog.gif','/frogfind/results.htm','/frogfind/article.htm'],
+                     'exact_requests':[{'method':'GET','path':'/frogfind/results.htm?q=ELKS'},{'method':'GET','path':'/frogfind/article.htm'}],
+                     'steps':[('initial',None),('field','tab'),('submit','tab'),('results','ret'),('home_link','tab'),('article_link','tab'),('article','ret')]},
+    'frogfind_images': {'path':'/frogfind/images.htm','requests':['/frogfind/images.htm','/frogfind/frog.gif'],
+                       'steps':[('initial',None),('direct_link','tab'),('direct_image','ret')]},
+    'frogfind_local': {'path':r'FROG\INDEX.HTM','local_folder':'frogfind','requests':[],
+                      'steps':[('initial',None),('results_link','tab'),('results','ret'),('home_link','tab'),('article_link','tab'),('article','ret'),('back','backspace')]},
     'auto_columns': {'path':'/auto-columns.htm','requests':['/auto-columns.htm','/next.htm'],
                      'exact_requests':[{'method':'GET','path':'/next.htm?autotable=1'}],
                      'steps':[('initial',None),('end','end'),('home','home'),('focused','tab'),('followed','ret')]},
@@ -121,6 +129,7 @@ class FixtureServer:
                     outer.requests.append({'method':'GET','path':self.path,'status':None if path=='/malformed' else 200,'body_sha256':hashlib.sha256(body).hexdigest(),'wire_sha256':hashlib.sha256(raw).hexdigest()})
                     self.connection.sendall(raw);self.close_connection=True;return
                 if path in ['/redirect','/relative-redirect','/loop']:status,body,kind=302,b'Redirect','text/plain'
+                elif path.startswith('/frogfind/') and path[10:] in FROG_FILES:status,body,kind=200,(FIXTURES/'frogfind'/path[10:]).read_bytes(),'image/gif' if path.endswith('.gif') else 'text/html'
                 elif path=='/image.gif':status,body,kind=200,GIF,'image/gif'
                 elif path=='/charset.htm':status,body,kind=200,b'<html><title>Legacy charset</title><body><h1>caf\xe9 \x93quote\x94 \x80</h1><p>Cr\xe8me br\xfbl\xe9e</p><form action="/submit"><input name="q" value="caf\xe9"><input type="submit" value="Send"></form></body></html>','text/html; charset=windows-1252'
                 elif path=='/literal.txt':status,body,kind=200,b'<h1>Literal markup</h1> &amp; remains literal\nWi.!    spaced\n1234\tcolumn\nLast line','text/plain'
@@ -179,8 +188,17 @@ class Machine:
             except subprocess.TimeoutExpired:self.process.kill();self.process.wait()
         finally:self.socket.close();self.log.close()
 
+def install_frog_fixture(image,guest_dir):
+    """Copy only8.3 fixture resources into an isolated guest image."""
+    made=subprocess.run(['mmd','-i',str(image),'::'+guest_dir],capture_output=True)
+    if made.returncode:
+        subprocess.run(['mdir','-i',str(image),'::'+guest_dir],check=True,capture_output=True)
+    for name in FROG_FILES:
+        subprocess.run(['mcopy','-o','-i',str(image),str(FIXTURES/'frogfind'/name),'::'+guest_dir+'/'+name],check=True,capture_output=True)
+
 def prepare_reference(args,work,url,case):
     image=work/'reference.img';shutil.copyfile(args.reference_image,image)
+    if CASES[case].get('local_folder'):install_frog_fixture(image,'/frog')
     proxy=f'SET HTTP_PROXY=10.0.2.2:{args.port}\r\n' if CASES[case].get('proxy') else ''
     files={'CONFIG.SYS':'FILES=20\r\nBUFFERS=20\r\nSHELL=A:\\COMMAND.COM /E:512 /P\r\n',
            'AUTOEXEC.BAT':f'@ECHO OFF\r\nNE2000 0x60 3 0x300\r\nSET MTCPCFG=MTCP.CFG\r\nDHCP\r\n{proxy}MICROWEB -video=a {url}\r\n'}
@@ -194,7 +212,7 @@ def prepare_reference(args,work,url,case):
 
 def run_case(args,lane,case,server,manifest):
     target=args.output/lane/case;target.mkdir(parents=True)
-    spec=CASES[case];url='LOCAL.HTM' if case=='local' else spec['path'] if spec.get('proxy') else f'http://10.0.2.2:{args.port}'+spec['path']
+    spec=CASES[case];is_local=case=='local' or bool(spec.get('local_folder'));url=spec['path'] if is_local else spec['path'] if spec.get('proxy') else f'http://10.0.2.2:{args.port}'+spec['path']
     result={'case':case,'lane':lane,'url':url,'captures':{},'status':'error'}
     start=len(server.requests);machine=None
     with tempfile.TemporaryDirectory(prefix='elksweb-parity-') as tmp:
@@ -208,9 +226,13 @@ def run_case(args,lane,case,server,manifest):
                     result['boot_image_sha256']=digest(candidate_image)
                     values['image']=str(candidate_image)
                     local_guest=manifest.get('local_fixture_path','/root/local.htm')
-                    url_file=work/'qaurl';url_file.write_text((local_guest if case=='local' else url)+'\n')
+                    if spec.get('local_folder'):
+                        install_frog_fixture(candidate_image,'/root/frog')
+                        local_guest='/root/frog/index.htm'
+                    if is_local:result['url']=local_guest
+                    url_file=work/'qaurl';url_file.write_text((local_guest if is_local else url)+'\n')
                     subprocess.run(['mcopy','-o','-i',str(candidate_image),str(url_file),'::'+manifest.get('url_file','/root/qaurl')],check=True,capture_output=True)
-                    subprocess.run(['mcopy','-o','-i',str(candidate_image),str(FIXTURES/'local.htm'),'::'+local_guest],check=True,capture_output=True)
+                    if not spec.get('local_folder'):subprocess.run(['mcopy','-o','-i',str(candidate_image),str(FIXTURES/'local.htm'),'::'+local_guest],check=True,capture_output=True)
                     proxy_file=work/'qaproxy';proxy_file.write_text((f'10.0.2.2:{args.port}' if spec.get('proxy') else '')+'\n')
                     subprocess.run(['mcopy','-o','-i',str(candidate_image),str(proxy_file),'::'+manifest.get('proxy_file','/root/qaproxy')],check=True,capture_output=True)
                 argv=[str(v).format(**values) for v in manifest['argv']]
@@ -218,7 +240,7 @@ def run_case(args,lane,case,server,manifest):
             (target/'command.json').write_text(json.dumps(argv,indent=2)+'\n')
             machine=Machine(argv,work/'qmp.sock',target/'qemu.log')
             deadline=time.monotonic()+args.boot_timeout
-            if case=='local':time.sleep(args.local_wait)
+            if is_local:time.sleep(args.local_wait)
             else:
                 while len(server.requests)==start and time.monotonic()<deadline:time.sleep(.1)
                 if len(server.requests)==start:raise TimeoutError('No fixture HTTP request before deadline')
@@ -279,7 +301,7 @@ def main():
     if manifest and 'image' in manifest:
         p=pathlib.Path(manifest['image'])
         manifest['image']=str((args.candidate.parent/p).resolve()) if not p.is_absolute() else str(p)
-    summary={'schema':1,'release_pass':False,'harness_sha256':digest(pathlib.Path(__file__)),'case_specs':{c:CASES[c] for c in args.cases},'qemu_version':subprocess.check_output([args.qemu,'--version'],text=True).splitlines()[0],'reference_image_sha256':digest(args.reference_image),'candidate_image_sha256':digest(pathlib.Path(manifest['image'])) if manifest and 'image' in manifest else None,'fixture_hashes':{p.name:digest(p) for p in FIXTURES.iterdir() if p.is_file()},'gif_sha256':hashlib.sha256(GIF).hexdigest(), 'reference':{},'candidate':{},'parity':'candidate_pending','strict_8088':'pending: QEMU 486 is not ISA proof','hardware':'not_tested','memory_and_timing':'not_tested','review':'pending independent blind review','unsupported_claims':['No CSS/JavaScript/TLS parity claim','No full HTML/form/GIF/error coverage claim','No HP hardware access']}
+    summary={'schema':1,'release_pass':False,'harness_sha256':digest(pathlib.Path(__file__)),'case_specs':{c:CASES[c] for c in args.cases},'qemu_version':subprocess.check_output([args.qemu,'--version'],text=True).splitlines()[0],'reference_image_sha256':digest(args.reference_image),'candidate_image_sha256':digest(pathlib.Path(manifest['image'])) if manifest and 'image' in manifest else None,'fixture_hashes':{str(p.relative_to(FIXTURES)):digest(p) for p in FIXTURES.rglob('*') if p.is_file()},'gif_sha256':hashlib.sha256(GIF).hexdigest(), 'reference':{},'candidate':{},'parity':'candidate_pending','strict_8088':'pending: QEMU 486 is not ISA proof','hardware':'not_tested','memory_and_timing':'not_tested','review':'pending independent blind review','unsupported_claims':['No CSS/JavaScript/TLS parity claim','No full HTML/form/GIF/error coverage claim','No HP hardware access']}
     server=FixtureServer(args.port)
     try:
         for lane in (['reference','candidate'] if manifest else ['reference']):

@@ -55,7 +55,7 @@ Sanitizer fuzzing uses seed0x01868088 and10,000 bounded HTML/URL iterations plus
 
 ## Live sites
 
-`live_qa.py` separately loads actual `http://frogfind.com/` and `http://68k.news/` in DOS MicroWeb and native ELKSWeb through QEMU networking. It saves bounded early/final screenshots, raw network captures, URLs/timestamps and reviewed errors. It uses no fixture substitutions and no HTTP proxy. FrogFind timeout skips only that run; the next invocation always retries. Reference binaries are not bundled; supply `--reference-image /path/to/freedos.boot.disk.720K.img`. Live changing content never enters deterministic pixel comparisons.
+`live_qa.py` separately loads actual `http://frogfind.8088retro.com/` and `http://68k.news/` in DOS MicroWeb and native ELKSWeb through QEMU networking. It saves bounded early/final screenshots, raw network captures, URLs/timestamps and reviewed errors. It uses no fixture substitutions and no HTTP proxy. The original frogfind.com is skipped per user instruction; the supplied mirror is named explicitly in each result. A mirror timeout skips only that run; the next invocation retries the mirror. Reference binaries are not bundled; supply `--reference-image /path/to/freedos.boot.disk.720K.img`. Live changing content never enters deterministic pixel comparisons.
 
 ## Control and text behavior inventory
 
@@ -84,3 +84,16 @@ The horizontal-line test compares 14,256 clipped CGA byte-buffer cases against a
 ## Reference setup
 
 Download the reference image separately from upstream MicroWeb and supply `--reference-image /absolute/path/to/freedos.boot.disk.720K.img` to parity.py or live_qa.py. The optional default is reference/freedos.boot.disk.720K.img. No MicroWeb executable, source, BIOS ROM or captured website HTML is included in this repository. Historical examples require a separately built candidate image.
+
+## FrogFind mirror and deterministic local fixture
+
+`fixtures/frogfind/PROVENANCE.json` records the mirror homepage capture and unchanged174x80 transparent, two-frame GIF. `mirror.htm` is the unmodified received homepage; it is evidence, not a working offline search engine. `http.htm` retains its layout while submitting to fixed local sample results. `index.htm` replaces search with fixed local links because local-file query loading remains unsupported. Credits and the source asset license are retained.
+
+The `frogfind_http` scenario requires the exact `GET /frogfind/results.htm?q=ELKS`, then follows the sample article. `frogfind_images` displays natural/half-sized GIFs and opens the image directly. `frogfind_local` copies the six8.3 resources into an isolated guest folder, follows results/article, and exercises Back; its screenshots require independent review because no HTTP request can prove local rendering. Native image output should show the first GIF frame; animation is not claimed. The local links and forms do not exercise public search.
+
+```sh
+python3 -m unittest discover -s tests -p test_frogfind_fixture.py -v
+python3 tests/parity.py --candidate tests/candidate.example.json --reference-image /path/to/freedos.boot.disk.720K.img --cases frogfind_http frogfind_images frogfind_local --output qa/frogfind-NEW
+```
+
+The optional Pillow oracle independently checks every first-frame opaque pixel and transparency against the actual C decoder. Without Pillow that pixel test is explicitly skipped. Local image installation additionally requires mtools `mmd` and `mdir`. Automated candidate image startup must invoke `elksweb -video cga` to bypass the interactive display selector; `toolchain/package-image.sh` supplies this. Reference MicroWeb startup arguments remain unchanged.

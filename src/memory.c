@@ -21,11 +21,15 @@ static struct ew_run EW_FAR *document_runs;
 #define URL_BANKS 16
 static char EW_FAR *urls[URL_BANKS];
 static unsigned url_used[URL_BANKS];
+/* Reject unequal URLs before walking long common prefixes in far memory.
+ * Hash matches still require exact equality; links are immutable until reset. */
+static unsigned short url_hashes[EW_LINKS];
+static unsigned url_hashed;
 static FILE *source_file;
 static char source_path[40];
 static char source_error[64];
 static unsigned char source_cache[512];
-static uint32_t source_cache_base, source_write_pos;
+static uint32_t source_cache_base, source_write_pos, source_read_pos;
 static unsigned source_cache_size;
 static int source_writing;
 
@@ -42,6 +46,7 @@ void ew_source_abort(void) {
   source_path[0] = 0;
   source_writing = 0;
   source_cache_size = 0;
+  source_read_pos = 0;
   ew_source_length = 0;
 }
 int ew_source_begin(void) {
@@ -78,6 +83,7 @@ int ew_source_finish(uint32_t length) {
   ew_source_length = length;
   source_writing = 0;
   source_cache_size = 0;
+  source_read_pos = 0;
   return 0;
 }
 unsigned char ew_source_byte(uint32_t offset) {
@@ -86,10 +92,14 @@ unsigned char ew_source_byte(uint32_t offset) {
       offset >= source_cache_base + source_cache_size) {
     source_cache_base = offset & ~511UL;
     source_cache_size = 0;
-    if (fseek(source_file, (long)source_cache_base, SEEK_SET)) {
+    /* Sequential parsing already leaves the stream at the next block.
+     * Avoid a kernel seek for every 512 bytes; lookbehind/replay still seeks. */
+    if (source_cache_base != source_read_pos &&
+        fseek(source_file, (long)source_cache_base, SEEK_SET)) {
       source_fail("Cannot seek page cache"); return 0;
     }
     source_cache_size = fread(source_cache, 1, sizeof(source_cache), source_file);
+    source_read_pos = source_cache_base + source_cache_size;
     if (!source_cache_size || ferror(source_file)) {
       source_fail("Cannot read page cache"); return 0;
     }
@@ -168,6 +178,7 @@ int ew_document_reset(void)
   ew_doc.text = document_text;
   ew_doc.runs = document_runs;
   memset(url_used, 0, sizeof(url_used));
+  url_hashed = 0;
   if (!document_text || !document_runs) {
     strcpy(ew_doc.title, "Not enough memory for document");
     ew_doc.truncated = 1;
@@ -183,14 +194,25 @@ void ew_document_trim(void)
     if (!url_used[bank]) { ew_far_free(urls[bank]); urls[bank] = 0; }
   }
 }
+static unsigned short url_hash(const char EW_FAR *p)
+{
+  unsigned short hash = 0;
+  if (p) while (*p) hash = (unsigned short)((hash * 33U) ^ (unsigned char)*p++);
+  return hash;
+}
 const char EW_FAR *ew_store_url(const char *url)
 {
   unsigned bank, len = strlen(url) + 1, i;
+  unsigned short hash = url_hash(url);
+  while (url_hashed < ew_doc.link_count) {
+    url_hashes[url_hashed] = url_hash(ew_doc.links[url_hashed].url);
+    ++url_hashed;
+  }
   /* Common news pages repeat article URLs. Deduplicate before allocation. */
   for (i = 0; i < ew_doc.link_count; ++i) {
     const char EW_FAR *p = ew_doc.links[i].url;
     const char *q = url;
-    if (!p) continue;
+    if (!p || url_hashes[i] != hash) continue;
     while (*p && *p == *q) { ++p; ++q; }
     if (!*p && !*q) return ew_doc.links[i].url;
   }
@@ -218,5 +240,6 @@ void ew_source_free(void)
   ew_source = ew_source_tail = document_text = 0;
   document_runs = 0;
   ew_source_length = 0;
+  url_hashed = 0;
   memset(&ew_doc, 0, sizeof(ew_doc));
 }

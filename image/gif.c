@@ -26,6 +26,7 @@ struct reader {
     unsigned length, pos, block_left;
     unsigned long bit_buffer;
     unsigned bit_count;
+    unsigned dither_shift;
 };
 
 static int byte_read(struct reader *r)
@@ -96,11 +97,12 @@ static unsigned char mono(unsigned char gray, unsigned x, unsigned y)
     return gray > bayer[((y & 3) << 2) | (x & 3)] * 16U + 7U;
 }
 
-static void emit(struct ew_gif *out, unsigned x, unsigned y, unsigned char gray, int opaque)
+static void emit(struct ew_gif *out, unsigned x, unsigned y, unsigned char gray,
+                 int opaque, unsigned dither_shift)
 {
     unsigned offset = y * out->stride + (x >> 3);
     unsigned char mask = 0x80U >> (x & 7);
-    if (mono(gray, x, y)) out->pixels[offset] |= mask;
+    if (mono(gray, x, y >> dither_shift)) out->pixels[offset] |= mask;
     else out->pixels[offset] &= ~mask;
     if (opaque && out->opacity) out->opacity[offset] |= mask;
 }
@@ -159,7 +161,8 @@ static int decode_pixels(struct reader *r, struct ew_gif *out,
         while (depth) {
             unsigned char index = w->stack[--depth];
             if (produced >= expected || index >= colors) return EW_GIF_BAD_DATA;
-            emit(out, left + x, top + y, gray[index], index != transparent);
+            emit(out, left + x, top + y, gray[index], index != transparent,
+                 r->dither_shift);
             ++produced;
             if (++x == width) {
                 x = 0;
@@ -187,6 +190,12 @@ static int signature(const unsigned char EW_GIF_FAR *data)
 
 int ew_gif_decode(const unsigned char EW_GIF_FAR *data, unsigned length, struct ew_gif *out)
 {
+    return ew_gif_decode_aspect(data, length, out, 1);
+}
+
+int ew_gif_decode_aspect(const unsigned char EW_GIF_FAR *data, unsigned length,
+                         struct ew_gif *out, unsigned pixel_aspect)
+{
     struct reader r;
     struct lzw_workspace EW_GIF_FAR *workspace = 0;
     unsigned char gray[256];
@@ -195,6 +204,8 @@ int ew_gif_decode(const unsigned char EW_GIF_FAR *data, unsigned length, struct 
     int marker, transparent = -1, result = EW_GIF_TRUNCATED;
     if (!out) return EW_GIF_BAD_DATA;
     memset(out, 0, sizeof(*out));
+    if (pixel_aspect != 1 && pixel_aspect != 2) return EW_GIF_BAD_DATA;
+    r.dither_shift = pixel_aspect == 2;
     if (!data || length < 6 || !signature(data))
         return EW_GIF_BAD_HEADER;
     if (length < 13) return EW_GIF_TRUNCATED;
@@ -253,7 +264,8 @@ int ew_gif_decode(const unsigned char EW_GIF_FAR *data, unsigned length, struct 
             if (out->opacity) out->opacity[i] = 0;
         }
         for (y = 0; y < out->height; ++y)
-            for (x = 0; x < out->width; ++x) emit(out, x, y, background, 0);
+            for (x = 0; x < out->width; ++x)
+                emit(out, x, y, background, 0, r.dither_shift);
         result = decode_pixels(&r, out, left, top, width, height, flags & 0x40,
                                gray, colors, transparent, workspace);
         far_free(workspace);

@@ -1,6 +1,7 @@
 /* Deterministic bounded host fuzzing of actual C layout and URL code.
  * Run with ASan/UBSan. This cannot prove 16-bit execution compatibility. */
 #include "elksweb.h"
+int ew_screen_height=200, ew_pixel_aspect=2;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

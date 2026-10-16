@@ -88,7 +88,7 @@ int ew_images_load_document(const char *url) {
     return document_fail(ew_source_error());
   }
   known=ew_image_dimensions(compressed,amount,&natural_width[0],&natural_height[0]);
-  result=ew_gif_decode(compressed,amount,&images[0]);
+  result=ew_gif_decode_aspect(compressed,amount,&images[0],ew_pixel_aspect);
   ew_far_free(compressed);
   if (result==EW_GIF_OK) return 0;
   document_fail(gif ? ew_gif_error(result) :
@@ -125,7 +125,8 @@ static int load_image(const char *url, struct ew_gif *image,
     for (i = 0; i < (unsigned)got; ++i) compressed[count++] = chunk[i];
   }
   ew_image_dimensions(compressed, (unsigned)size, width, height);
-  result = ew_gif_decode(compressed, (unsigned)size, image) == EW_GIF_OK ? 0 : -1;
+  result = ew_gif_decode_aspect(compressed, (unsigned)size, image,
+                               ew_pixel_aspect) == EW_GIF_OK ? 0 : -1;
 done:
   ew_far_free(compressed);
   close(fd);
@@ -180,7 +181,7 @@ int ew_image_map_point(const struct ew_run EW_FAR *r,int x,int y,
   unsigned i,j,width,height;
   if (!ew_image_is_map(r) || !r->n || !r->w || x<0 || y<0 ||
       (unsigned)x>=r->n || (unsigned)y>=r->w || !map_x || !map_y) return -1;
-  width=r->n; height=(unsigned)r->w*2;
+  width=r->n; height=(unsigned)r->w*ew_pixel_aspect;
   for (i=0;i<image_count;++i) {
     const char EW_FAR *cached=image_urls+i*EW_URL;
     const char EW_FAR *url=ew_doc.text+r->off;
@@ -223,6 +224,41 @@ static void image_placeholder(const struct ew_run EW_FAR *r,int x,int y,
     ++alt;
   }
 }
+/* Reduce coverage before dithering again: sampling one bit from an already
+ * dithered image can turn a gray patch entirely white. Three coverage bands
+ * (white, black, transparent) retain both tone and transparent background.
+ * The largest box is 640*480, so counts/products must be 32-bit on ELKS.
+ */
+static int reduced_pixel(const struct ew_gif *image, unsigned left, unsigned top,
+                         unsigned right, unsigned bottom, unsigned x, unsigned y) {
+  static const unsigned char bayer[16]={0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5};
+  unsigned row,col,at,mask;
+  unsigned char bits,coverage;
+  unsigned long opaque=0,white=0,threshold;
+  if (right==left) ++right;
+  if (bottom==top) ++bottom;
+  threshold=(unsigned long)(right-left)*(bottom-top)*
+            (2*bayer[((y&3)<<2)|(x&3)]+1);
+  for (row=top;row<bottom;++row) {
+    at=row*image->stride+(left>>3);
+    mask=0;
+    for (col=left;col<right;++col) {
+      if (!mask) {
+        mask=0x80U>>(col&7);
+        bits=image->pixels[at];
+        coverage=image->opacity ? image->opacity[at] : 255;
+        ++at;
+      }
+      if (coverage&mask) {
+        ++opaque;
+        if (bits&mask) ++white;
+      }
+      mask>>=1;
+    }
+  }
+  if ((opaque<<5)<=threshold) return -1;
+  return (white<<5)>threshold;
+}
 void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bottom,
                    int inverse) {
   unsigned row, col, sy, sx, first_row, last_row, first_col, last_col;
@@ -230,7 +266,8 @@ void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bot
   unsigned x_remainder, y_remainder, previous_row=65535U;
   unsigned char bits[80], opacity[80];
   unsigned long scaled;
-  int screen_x, screen_y;
+  int screen_x, screen_y, reduce, color;
+  unsigned end_y;
   struct ew_gif *image;
   if (top<0) top=0;
   if (bottom>EW_SCREEN_HEIGHT) bottom=EW_SCREEN_HEIGHT;
@@ -242,6 +279,7 @@ void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bot
     return;
   }
   image = &images[r->style];
+  reduce=image->width>r->n || image->height/(unsigned)ew_pixel_aspect>r->w;
   first_col=x<0 ? (unsigned)(-(long)x) : 0;
   last_col=(long)x+r->n>EW_SCREEN_WIDTH ? (unsigned)(EW_SCREEN_WIDTH-(long)x) : r->n;
   first_row=y<top ? (unsigned)(top-(long)y) : 0;
@@ -262,7 +300,8 @@ void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bot
   y_remainder=image->height%r->w;
   screen_y=y<top ? top : y;
   for (row=first_row;row<last_row;++row,++screen_y) {
-    if (sy!=previous_row) {
+    end_y=sy+y_step+(y_error>=r->w-y_remainder);
+    if (!reduce && sy!=previous_row) {
       ew_gif_copy_row(image,sy,bits,opacity);
       previous_row=sy;
     }
@@ -270,7 +309,11 @@ void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bot
     x_error=start_error;
     screen_x=x<0 ? 0 : x;
     for (col=first_col;col<last_col;++col,++screen_x) {
-      if (opacity[sx>>3] & (0x80U>>(sx&7)))
+      if (reduce) {
+        color=reduced_pixel(image,sx,sy,
+                            sx+x_step+(x_error>=r->n-x_remainder),end_y,col,row);
+        if (color>=0) ew_pixel(screen_x,screen_y,color^inverse);
+      } else if (opacity[sx>>3] & (0x80U>>(sx&7)))
         ew_pixel(screen_x,screen_y,!!(bits[sx>>3] & (0x80U>>(sx&7))) ^ inverse);
       sx+=x_step;
       /* Subtract before adding so even a 65535-pixel destination cannot

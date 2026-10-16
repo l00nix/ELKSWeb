@@ -1,0 +1,386 @@
+{
+  "candidate": "private beta preparation build004",
+  "source_base_commit": "2c912f142854c50350566dc2186eef6b3745c9e5",
+  "source_identity": "Exact C/header files from native build transfer archive; all matched current working sources when manifest created. See git history for final commit.",
+  "sources": [
+    {
+      "path": "src/url.c",
+      "sha256": "ebe9d3161e7cd128221f29d1bd67e47e1f965e5cf0cc4e844a165ce9f0301c66",
+      "bytes": 3466
+    },
+    {
+      "path": "src/latin.h",
+      "sha256": "66d3584f05931d35d1ec3b014d77570ba7eeeed1e891f8f9e45e9b304acfacf4",
+      "bytes": 1736
+    },
+    {
+      "path": "src/memory.c",
+      "sha256": "cec9340af373b2771f2333c452e58d0bb91357ff7c2987993f8a8ed5e057f8a2",
+      "bytes": 7824
+    },
+    {
+      "path": "src/images.c",
+      "sha256": "a7efe563e0f6aa73ee9ab415a647b76ff096690a27f60919467b41c7beb170c1",
+      "bytes": 13225
+    },
+    {
+      "path": "src/elksweb.h",
+      "sha256": "c631f28b7a8d3e2ea25238840cc9b22eba657648ea5e7fa13417d1b2c9770d42",
+      "bytes": 4602
+    },
+    {
+      "path": "src/main.c",
+      "sha256": "9bcba848b7ef3b27cf239645f02bbe9a7a79d488a4c5d19295b89779afd51718",
+      "bytes": 37058
+    },
+    {
+      "path": "src/net.c",
+      "sha256": "c24c36e04c7ef6d61f567e2476855c98c6e159bafc35abaac45f285ad8776293",
+      "bytes": 17002
+    },
+    {
+      "path": "src/html.c",
+      "sha256": "d03103c0580306791b1b52129efa38a36925f0625a95b65f107a82942aead0cd",
+      "bytes": 65574
+    },
+    {
+      "path": "platform/elks_mouse.c",
+      "sha256": "2b89556217a68d19b2aebb4dee376eafc16cb2277d8e4f1c4c3d10d27b77e98e",
+      "bytes": 2984
+    },
+    {
+      "path": "platform/elks_mouse_packet.c",
+      "sha256": "c05fcc623faa95569dbf06de98994b11c42d827f862441551822b9ca739136d4",
+      "bytes": 1373
+    },
+    {
+      "path": "platform/elks_keys.h",
+      "sha256": "88da90d5ee23a8d54f139596c609376a82e044b72289970d48fb57c928ebfb38",
+      "bytes": 507
+    },
+    {
+      "path": "platform/elks_platform.c",
+      "sha256": "f2d9fb927f46792edac223814d7847280a8de4ad3b644d70d364752f63a24450",
+      "bytes": 12111
+    },
+    {
+      "path": "platform/elks_mouse.h",
+      "sha256": "b749f329f5889ffe8b8c57fa32c7a1cae25701ffea85c2a41dd18132e13b73be",
+      "bytes": 432
+    },
+    {
+      "path": "platform/elks_keys.c",
+      "sha256": "d69d097be1389ddc10b20e8c015ed0bba6a80c42206cf0de260660a8e9cf09dc",
+      "bytes": 5026
+    },
+    {
+      "path": "platform/elks_platform.h",
+      "sha256": "a5aebf8ad0ca234e94157de349a1800889d0f054c33722d00237c0d2515a4fdf",
+      "bytes": 2186
+    },
+    {
+      "path": "platform/tests/keys_test.c",
+      "sha256": "962aac405eca73055191bd397766a4d2bc4b5c327d7408ca507e25290eff3621",
+      "bytes": 2894
+    },
+    {
+      "path": "platform/tests/mouse_test.c",
+      "sha256": "3d14ca6dffa7df017298a8bb1ca7e3cbc5af7fdfd3002a85f10de2cab7251420",
+      "bytes": 1474
+    },
+    {
+      "path": "image/dimensions.c",
+      "sha256": "c64a93b167b44d8cf637b73d01e11c4dd7400f87c3951b332c28f56d5c1f4e28",
+      "bytes": 2042
+    },
+    {
+      "path": "image/gif.h",
+      "sha256": "7b6629ead481436a085431966a4a00c7c69040f91fe9e3ba007c32b7610afa5b",
+      "bytes": 1853
+    },
+    {
+      "path": "image/dimensions.h",
+      "sha256": "1cc01fa7b762a119269354c5eec53c484f39c781980543aae3308c29b6fe2b80",
+      "bytes": 460
+    },
+    {
+      "path": "image/gif.c",
+      "sha256": "d67d113222a4816c0bc266d90b76eb82b0c25178c83f915ef4e1db62bd17039a",
+      "bytes": 11204
+    },
+    {
+      "path": "image/tests/gif_native_smoke.c",
+      "sha256": "5fc2dec37cb7a2f53db66d76811628e7a713e3db13be6c2cde2abb278ffc6147",
+      "bytes": 1017
+    },
+    {
+      "path": "font/body_font.c",
+      "sha256": "61d626f68babf89946811441c22a019eba8710dfcedbbf554ea6d67ba7399043",
+      "bytes": 19964
+    },
+    {
+      "path": "font/font.c",
+      "sha256": "a79b188987c8f5644871cb0adc2f6137222e16f74f154b61910c44e4fda88bb8",
+      "bytes": 14288
+    },
+    {
+      "path": "font/body_font.h",
+      "sha256": "3315d14cae0f97886090dbd39c591582e3aaab066170817892358a33444c4aec",
+      "bytes": 1101
+    },
+    {
+      "path": "font/font.h",
+      "sha256": "eff5b069c04b729c148dab0cc9bc4ca6232590817982ae351e69bec74f76f5b1",
+      "bytes": 1005
+    }
+  ],
+  "source_archive": {
+    "path": "build/beta-source.tgz",
+    "sha256": "1c9c9aba4c5c58f3374f49a3d910f85a109998f7f337775ca60e7a1fb3514386",
+    "bytes": 205352
+  },
+  "compiler_version": "ia16-elf-gcc (GCC) 6.3.0\nCopyright (C) 2016 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "compiler_commands": [
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c src/html.c -o build/obj/src_html.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c src/images.c -o build/obj/src_images.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c src/main.c -o build/obj/src_main.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c src/memory.c -o build/obj/src_memory.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c src/net.c -o build/obj/src_net.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c src/url.c -o build/obj/src_url.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c platform/elks_keys.c -o build/obj/platform_elks_keys.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c platform/elks_mouse.c -o build/obj/platform_elks_mouse.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c platform/elks_mouse_packet.c -o build/obj/platform_elks_mouse_packet.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c platform/elks_platform.c -o build/obj/platform_elks_platform.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c image/dimensions.c -o build/obj/image_dimensions.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c image/gif.c -o build/obj/image_gif.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c font/body_font.c -o build/obj/font_body_font.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c font/font.c -o build/obj/font_font.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -Wl\\,-Map\\,build/elksweb.map build/obj/src_html.o build/obj/src_images.o build/obj/src_main.o build/obj/src_memory.o build/obj/src_net.o build/obj/src_url.o build/obj/platform_elks_keys.o build/obj/platform_elks_mouse.o build/obj/platform_elks_mouse_packet.o build/obj/platform_elks_platform.o build/obj/image_dimensions.o build/obj/image_gif.o build/obj/font_body_font.o build/obj/font_font.o -o build/elksweb "
+  ],
+  "artifacts": [
+    {
+      "path": "build/elksweb",
+      "sha256": "dbe320a6088ee8f9cba8ac02ff157510989ba2350b71bd803b72fe1ee09a5f85",
+      "bytes": 76176
+    },
+    {
+      "path": "build/elksweb.img",
+      "sha256": "d7884117a6ba037a4ce28cda76df20b5cec6e5eb00d3730da3b44faaf4f20d02",
+      "bytes": 2949120
+    },
+    {
+      "path": "build/elksweb.elf",
+      "sha256": "30a3d98cb2dd293bfa8e08adf8445215498c2ec35aeecea9e1661cf7c5c6ebbc",
+      "bytes": 225848
+    },
+    {
+      "path": "build/elksweb.map",
+      "sha256": "d3c5182efd66565dbaa2467d3b9615ac52a92ddac3b52de28e98e7ac33179294",
+      "bytes": 229186
+    },
+    {
+      "path": "build/isa-audit.json",
+      "sha256": "eabf1b742169205b4ab5aa511674b380b481d18a880c2405e6a222351cf4ad67",
+      "bytes": 1332
+    },
+    {
+      "path": "build/stack-usage.txt",
+      "sha256": "c57b178efd03a6ecddbda1e43331d9b3ead88d4fa411bc8c4574217457d8a1b5",
+      "bytes": 10343
+    }
+  ],
+  "static_audit": {
+    "executable_sha256": "dbe320a6088ee8f9cba8ac02ff157510989ba2350b71bd803b72fe1ee09a5f85",
+    "elf_sha256": "30a3d98cb2dd293bfa8e08adf8445215498c2ec35aeecea9e1661cf7c5c6ebbc",
+    "instructions": 25708,
+    "code_sections": {
+      ".text": {
+        "bytes": 64048,
+        "decoded_bytes": 64048,
+        "linker_zero_padding_bytes": 1,
+        "uncovered_bytes": 0
+      }
+    },
+    "isa_static_pass": true,
+    "forbidden_instructions": [],
+    "ambiguities": [],
+    "memory": {
+      "header_bytes": 32,
+      "header_version": 1,
+      "text_bytes": 64048,
+      "data_bytes": 12096,
+      "bss_bytes": 38432,
+      "header_heap_bytes": 0,
+      "header_stack_bytes": 0,
+      "effective_heap_bytes": 4096,
+      "effective_stack_bytes": 4096,
+      "near_static_bytes": 50528,
+      "near_total_before_arguments_environment": 58720,
+      "remaining_before_arguments_environment": 6800,
+      "minimum_argument_environment_reserve": 1024,
+      "memory_gate_pass": true,
+      "note": "Zero header heap/stack fields select ELKS INIT_HEAP/INIT_STACK defaults of 4096 each. argv/envp also consume near space."
+    },
+    "real_8088_execution": "not verified",
+    "limits": "Linear decoding of ELF executable sections; inline data in executable sections requires manual review if rejected. Static ISA compatibility does not prove timing, BIOS compatibility or actual 8088 execution."
+  },
+  "windows_test_image": {
+    "path": "qa/86box-beta-001/elksweb004.img",
+    "sha256": "8f5f85e53cb2e14506f92796225072716c367b70729cd4b1a806d2935fc10d40",
+    "bytes": 2949120
+  },
+  "limits": [
+    "Private candidate, not public release.",
+    "Static near memory is not peak runtime memory.",
+    "QEMU uses486, does not establish8088timing.",
+    "Windows build003 timing is separate from build004.",
+    "Clean machine bootstrap not validated.",
+    "Established ELKS builder is a copied tree without Git metadata; recorded upstream base is not proof of an unmodified tree."
+  ],
+  "screenshots": [
+    {
+      "path": "docs/screenshots/68k-news-build004-qemu.png",
+      "sha256": "08e514d760add342db2aa7336d6286133d7a78dc8d7096e502c9fc56143f942f",
+      "bytes": 7549,
+      "candidate": "build004"
+    },
+    {
+      "path": "docs/screenshots/frogfind-build004-qemu.png",
+      "sha256": "9bbaf3ed44da6ed56bd49ed7cd9a691241ea82c6d50771252d0a4a014ffbd92e",
+      "bytes": 4137,
+      "candidate": "build004"
+    },
+    {
+      "path": "docs/screenshots/68k-news-build003-86box.png",
+      "sha256": "4e08a0a41718ac5fe37219d6a9d4869d9ad26b84a5fb060fa566760fb6f0f709",
+      "bytes": 7576,
+      "candidate": "build003"
+    },
+    {
+      "path": "docs/screenshots/frogfind-build004-ega-86box.png",
+      "sha256": "6d18a6f41f0ad8b977cc1deb0b5498172ca117bc62cfc8d5373885c45bcc1f6d",
+      "bytes": 5442,
+      "candidate": "build004"
+    },
+    {
+      "path": "docs/screenshots/frogfind-build004-vga-86box.png",
+      "sha256": "82714a363db3c705e5f77a52d29243debf56bb6db665bc92bfa4c867740d2989",
+      "bytes": 5995,
+      "candidate": "build004"
+    },
+    {
+      "path": "docs/screenshots/frogfind-build004-cga-86box.png",
+      "sha256": "66a9239d5222fc90bdc1f233248547ef3faf6bf128f409e30b533330a84b869e",
+      "bytes": 4122,
+      "candidate": "build004"
+    }
+  ],
+  "validation": {
+    "host_core_tests": 254,
+    "native_frog_fixture_gates": {
+      "passed": 3,
+      "total": 3
+    },
+    "native_display_modes": [
+      "cga640x200",
+      "ega640x350",
+      "vga640x480"
+    ],
+    "blind_review": {
+      "reviewers": 1,
+      "content_states": 6,
+      "balanced_sides": true,
+      "crop": {
+        "x": 0,
+        "y": 22,
+        "width": 640,
+        "height": 170,
+        "bounds": "[0:640,22:192]"
+      },
+      "counts": {
+        "candidate": 5,
+        "reference": 0,
+        "tie": 1
+      },
+      "views": [
+        {
+          "view": "view01",
+          "choice": "RIGHT",
+          "rationale": "The right arrangement exposes the search form, attribution, and an additional URL-entry control within the crop. Its frog has a taller, more distinct silhouette and more visible internal detail. The left uses more vertical whitespace and its frog looks vertically compressed. Both principal forms and headings are legible. The right lower explanatory text is very small and its last visible line is cut by the crop.",
+          "blocking_defects": [],
+          "limitations": "Cannot determine whether content below either crop is reachable or whether either form works.",
+          "winner": "candidate",
+          "case": "frogfind_http",
+          "state": "initial",
+          "left": "reference",
+          "right": "candidate"
+        },
+        {
+          "view": "view02",
+          "choice": "RIGHT",
+          "rationale": "Both search inputs have a clear dark focus outline. The right places the focused input higher while retaining the additional URL-entry control and more supporting content. Its frog silhouette is taller and easier to distinguish. The left gives the form more breathing room, but consumes much more of the limited vertical space. Right-side fine print is cramped and the lowest visible text is crop-cut.",
+          "blocking_defects": [],
+          "limitations": "The outline is visible; keyboard behavior and focus movement cannot be assessed.",
+          "winner": "candidate",
+          "case": "frogfind_http",
+          "state": "field",
+          "left": "reference",
+          "right": "candidate"
+        },
+        {
+          "view": "view03",
+          "choice": "TIE",
+          "rationale": "Both show the same readable heading, offline-data notice, home link, separator, result title, explanatory sentence, and image-test link. Neither has a visible overlap or clipped text. The small differences in vertical spacing and the right scrollbar do not establish a meaningful content-quality advantage.",
+          "blocking_defects": [],
+          "winner": "tie",
+          "case": "frogfind_http",
+          "state": "results",
+          "left": "candidate",
+          "right": "reference"
+        },
+        {
+          "view": "view04",
+          "choice": "RIGHT",
+          "rationale": "The right natural-size frog and half-size frog have taller silhouettes and more distinguishable internal image detail. Their labels sit consistently above the images, making the size comparison easier to scan. On the left the images look vertically flattened and labels sit low alongside them. The right spends slightly more vertical space, but the explanatory text and both links remain fully visible.",
+          "blocking_defects": [],
+          "winner": "candidate",
+          "case": "frogfind_images",
+          "state": "initial",
+          "left": "reference",
+          "right": "candidate"
+        },
+        {
+          "view": "view05",
+          "choice": "LEFT",
+          "rationale": "The left standalone frog has a more complete, taller visible silhouette and clearer head/body separation. On the right the frog meets the top crop boundary and looks flattened, with the upper contour cut or crowded against that boundary. There are no text or form controls to compare.",
+          "blocking_defects": [],
+          "limitations": "The right upper-edge loss is a defect in the observed crop; its cause and the full uncropped image cannot be established.",
+          "winner": "candidate",
+          "case": "frogfind_images",
+          "state": "direct_image",
+          "left": "candidate",
+          "right": "reference"
+        },
+        {
+          "view": "view06",
+          "choice": "LEFT",
+          "rationale": "Both headings, introductory sentences, three bullets, and bottom links are readable and fit. The left frog is taller, with a clearer eye/head contour and body detail; the right frog looks vertically compressed. The left also leaves slightly more separation between the frog and the links. Neither side visibly overlaps text.",
+          "blocking_defects": [],
+          "winner": "candidate",
+          "case": "frogfind_local",
+          "state": "article",
+          "left": "candidate",
+          "right": "reference"
+        }
+      ],
+      "scope": "Visible content quality only, one fresh critic. No functionality or browser-chrome score; no release approval. Verdict written before key reveal. Original003 verdict retained."
+    },
+    "timing_limits": "Manual Windows003 observations only, roughly5\u20139minutes to first live68k viewport; no004news timing.",
+    "platform_tests": 5,
+    "windows_adapter_checks": [
+      "CGA640x200 menu,image sizes,console restoration pass",
+      "EGA640x350 menu,image sizes,console restoration pass",
+      "VGA640x480 menu,image sizes,console restoration pass"
+    ]
+  }
+}
