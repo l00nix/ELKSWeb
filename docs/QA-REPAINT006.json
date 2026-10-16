@@ -1,0 +1,91 @@
+{
+  "review_id": "repaint-006-independent-visual-review",
+  "reviewed_utc": "2026-10-16T18:00:39.953436+00:00",
+  "binary_sha256": "70450a34d4a551631689a606fdeef688471094ff2d853db81934b1569076e925",
+  "image_sha256": "7bbec8ffacc23dc34c4cd7747d5e65e8fd77ce8f7a7e45a30edd5cc010c7c8bb",
+  "method": "Opened all 18 candidate full PNG frames and the three baseline selected frames using tools.view_image. Independently computed full-frame RGB pixel differences for all three selected-mode pairs. Read the capture manifests and briefly inspected the repaint/clipping source diff. No new visual preference vote.",
+  "reviewed_candidate_frames": [
+    "qa/repaint-006/display-final/cga/startup.png",
+    "qa/repaint-006/display-final/cga/selected.png",
+    "qa/repaint-006/display-final/cga/restored.png",
+    "qa/repaint-006/display-final/ega/startup.png",
+    "qa/repaint-006/display-final/ega/selected.png",
+    "qa/repaint-006/display-final/ega/restored.png",
+    "qa/repaint-006/display-final/vga/startup.png",
+    "qa/repaint-006/display-final/vga/selected.png",
+    "qa/repaint-006/display-final/vga/restored.png",
+    "qa/repaint-006/live/candidate/frogfind/early.png",
+    "qa/repaint-006/live/candidate/frogfind/final.png",
+    "qa/repaint-006/live/candidate/68k/early.png",
+    "qa/repaint-006/live/candidate/68k/final.png",
+    "qa/repaint-006/live/candidate/68k/news-page2.png",
+    "qa/repaint-006/live/candidate/68k/news-end.png",
+    "qa/repaint-006/live/candidate/68k/news-first-article-focused.png",
+    "qa/repaint-006/live/candidate/68k/news-article-result.png",
+    "qa/repaint-006/live/candidate/68k/news-back-to-home.png"
+  ],
+  "selected_mode_pixel_comparison": [
+    {
+      "mode": "cga",
+      "candidate": "qa/repaint-006/display-final/cga/selected.png",
+      "baseline": "qa/beta-gates-005/clean/display/cga/selected.png",
+      "size": [
+        640,
+        200
+      ],
+      "different_pixels": 0,
+      "difference_bbox": null,
+      "full_frame_equal": true
+    },
+    {
+      "mode": "ega",
+      "candidate": "qa/repaint-006/display-final/ega/selected.png",
+      "baseline": "qa/beta-gates-005/clean/display/ega/selected.png",
+      "size": [
+        640,
+        350
+      ],
+      "different_pixels": 0,
+      "difference_bbox": null,
+      "full_frame_equal": true
+    },
+    {
+      "mode": "vga",
+      "candidate": "qa/repaint-006/display-final/vga/selected.png",
+      "baseline": "qa/beta-gates-005/clean/display/vga/selected.png",
+      "size": [
+        640,
+        480
+      ],
+      "different_pixels": 0,
+      "difference_bbox": null,
+      "full_frame_equal": true
+    }
+  ],
+  "display_observations": [
+    "CGA, EGA and VGA selected frames are pixel-identical to clean005, including title/address chrome, page, image, right gutter and status region. The reported intermediate-build stray pixels are absent from these final comparisons.",
+    "All three 720x400 startup frames show a readable pre-graphics mode selector. All three restored frames show ELKSWeb closed and a readable text login prompt, without visible graphics residue.",
+    "Still captures support the restored text appearance, not keyboard functionality after exit."
+  ],
+  "live_observations": {
+    "frogfind": "Early and final frames show a readable homepage, frog GIF, query field, Ribbit button, attribution and lower URL form. No missing title, overlapping controls or repaint residue is visible. The capture record shows equal early/final hashes and homepage/GIF requests. This run does not include live search-result or article frames.",
+    "news": "Early/final homepage, later viewport, footer, focused first headline, article response and returned homepage are all legible and coherent. Focus highlighting and status destination are visible. Titles and chrome are cleared/updated appropriately across the displayed states, with no apparent stale content or damaged boundaries.",
+    "news_article_caveat": "The article response explicitly says Failed to get the article and Invalid or incomplete HTML. This remains the upstream extraction-error page, not successful article reading. The address changes to article.php and Back restores the original homepage; the latter shares its recorded hash with the initial settled frame."
+  },
+  "findings": [],
+  "source_inspection_scope": "The diff separates page/address/status/title/frame invalidation and clips page primitives before restoring the full drawing area. Explicit title invalidation follows the image-triggered reparse. This was a brief supporting inspection, not a complete independent code audit.",
+  "decision": {
+    "visual_regression_found": false,
+    "visual_blocker_in_reviewed_scope": false,
+    "required_visual_fix": "None established by the reviewed frames and selected-mode pixel comparisons.",
+    "previous_votes": "Unchanged; no new preference score."
+  },
+  "limits": [
+    "Pixel equality covers the three selected display states only; it does not establish all incremental repaint transitions.",
+    "These reviewed screenshots do not cover address editing, select overlays, download/error dialogs, inversion or mouse interactions. Separate host/native tests are needed for those transitions; no claim is made that they are absent from the wider suite.",
+    "The manifest reports 279 host tests and 13 focused repaint tests; this review did not rerun or audit that test suite.",
+    "QEMU screenshots and static build identity do not establish physical HP200LX behavior or actual 8088 compatibility. HP retest remains separate.",
+    "No timing/responsiveness conclusion or gate is drawn from capture intervals.",
+    "No source edit, build, emulator start, HP interaction or remote/RDP access was performed."
+  ]
+}

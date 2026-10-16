@@ -19,7 +19,7 @@ class Cursor(unittest.TestCase):
         root = Path(cls.tmp.name)
         source = (PLATFORM / 'elks_platform.c').read_text()
         globals_ = '\n'.join(line for line in source.splitlines()
-                            if line.startswith(('static int cursor_',
+                            if line.startswith(('static int clip_', 'static int cursor_',
                                                 'static unsigned char cursor_')))
         routines = source[source.index('static unsigned scan_offset'):]
         mock = '''

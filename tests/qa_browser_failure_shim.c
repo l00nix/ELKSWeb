@@ -52,6 +52,7 @@ static int qa_save_unlink(const char *path)
 #define ew_net_progress qa_unused_net_progress
 #include "qa_core_shim.c"
 #undef ew_net_progress
+void ew_clip(int r,int t,int b) {(void)r;(void)t;(void)b;}
 void ew_clear(int c) {(void)c;}
 void ew_hline(int x,int y,int w,int c) {(void)x;(void)y;(void)w;(void)c;}
 void ew_rect(int x,int y,int w,int h,int c) {(void)x;(void)y;(void)w;(void)h;(void)c;}

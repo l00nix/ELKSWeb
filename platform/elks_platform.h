@@ -52,6 +52,9 @@ void ew_cursor_shape(int hand);
 /* Coordinates and dimensions are pixels. Drawing is clipped to the screen.
  * White is 1, black is 0. Glyph/bitmap background -1 is transparent.
  */
+/* Restrict subsequent primitives to [0,right) x [top,bottom).
+ * Restore the full screen before chrome or software-cursor drawing. */
+void ew_clip(int right, int top, int bottom);
 void ew_clear(int white);
 void ew_pixel(int x, int y, int white);
 void ew_hline(int x, int y, int width, int white);

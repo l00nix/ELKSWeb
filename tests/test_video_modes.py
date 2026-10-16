@@ -44,6 +44,7 @@ SOURCE = r'''
 #include "DRIVER"
 unsigned char test_cga[65536], test_planar[65536];
 static unsigned char expected[65536];
+static int oracle_right=640, oracle_top, oracle_bottom=480;
 static int adapter=3, current_mode=3, mode_failure, terminal=1;
 static int opens, closes, sets, graphics_lock, keyboard_lock, mice;
 static unsigned port_count, port_values[8], port_numbers[8];
@@ -111,7 +112,7 @@ static unsigned at(int x,int y,int height) {
  return height==200 ? ((y%2)*8192+(y/2)*80+x/8) : y*80+x/8;
 }
 static void oracle_pixel(int x,int y,int color,int height) {
- unsigned p,mask;if(x<0||x>=640||y<0||y>=height)return;
+ unsigned p,mask;if(x<0||x>=640||y<0||y>=height||x>=oracle_right||y<oracle_top||y>=oracle_bottom)return;
  p=at(x,y,height);mask=128>>(x%8);
  if(color)expected[p]|=mask;else expected[p]&=~mask;
 }
@@ -131,7 +132,15 @@ static void drawing(const char *mode,int height) {
   for(i=0;i<6;i++){assert(port_values[i]==vals[i]);assert(port_numbers[i]==(i?0x3ce:0x3c4));}
  }
  memcpy(expected,frame,65536);
- for(i=0;i<1200;i++) {
+ oracle_right=640;oracle_top=0;oracle_bottom=height;ew_clip(640,0,height);
+ for(i=0;i<2400;i++) {
+  if(i>=1200 && !(i%100)) {
+   static const int right_edges[]={0,1,623,624,639,640};
+   oracle_right=right_edges[(i/100)%6];
+   oracle_top=(i/100)%2 ? 22 : 0;
+   oracle_bottom=(i/100)%3 ? height-8 : oracle_top;
+   ew_clip(oracle_right,oracle_top,oracle_bottom);
+  }
   rng=rng*1664525U+1013904223U;x=(rng>>16)%800-80;
   rng=rng*1664525U+1013904223U;y=(rng>>16)%(height+60)-30;
   rng=rng*1664525U+1013904223U;w=(rng>>16)%720-20;
@@ -144,6 +153,7 @@ static void drawing(const char *mode,int height) {
   }
   assert(!memcmp(expected,frame,65536));
  }
+ oracle_right=640;oracle_top=0;oracle_bottom=height;ew_clip(640,0,height);
  for(i=0;i<2;i++)for(x=631;x<640;x++)for(y=height-13;y<height;y++) {
   ew_cursor_shape(i);ew_cursor_show(x,y);ew_cursor_hide();assert(!memcmp(expected,frame,65536));
  }

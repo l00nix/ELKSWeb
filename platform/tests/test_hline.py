@@ -18,7 +18,9 @@ class HorizontalLine(unittest.TestCase):
             (root / 'line.c').write_text(
                 '#include "elks_platform.h"\nunsigned char video[65536]={1};\n'
                 'int ew_screen_height=200, ew_pixel_aspect=2;\n'
-                'static unsigned video_bytes=16384;\n' + routines)
+                'static unsigned video_bytes=16384;\n' +
+                '\n'.join(line for line in source.splitlines()
+                          if line.startswith('static int clip_')) + '\n' + routines)
             subprocess.run(['cc', '-O2', '-shared', '-fPIC', '-Wall', '-Wextra',
                             '-Werror', '-I'+str(PLATFORM), str(root / 'line.c'),
                             '-o', str(root / 'line.so')], check=True)

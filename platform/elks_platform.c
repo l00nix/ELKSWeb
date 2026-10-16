@@ -31,6 +31,7 @@ static const char *last_error = "";
 static far_bytes video = FAR_BYTES(0xb800, 0);
 int ew_screen_height=200, ew_pixel_aspect=2;
 static unsigned video_bytes=16384;
+static int clip_right=640, clip_top, clip_bottom=480;
 static unsigned long escape_started;
 static int cursor_x = -1, cursor_y;
 static unsigned char cursor_saved[12][2];
@@ -164,6 +165,7 @@ int ew_platform_init(const char *requested)
         video_register(0x3ce,0x0005);
         video_register(0x3ce,0xff08);
     }
+    ew_clip(640, 0, EW_SCREEN_HEIGHT);
     ew_clear(1);
     ew_mouse_init();
     last_error = "";
@@ -227,6 +229,13 @@ static unsigned scan_offset(int x, int y)
     return ((unsigned)y & 1) * 8192U + ((unsigned)y >> 1) * 80U + ((unsigned)x >> 3);
 }
 
+void ew_clip(int right, int top, int bottom)
+{
+    clip_right=right;
+    clip_top=top;
+    clip_bottom=bottom;
+}
+
 void ew_clear(int white)
 {
     unsigned n;
@@ -238,7 +247,8 @@ void ew_pixel(int x, int y, int white)
 {
     unsigned offset;
     unsigned char mask;
-    if ((unsigned)x >= EW_SCREEN_WIDTH || (unsigned)y >= (unsigned)EW_SCREEN_HEIGHT) return;
+    if ((unsigned)x >= (unsigned)clip_right || y < clip_top ||
+        y >= clip_bottom || (unsigned)y >= (unsigned)EW_SCREEN_HEIGHT) return;
     offset = scan_offset(x, y);
     mask = 0x80U >> (x & 7);
     if (white) video[offset] |= mask; else video[offset] &= ~mask;
@@ -248,9 +258,10 @@ void ew_hline(int x, int y, int width, int white)
 {
     unsigned offset;
     unsigned char mask, value = white ? 255 : 0;
-    if (width <= 0 || y < 0 || y >= EW_SCREEN_HEIGHT || x >= EW_SCREEN_WIDTH) return;
+    if (width <= 0 || y < clip_top || y >= clip_bottom ||
+        y < 0 || y >= EW_SCREEN_HEIGHT || x >= clip_right) return;
     if (x < 0) { if (x <= -width) return; width += x; x = 0; }
-    if (width > EW_SCREEN_WIDTH - x) width = EW_SCREEN_WIDTH - x;
+    if (width > clip_right - x) width = clip_right - x;
     offset = scan_offset(x, y);
     if (x & 7) {
         int count = 8 - (x & 7);
