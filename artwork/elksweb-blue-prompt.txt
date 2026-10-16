@@ -1,0 +1,3 @@
+Built-in image generation edit, 2026-10-16. Original artwork/elksweb-wordmark.png as edit target; local upstream ELKS logo used only as blue colour reference.
+Prompt: Change only ELKS letters to deep ELKS blue (approximately #0000AA). Keep Web and globe black, white background, exact lettering, typeface, shapes, layout and proportions; no extra text or effects.
+Output resized to320x107 and encoded as a static white/black/blue palette GIF. Colour artwork only: current0.1 browser decodes images to monochrome. No colour-browser screenshot is implied.

@@ -989,7 +989,11 @@
       "exit_to_login": "pass",
       "input_note": "Windows on-screen keyboard entered root; login succeeded and shell relaunched elksweb. Direct CUA letter input did not reach emulator."
     },
-    "repeat_welcome_scroll_exit": "Pending: Mac locked during shell relaunch; user unlock requested.",
+    "repeat_welcome_scroll_exit": {
+      "result": "PASS bounded repeat: normal shell launch, interactive selector, welcome GIF, Page Down, Escape, pwd returned /root and shell prompt.",
+      "scope": "Same approved binary; current retry image. Launched from logged-in shell, not original cold-boot autorun. Original failure unresolved and retained.",
+      "new_blind_votes": null
+    },
     "status": "incomplete; initial exit anomaly unresolved",
     "record": "qa/86box-release01/result.json"
   }
