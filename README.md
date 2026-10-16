@@ -4,7 +4,7 @@ An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation; MicroWeb is the visual and behavioral comparison reference.
 
-**Version 0.1 — public-beta preparation; final QA remains open.** This release adds display selection, a stable application frame and incremental vertical scrolling: existing pixels move and only the exposed strip is rendered again. It remains an original C implementation built with the native ELKS toolchain. See [0.1 release notes](docs/RELEASE-0.1.md) for exact artifacts, validation and limits. The owner confirms this exact version runs on both the standard HP 200LX and the owner-identified DS HP 200LX, and reports smoother scrolling on the standard HP. This is owner feedback, not an independently captured hardware benchmark. Speed and responsiveness remain outside the first-beta release decision.
+**Version 0.1 — experimental beta, staged privately; final QA remains open.** This release adds display selection, a stable application frame and incremental vertical scrolling: existing pixels move and only the exposed strip is rendered again. It remains an original C implementation built with the native ELKS toolchain. See [0.1 release notes](docs/RELEASE-0.1.md) for exact artifacts, validation and limits. The owner confirms this exact version runs on both the standard HP 200LX and the owner-identified DS HP 200LX, and reports smoother scrolling on the standard HP. This is owner feedback, not an independently captured hardware benchmark. Speed and responsiveness remain outside the first-beta release decision.
 
 ![ELKSWeb 0.1 default welcome page in QEMU CGA](docs/screenshots/0.1/welcome-cga-qemu.png)
 
@@ -24,7 +24,7 @@ The discussion's C++, networking, graphics-dependency and memory concerns guide 
 ## Tested configuration and requirements
 
 - An ELKS system with graphics-capable console interfaces and a working native network stack.
-- 8088-compatible processor target. Earlier candidates were exercised in 86Box with an Intel 8088 at 4.77 MHz and 640 KB RAM. The owner confirms the exact 0.1 executable runs on the standard HP 200LX and DS HP 200LX, with smoother scrolling reported on the standard HP. Installation identities were verified separately from those owner graphics reports. The final exact-0.1 86Box check remains pending; see the release notes.
+- 8088-compatible processor target. Earlier candidates were exercised in 86Box with an Intel 8088 at 4.77 MHz and 640 KB RAM. The owner confirms the exact 0.1 executable runs on the standard HP 200LX and DS HP 200LX, with smoother scrolling reported on the standard HP. Installation identities were verified separately from those owner graphics reports. Exact-0.1 86Box welcome, scrolling and a normal-shell exit passed; an earlier cold-boot exit anomaly remains unresolved. See the release notes.
 - CGA 640×200, color EGA with at least 128 KB video RAM at 640×350, or VGA at 640×480. All browser modes are monochrome. Mode selection and console restoration are exercised in QEMU and Windows 86Box; 0.1-specific results are recorded in the release notes. [CGA capture](docs/screenshots/frogfind-build004-cga-86box.png) · [EGA capture](docs/screenshots/frogfind-build004-ega-86box.png) · [VGA capture](docs/screenshots/frogfind-build004-vga-86box.png).
 - A writable `/tmp` for page caching.
 - Keyboard navigation; PS/2 mouse support exists but was not tested in the 8088 run.
@@ -45,6 +45,17 @@ HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, f
 - Some accented characters are transliterated rather than rendered faithfully.
 - Form fields retain at most 79 UTF-8 bytes; textarea editing is single-line. HTML `maxlength` and `size` semantics are not fully implemented. Form support does not imply modern HTML standards compliance.
 - No claim of complete MicroWeb parity or physical 8088 certification. Publication remains subject to owner approval.
+
+## Future enhancements
+
+Version 0.1 keeps the tested monochrome renderer. Follow-up work under consideration includes:
+
+- **EGA/VGA colour GIF rendering**, while retaining monochrome CGA and HP 200LX output. This requires palette-aware image storage, video-plane drawing, scrolling and cursor handling, plus work to fit the 64 KB code-segment limit. The blue logo artwork is prepared for this future work; it is not the installed 0.1 logo.
+- **Faster page loading and rendering**, with measured reductions in CPU, disk and memory use.
+- **Broader compatibility testing**, including additional ELKS systems, physical 8088 machines and display adapters, and investigation of the remaining 86Box cold-boot exit anomaly.
+- **HTML and input improvements**, including form controls, accented text and clearer handling of document limits.
+
+These are directions, not promised features or dates. JPEG decoding remains outside the planned scope; 0.1 displays GIF pixels and uses JPEG/PNG dimensions for placeholders.
 
 ## Keyboard shortcuts
 
@@ -77,7 +88,7 @@ Without `-video`, ELKSWeb displays a text-console selector before entering graph
 
 The normal runtime package contains the native executable, its default HTML help page, an original GIF logo and required notices. Install the executable as `/bin/elksweb`, the help page as `/root/welcome.htm`, and the logo as `/root/elksweb.gif`; launching `elksweb` without a URL opens the help page.
 
-Corresponding source is supplied separately. The QEMU test image and offline fixtures are optional testing downloads, not runtime requirements. The project-specific `webfrog` and `webnews` launchers are not part of the normal package. Verify the checksums supplied with the chosen artifact. The repository and draft release remain private until owner approval; final packaging and exact-0.1 86Box validation are being completed. The first 86Box welcome-page run had an unresolved exit anomaly; a narrower retry passed. See [the current QA hold](docs/8088-VALIDATION.md#exact-01-follow-up--incomplete).
+Corresponding source is supplied separately. The QEMU test image and offline fixtures are optional testing downloads, not runtime requirements. The project-specific `webfrog` and `webnews` launchers are not part of the normal package. Verify the checksums supplied with the chosen artifact. The repository and release draft remain private. Runtime, corresponding-source and optional test-image archives are provided separately with checksum sidecars. The first 86Box welcome-page run had an unresolved cold-boot exit anomaly; a normal-shell welcome/scroll/exit repeat passed. See [the current QA hold](docs/8088-VALIDATION.md#exact-01-follow-up--incomplete).
 
 See [BUILDING.md](docs/BUILDING.md) for native compilation, optional image packaging and QEMU testing. Emulator boot success must be evaluated separately from slow 8088 behavior.
 

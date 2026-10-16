@@ -712,7 +712,7 @@
     "frogfind.8088retro.com": "Homepage GIF, query, results, article and Back inspected; no visible regression.",
     "68k.news": "Homepage, scrolling, article response and Back inspected; article response displays an extraction error. Article request evidence in the summary is incomplete; successful article reading is not claimed."
   },
-  "hardware_scope": "Exact 0.1 runtime independently exercised in QEMU. Owner confirms exact binary runs on standard HP 200LX and owner-identified DS HP 200LX; smoother scrolling reported on standard HP. Installation/version identity verified separately; no independent physical graphics capture or controlled timing measurement. Exact 0.1 Windows 86Box 8088 run pending; earlier build results remain historical.",
+  "hardware_scope": "Exact 0.1 runtime independently exercised in QEMU. Owner confirms exact binary runs on standard HP 200LX and owner-identified DS HP 200LX; smoother scrolling reported on standard HP. Installation/version identity verified separately; no independent physical graphics capture or controlled timing measurement. Exact 0.1 Windows 86Box welcome/scroll/normal-shell exit pass; original cold-boot exit anomaly and exact-version live-site follow-up remain open. Earlier build results remain historical.",
   "new_blind_comparison_votes": null,
   "speed_responsiveness_release_gate": false,
   "raw_evidence_location": "qa/release-0.1 and qa/welcome-01 in private working copy; HP installation records under parent-project/output/elksweb-hp01 and elksweb-ds01. Raw artifacts are not all tracked in Git or included in release archives.",
@@ -918,8 +918,8 @@
     }
   },
   "exact_0_1_8088": {
-    "status": "pending",
-    "scope": "Root final Windows 86Box run; do not infer completion from earlier build005 evidence."
+    "status": "incomplete; original cold-boot exit anomaly unresolved",
+    "scope": "Exact-binary welcome/scroll/normal-shell exit passed, including pwd returning /root. Original cold-boot autorun sequence and live-site follow-up remain open; see exact_8088_followup."
   },
   "jpeg_decoding_scope": "Explicitly outside version 0.1. GIF pixels render; JPEG/PNG dimensions only are recognized.",
   "welcome_640k_validation": {

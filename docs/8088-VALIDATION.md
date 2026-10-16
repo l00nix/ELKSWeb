@@ -16,7 +16,7 @@ QEMU uses a 486 CPU for general ELKS integration testing. It supplies no 8088 ti
 
 The 77,024-byte executable has SHA256 `5c652079e7cc27884091c9e3b1730fea5d37fa3cbeb690535fed94af16dcfce2` and MD5 `9618c7abec60bc79d5ce539b2516b04c`. Installation/version checks are retained locally in the parent project's `output/elksweb-hp01/` and `output/elksweb-ds01/`; later owner reports confirm use after those records were written. The DS system reported `ELKS0.9.2-dev hp200lx-3.8-beta1`. Its designation alone does not establish a clock frequency.
 
-The final Windows 86Box 8088 run of this exact 0.1 executable is pending. Earlier build005 captures and its approximately eight-minute first-news-viewport observation remain historical evidence for build005, not a 0.1 timing result. The new help page/logo change runtime assets only; they do not change this executable identity. Their refreshed image SHA256 is `3c865e5edb81f67c50b88554ee0d040f07c474423e1a200313925db37c79711d`; default-page QA passes all three QEMU display modes, independently of the pending exact-version 8088 check.
+The exact-version Windows 86Box 8088 follow-up is incomplete; its successful normal-shell sequence and unresolved original cold-boot exit anomaly are detailed below. Earlier build005 captures and its approximately eight-minute first-news-viewport observation remain historical evidence for build005, not a 0.1 timing result. The new help page/logo change runtime assets only; they do not change this executable identity. Their refreshed image SHA256 is `3c865e5edb81f67c50b88554ee0d040f07c474423e1a200313925db37c79711d`; default-page QA passes all three QEMU display modes, independently of the pending exact-version 8088 check.
 
 ## Exact 0.1 follow-up — incomplete
 

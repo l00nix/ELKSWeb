@@ -1,6 +1,6 @@
 # Public-beta preparation
 
-ELKSWeb 0.1 is being prepared for public beta on the strength of scoped native QA, independent visual review and owner-confirmed runs on two HP 200LX systems. The repository and release draft remain private until owner approval. Final packaging checks and the exact-0.1 86Box check remain pending; earlier screenshots or host tests alone do not establish readiness.
+ELKSWeb 0.1 is being prepared for public beta on the strength of scoped native QA, independent visual review and owner-confirmed runs on two HP 200LX systems. The repository and release draft remain private until owner approval. Separate runtime/source/test-image packages carry checksum sidecars and internal manifests. The exact-0.1 86Box cold-boot exit anomaly remains open; successful normal-shell exit checks and earlier screenshots do not establish its cause.
 
 ## Preparation completed in build005
 

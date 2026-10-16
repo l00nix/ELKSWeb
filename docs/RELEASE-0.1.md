@@ -1,6 +1,6 @@
-# ELKSWeb 0.1 — public-beta preparation
+# ELKSWeb 0.1 — experimental beta (private staging)
 
-ELKSWeb is an original C graphical browser for ELKS Linux, built with the native ELKS IA16 toolchain for 8088-compatible processors. Inspired by the ELKS graphical-browser discussion and MicroWeb, it uses native ELKS networking and direct graphics without Microwindows or a C++ runtime. The scoped QA and owner hardware feedback support preparing this version for public beta. The repository and release draft remain private pending owner approval; final packaging checks and the exact-0.1 86Box check are still in progress.
+ELKSWeb is an original C graphical browser for ELKS Linux, built with the native ELKS IA16 toolchain for 8088-compatible processors. Inspired by the ELKS graphical-browser discussion and MicroWeb, it uses native ELKS networking and direct graphics without Microwindows or a C++ runtime. The scoped QA and owner hardware feedback support preparing this version for public beta. The repository and release draft remain private. Runtime, corresponding-source and optional test-image packages are supplied separately. The original cold-boot 86Box exit anomaly remains unresolved; the later normal-shell welcome/scroll/exit sequence passed. This is an experimental beta, not a claim that all QA gates are closed.
 
 ## Included in 0.1
 
@@ -31,7 +31,7 @@ The verified executable is 77,024 bytes with MD5 `9618c7abec60bc79d5ce539b2516b0
 
 ## Validation and identity
 
-Final validation is recorded in `QA-0.1.json` in the browser source documentation. The native application was rebuilt against the prepared toolchain from clean-build001; this was not another fresh compiler/system bootstrap. The validated QEMU image derives from clean-build005 with the new executable, the earlier welcome page and attributed offline fixtures installed. The subsequent default-help/logo packaging refresh does not rebuild or change the executable; its image identity and dedicated welcome-page QA are recorded separately below. Final distribution archive checksums remain pending.
+Final validation is recorded in `QA-0.1.json` in the browser source documentation. The native application was rebuilt against the prepared toolchain from clean-build001; this was not another fresh compiler/system bootstrap. The validated QEMU image derives from clean-build005 with the new executable, the earlier welcome page and attributed offline fixtures installed. The subsequent default-help/logo packaging refresh does not rebuild or change the executable; its image identity and dedicated welcome-page QA are recorded separately below. Each distribution archive has a SHA256 sidecar and an internal file manifest. The executable and test-image identities below remain unchanged by this documentation refresh.
 
 - Executable SHA256: `5c652079e7cc27884091c9e3b1730fea5d37fa3cbeb690535fed94af16dcfce2`.
 - Previously validated QEMU image SHA256 (before the help/logo packaging refresh): `7c51c3df6becacbe2ddbe7eb7d446d67e0d57cff89d1be14531e998d844191f5`.
@@ -45,9 +45,13 @@ Final validation is recorded in `QA-0.1.json` in the browser source documentatio
 - Native display selection, cancellation, unsupported-option handling and console restoration pass.
 - Native history and receive cancellation: 12 checks pass.
 
-All 39 native fixture scenarios pass their request/capture assertions. Download bytes, edited filenames, existing-file protection and recovery after save errors pass. Disk-full testing removes the incomplete file and returns to the welcome page. Live FrogFind mirror search/article/Back and 68k.news homepage/scroll/Back were visually checked. The selected news article displays an upstream extraction error, so successful article reading is not claimed. The independent reviewer inspected 59 frames and recomputed all 54 scroll comparisons without finding a visual regression. Details and evidence limits are recorded in the accompanying QA record. Earlier 8088 Windows 86Box and DOS MicroWeb comparisons remain scoped to their recorded builds. The final Windows 86Box run of this exact 0.1 executable is pending. No new blind preference vote or physical 8088 timing claim is made for 0.1.
+All 39 native fixture scenarios pass their request/capture assertions. Download bytes, edited filenames, existing-file protection and recovery after save errors pass. Disk-full testing removes the incomplete file and returns to the welcome page. Live FrogFind mirror search/article/Back and 68k.news homepage/scroll/Back were visually checked. The selected news article displays an upstream extraction error, so successful article reading is not claimed. The independent reviewer inspected 59 frames and recomputed all 54 scroll comparisons without finding a visual regression. Details and evidence limits are recorded in the accompanying QA record. Earlier 8088 Windows 86Box and DOS MicroWeb comparisons remain scoped to their recorded builds. Exact-version Windows 86Box welcome, scrolling and normal-shell exit passed; the original cold-boot exit anomaly remains open, and exact-version live-site checks in that emulator remain pending. No new blind preference vote or physical 8088 timing claim is made for 0.1.
 
 The refreshed help/logo image passes dedicated QEMU checks in CGA, EGA and VGA: no-URL startup opens `/root/welcome.htm`, the original GIF renders, the third link opens `#keys`, scrolling and Home/End behave correctly, two inversions restore identical pixels, and exit restores the text login screen. Twenty original frames were visually inspected without finding a defect; a separate reviewer inspected 16 frames and found no visual blocker. The full page fits in VGA, so anchor/End movement is correctly clamped. A VGA anchor capture was repeated after the first capture preceded completion of the local reload. This asset-only check does not repeat the baseline 39-case suite. [CGA welcome](screenshots/0.1/welcome-cga-qemu.png) · [Selector](screenshots/0.1/selector-qemu.png).
+
+## Future enhancements
+
+Colour GIF rendering for EGA/VGA is deferred beyond 0.1; CGA and HP 200LX monochrome support will be preserved. Further work may improve page-load efficiency, HTML/input handling and hardware coverage. These are investigation areas without committed delivery dates. The prepared blue artwork is not installed by 0.1, and JPEG decoding remains outside the planned scope. See the README’s future-enhancements section for details.
 
 ## Known limitations
 

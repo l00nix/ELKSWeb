@@ -1,6 +1,6 @@
 # ELKSWeb 0.1 — public-beta preparation
 
-**Version 0.1 is prepared for public beta, with final packaging and the exact-version 86Box check still in progress.** The repository and release draft remain private; publication and any discussion announcement require owner approval. Speed and responsiveness remain excluded from the first-beta decision.
+**Version 0.1 is staged privately as an experimental beta; the original 86Box cold-boot exit anomaly remains open.** The repository and release draft remain private; publication and any discussion announcement require owner approval. Speed and responsiveness remain excluded from the first-beta decision.
 
 The unchanged 77,024-byte executable has SHA256 `5c652079e7cc27884091c9e3b1730fea5d37fa3cbeb690535fed94af16dcfce2`. See [0.1 release notes](RELEASE-0.1.md) for artifact identity, memory limits and validation scope.
 
@@ -14,10 +14,10 @@ The unchanged 77,024-byte executable has SHA256 `5c652079e7cc27884091c9e3b1730fe
 | Live sites | FrogFind mirror homepage/GIF/search/article/Back and 68k.news homepage/scroll/article response/Back reviewed; the selected news article returns an upstream extraction error |
 | Standard HP 200LX | Exact executable identity/version verified; owner confirms it runs and scrolling is smoother |
 | DS HP 200LX | Exact executable identity/version verified on the owner-identified DS system; owner confirms it works |
-| Exact-version 8088 emulator | Final Windows 86Box run pending; older build005 evidence remains below |
-| Normal runtime packaging | Executable, default HTML help, original GIF logo and notices; final archive validation pending. Source is separate, QEMU image/website fixtures optional; no normal-package `webfrog` or `webnews` helpers |
+| Exact-version 8088 emulator | Exact-0.1 welcome/scroll/normal-shell exit pass; original cold-boot exit anomaly and live-site follow-up remain open |
+| Normal runtime packaging | Executable, default HTML help, original GIF logo and notices; separate runtime/source/test-image archives with SHA256 sidecars and internal manifests. Source is separate, QEMU image/website fixtures optional; no normal-package `webfrog` or `webnews` helpers |
 
-The HP and DS identity records are retained locally in the parent project's `output/elksweb-hp01/` and `output/elksweb-ds01/`. Their installation-time “graphics test pending” fields precede the owner's subsequent confirmations. These reports are not independent graphics captures, controlled performance measurements or complete physical-hardware qualification. The help/logo packaging refresh leaves the executable unchanged; its new image hash appears above, separately from the earlier full-suite image in [QA-0.1.json](QA-0.1.json). Distribution archive checksums remain pending. JPEG decoding is explicitly outside 0.1 scope: GIF pixels are supported, while JPEG/PNG dimensions alone are recognized.
+The HP and DS identity records are retained locally in the parent project's `output/elksweb-hp01/` and `output/elksweb-ds01/`. Their installation-time “graphics test pending” fields precede the owner's subsequent confirmations. These reports are not independent graphics captures, controlled performance measurements or complete physical-hardware qualification. The help/logo packaging refresh leaves the executable unchanged; its new image hash appears above, separately from the earlier full-suite image in [QA-0.1.json](QA-0.1.json). Distribution archive checksums are supplied as release-asset sidecars. JPEG decoding is explicitly outside 0.1 scope: GIF pixels are supported, while JPEG/PNG dimensions alone are recognized.
 
 ## Historical build005/006 qualification record
 
