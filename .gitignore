@@ -1,0 +1,11 @@
+build/
+qa/
+reference/
+__pycache__/
+*.pyc
+.DS_Store
+._*
+.env
+.env.*
+*.img
+*.pcap

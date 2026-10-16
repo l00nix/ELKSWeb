@@ -1,0 +1,185 @@
+{
+  "description": "Provenance for the tested candidate; binary and disk images are identified but not distributed in this repository. Browser C/header files are unchanged. Build scripts and documentation were adapted for standalone packaging.",
+  "sources": [
+    {
+      "path": "src/elksweb.h",
+      "sha256": "c631f28b7a8d3e2ea25238840cc9b22eba657648ea5e7fa13417d1b2c9770d42",
+      "bytes": 4602
+    },
+    {
+      "path": "src/html.c",
+      "sha256": "1e09d044479fd0079cf65af65dbd006319328332f7bc68d917a41c63ee265612",
+      "bytes": 65415
+    },
+    {
+      "path": "src/images.c",
+      "sha256": "3950fb6edbe55cca85d9fc9847af22414afd2313f0c12f47c1c683aa4018db86",
+      "bytes": 11472
+    },
+    {
+      "path": "src/latin.h",
+      "sha256": "66d3584f05931d35d1ec3b014d77570ba7eeeed1e891f8f9e45e9b304acfacf4",
+      "bytes": 1736
+    },
+    {
+      "path": "src/main.c",
+      "sha256": "8ae5016674471d6e1bc37c668949bb12010982b5686030772cd86da17ff5b6da",
+      "bytes": 36421
+    },
+    {
+      "path": "src/memory.c",
+      "sha256": "337f6f2758cebc13e3a150b6a38170a3a708ab45dce75d696bdbd77ff8557c9c",
+      "bytes": 6857
+    },
+    {
+      "path": "src/net.c",
+      "sha256": "c24c36e04c7ef6d61f567e2476855c98c6e159bafc35abaac45f285ad8776293",
+      "bytes": 17002
+    },
+    {
+      "path": "src/url.c",
+      "sha256": "ebe9d3161e7cd128221f29d1bd67e47e1f965e5cf0cc4e844a165ce9f0301c66",
+      "bytes": 3466
+    },
+    {
+      "path": "platform/elks_keys.c",
+      "sha256": "d69d097be1389ddc10b20e8c015ed0bba6a80c42206cf0de260660a8e9cf09dc",
+      "bytes": 5026
+    },
+    {
+      "path": "platform/elks_keys.h",
+      "sha256": "88da90d5ee23a8d54f139596c609376a82e044b72289970d48fb57c928ebfb38",
+      "bytes": 507
+    },
+    {
+      "path": "platform/elks_mouse.c",
+      "sha256": "2b89556217a68d19b2aebb4dee376eafc16cb2277d8e4f1c4c3d10d27b77e98e",
+      "bytes": 2984
+    },
+    {
+      "path": "platform/elks_mouse.h",
+      "sha256": "b749f329f5889ffe8b8c57fa32c7a1cae25701ffea85c2a41dd18132e13b73be",
+      "bytes": 432
+    },
+    {
+      "path": "platform/elks_mouse_packet.c",
+      "sha256": "c05fcc623faa95569dbf06de98994b11c42d827f862441551822b9ca739136d4",
+      "bytes": 1373
+    },
+    {
+      "path": "platform/elks_platform.c",
+      "sha256": "2164d0bd024841b9b0e99d76311909653904fe65b36d350bd409207316b3a92a",
+      "bytes": 12672
+    },
+    {
+      "path": "platform/elks_platform.h",
+      "sha256": "279c2827aa784f5f34ae31e8482c791e0a84e07859b588dfd6a5ccb660761271",
+      "bytes": 2397
+    },
+    {
+      "path": "image/dimensions.c",
+      "sha256": "c64a93b167b44d8cf637b73d01e11c4dd7400f87c3951b332c28f56d5c1f4e28",
+      "bytes": 2042
+    },
+    {
+      "path": "image/dimensions.h",
+      "sha256": "1cc01fa7b762a119269354c5eec53c484f39c781980543aae3308c29b6fe2b80",
+      "bytes": 460
+    },
+    {
+      "path": "image/gif.c",
+      "sha256": "211196141725e546cf4cb08e2b7d7771ea0632fdf51ea1291ef020201fedb9dd",
+      "bytes": 10735
+    },
+    {
+      "path": "image/gif.h",
+      "sha256": "9d7b5320ed3e078895f689c721652c949cc279c20f5e32a23964d2803c91384b",
+      "bytes": 1384
+    },
+    {
+      "path": "font/body_font.c",
+      "sha256": "61d626f68babf89946811441c22a019eba8710dfcedbbf554ea6d67ba7399043",
+      "bytes": 19964
+    },
+    {
+      "path": "font/body_font.h",
+      "sha256": "3315d14cae0f97886090dbd39c591582e3aaab066170817892358a33444c4aec",
+      "bytes": 1101
+    },
+    {
+      "path": "font/font.c",
+      "sha256": "a79b188987c8f5644871cb0adc2f6137222e16f74f154b61910c44e4fda88bb8",
+      "bytes": 14288
+    },
+    {
+      "path": "font/font.h",
+      "sha256": "eff5b069c04b729c148dab0cc9bc4ca6232590817982ae351e69bec74f76f5b1",
+      "bytes": 1005
+    }
+  ],
+  "compiler_version": "ia16-elf-gcc (GCC) 6.3.0\nCopyright (C) 2016 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "compiler_commands": [
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c src/html.c -o build/obj/src_html.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c src/images.c -o build/obj/src_images.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c src/main.c -o build/obj/src_main.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c src/memory.c -o build/obj/src_memory.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c src/net.c -o build/obj/src_net.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c src/url.c -o build/obj/src_url.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c platform/elks_keys.c -o build/obj/platform_elks_keys.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c platform/elks_mouse.c -o build/obj/platform_elks_mouse.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c platform/elks_mouse_packet.c -o build/obj/platform_elks_mouse_packet.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c platform/elks_platform.c -o build/obj/platform_elks_platform.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c image/dimensions.c -o build/obj/image_dimensions.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c image/gif.c -o build/obj/image_gif.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c font/body_font.c -o build/obj/font_body_font.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -c font/font.c -o build/obj/font_font.o ",
+    "ia16-elf-gcc -march=i8086 -mtune=i8086 -mcmodel=small -melks-libc -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font -Wl\\,-Map\\,build/elksweb.map build/obj/src_html.o build/obj/src_images.o build/obj/src_main.o build/obj/src_memory.o build/obj/src_net.o build/obj/src_url.o build/obj/platform_elks_keys.o build/obj/platform_elks_mouse.o build/obj/platform_elks_mouse_packet.o build/obj/platform_elks_platform.o build/obj/image_dimensions.o build/obj/image_gif.o build/obj/font_body_font.o build/obj/font_font.o -o build/elksweb "
+  ],
+  "candidate_outputs": {
+    "elksweb": {
+      "sha256": "1089c3198f235ede1adb6ae6e5cdb19be7b97033001221946a48268484f3b224",
+      "bytes": 74992
+    },
+    "elksweb.elf": {
+      "sha256": "14c0a7bba9ac747722a4f2cc090c98624eb0afd80788466b8c260d38ac482ab5",
+      "bytes": 224148
+    },
+    "elksweb.img": {
+      "sha256": "2dced9f6a546fb73d0829dcdeca191cc39c514e7f4093111b8e74d2f6c0d375d",
+      "bytes": 2949120
+    },
+    "elksweb.map": {
+      "sha256": "514370fae8c18c8c21f320fd65bd1c323d0ae5313157ec38510bb8d3d8df8186",
+      "bytes": 229372
+    },
+    "elksweb.elf.dis": {
+      "sha256": "aabcafca56f99684c315ba7a53f7a5431289c917bec61597bda9a38b3f33a72a",
+      "bytes": 2040813
+    },
+    "isa-audit.json": {
+      "sha256": "61e84b2b736319b2a4ee8b4e4fa6bff3d94e6b8b62b5390d010f986d87941576",
+      "bytes": 1333
+    },
+    "stack-usage.txt": {
+      "sha256": "2dc1fcd057339b2a92fe159daa9aa3de8bebe41723b1d24d96573a926701cb79",
+      "bytes": 10451
+    }
+  },
+  "screenshots": [
+    {
+      "path": "docs/screenshots/68k-footer.png",
+      "sha256": "853d4bce3ad94f1f52cfb2d7181d8cdf248a083c00d0b7b7471d9bca839af4d1",
+      "bytes": 6792
+    },
+    {
+      "path": "docs/screenshots/68k-news-86box.png",
+      "sha256": "1007e8cd1292f2150c9cbc87033ac99d7963f1fff42a9a13c5b091245693e79a",
+      "bytes": 7368
+    },
+    {
+      "path": "docs/screenshots/68k-page-down.png",
+      "sha256": "a6f0732d71b390d105b4505f659d19723428d3af3ae4592e5ab55ccc0394e80e",
+      "bytes": 7575
+    }
+  ]
+}

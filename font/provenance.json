@@ -1,0 +1,41 @@
+{
+  "origin": "X.Org font-adobe-75dpi 1.0.4",
+  "source_url": "https://www.x.org/releases/individual/font/font-adobe-75dpi-1.0.4.tar.xz",
+  "license_file": "COPYING",
+  "font_selection": [
+    "helvR08.bdf",
+    "helvB08.bdf"
+  ],
+  "subset": "ASCII 32-126, NBSP alias to space, other bytes question mark",
+  "generation": "python3 font/generate.py",
+  "sha256": {
+    "upstream.tar.xz": "1281a62dbeded169e495cae1a5b487e1f336f2b4d971d92911c59c103999b911",
+    "helvR08.bdf": "51ec71e410939f3336909944ac2a266db245a8b26ddc829d2051a7f632c4382e",
+    "helvB08.bdf": "601c787d794aafef4d50e1eff2d50676deebcfebb9f33d1daf97cbcf63abdc14",
+    "COPYING": "bf6d862672b4fcc86f3f38bc138ad44e52d52207dd8689b8d3701630fc331194",
+    "font.c": "a79b188987c8f5644871cb0adc2f6137222e16f74f154b61910c44e4fda88bb8",
+    "body_font.c": "61d626f68babf89946811441c22a019eba8710dfcedbbf554ea6d67ba7399043"
+  },
+  "horizontal_scale": 2,
+  "line_box_pixels": 10,
+  "italic": "Synthetic oblique: shift each glyph row right by floor((9-row)/4) pixels, maximum 2; preserve advance. No additional font asset.",
+  "body_variant": {
+    "source": "Independent X.Org Adobe/DEC helvR08 BDF glyphs. Original ELKSWeb t/numeral hints. Existing advances retain helvR08/B08-derived dimensions. No reference-browser assets.",
+    "transform": "J trial: preserve established advances, bold, a/t/numeral hints and H small face. Replicate BDF source columns with balanced endpoint allocation for other regular glyphs. Extend isolated contiguous horizontal bars/round shoulders by one available pixel at each end, excluding diagonals and repeated vertical stems. No reference-browser font data.",
+    "generated_sha256": "61d626f68babf89946811441c22a019eba8710dfcedbbf554ea6d67ba7399043",
+    "table_bytes": 2506,
+    "increase_from_previous_bytes": 796,
+    "packing": "190 one-byte advances + 190 unsigned-short offsets +1936 bitmap bytes. Each eight-row glyph uses one byte per row for ink widths<=8, two otherwise. Shared by regular/small/mono rendering.",
+    "generation": "python3 font/generate_body.py",
+    "original_hints_license": "GPL-2.0-or-later; original BDF-derived portions retain font/COPYING."
+  },
+  "small_variant": {
+    "table_bytes": 778,
+    "transform": "Regular six-row face independently derived from helvR08 BDF, retaining body-derived advances. Preserve lowercase counter rows; capitals remove one duplicate interior row; original ELKSWeb six-row numeral and a hints. A separate j descender survives. Packed95offsets+588pixelbytes. Bold keeps the prior shared-body rendering. Italic remains clipped within each advance.",
+    "generation": "python3 font/generate_body.py"
+  },
+  "mono_variant": {
+    "table_bytes": 0,
+    "transform": "Shared packed body glyphs centered/fitted in fixed cells: small8x6, regular9x8, large12x10; bold adds one to advance. One blank trailing column retained."
+  }
+}

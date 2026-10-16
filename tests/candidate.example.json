@@ -1,0 +1,14 @@
+{
+  "image": "../build/elksweb.img",
+  "url_file": "/root/qaurl",
+  "local_fixture_path": "/root/local.htm",
+  "argv": [
+    "qemu-system-i386", "-machine", "isapc", "-cpu", "486", "-m", "8M",
+    "-accel", "tcg,one-insn-per-tb=on", "-display", "none",
+    "-monitor", "none", "-serial", "none",
+    "-qmp", "unix:{qmp},server=on,wait=off",
+    "-drive", "file={image},if=floppy,format=raw,snapshot=on",
+    "-boot", "a", "-netdev", "user,id=net0",
+    "-device", "ne2k_isa,netdev=net0,irq=3,iobase=0x300", "-vga", "std"
+  ]
+}
