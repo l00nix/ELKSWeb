@@ -2,12 +2,14 @@
 
 The repository remains private during preparation. A candidate is not beta-ready merely because a screenshot or host test passes.
 
-## Current work
+## Preparation completed in build005
 
-- Add text-mode display selection before browser graphics, with explicit CLI selection for unattended testing. Exercise every advertised mode and unsupported-adapter handling.
-- Fix local-file history identity and verify local → HTTP → Back → Forward in the native browser.
-- Reduce avoidable URL comparisons, cache seeks and image-free document reparsing; measure the result on the 8088 lane before claiming a performance improvement.
-- Use http://frogfind.8088retro.com/ for live FrogFind QA. Preserve a separately labelled local homepage/image/form fixture for repeatable offline tests.
+- Text-mode display selection before graphics, explicit CLI modes, unavailable-mode handling and clean console restoration.
+- Local-file history identity with native local → HTTP → Back → Forward regression checks.
+- Live FrogFind mirror search/image/article checks plus separately attributed local and fixed HTTP fixtures.
+- A fresh native toolchain/system/application build, static ISA and memory checks, native functional/error-recovery QA, and independent visual review.
+
+The exact final candidate and checkpoint decision are recorded in [STATUS.md](STATUS.md). Performance tuning and physical-hardware testing remain follow-up work. Public visibility and release publication still require the owner's approval.
 
 ## Release gates
 

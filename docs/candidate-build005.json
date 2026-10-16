@@ -1,0 +1,151 @@
+{
+  "candidate": "build005 private beta review",
+  "source_commit": "4fa4907bff0a5a11d82ec26ce503a255e5d9bf74",
+  "elks_commit": "89d09706f17c123f9e0f5ef7cba2eb6745e8478c",
+  "source_file_sha256": {
+    "font/COPYING": "bf6d862672b4fcc86f3f38bc138ad44e52d52207dd8689b8d3701630fc331194",
+    "font/body_font.c": "61d626f68babf89946811441c22a019eba8710dfcedbbf554ea6d67ba7399043",
+    "font/body_font.h": "3315d14cae0f97886090dbd39c591582e3aaab066170817892358a33444c4aec",
+    "font/font.c": "a79b188987c8f5644871cb0adc2f6137222e16f74f154b61910c44e4fda88bb8",
+    "font/font.h": "eff5b069c04b729c148dab0cc9bc4ca6232590817982ae351e69bec74f76f5b1",
+    "font/generate.py": "5a0ca50205a013387e44761ab0ba1acab871a1d71a3084e0c2936f04ee63dcfa",
+    "font/generate_body.py": "ee52f76a1bffcc9de8aebdbf02047e93f08b60114abdbad996ac90089fc95cdf",
+    "font/helvB08.bdf": "601c787d794aafef4d50e1eff2d50676deebcfebb9f33d1daf97cbcf63abdc14",
+    "font/helvR08.bdf": "51ec71e410939f3336909944ac2a266db245a8b26ddc829d2051a7f632c4382e",
+    "font/provenance.json": "5da9264abcc00bbb74d776f8cae6b7fe9e8365c53dc8fc86946fc979ee7b11e7",
+    "image/dimensions.c": "c64a93b167b44d8cf637b73d01e11c4dd7400f87c3951b332c28f56d5c1f4e28",
+    "image/dimensions.h": "1cc01fa7b762a119269354c5eec53c484f39c781980543aae3308c29b6fe2b80",
+    "image/gif.c": "d67d113222a4816c0bc266d90b76eb82b0c25178c83f915ef4e1db62bd17039a",
+    "image/gif.h": "7b6629ead481436a085431966a4a00c7c69040f91fe9e3ba007c32b7610afa5b",
+    "platform/elks_keys.c": "d69d097be1389ddc10b20e8c015ed0bba6a80c42206cf0de260660a8e9cf09dc",
+    "platform/elks_keys.h": "88da90d5ee23a8d54f139596c609376a82e044b72289970d48fb57c928ebfb38",
+    "platform/elks_mouse.c": "2b89556217a68d19b2aebb4dee376eafc16cb2277d8e4f1c4c3d10d27b77e98e",
+    "platform/elks_mouse.h": "b749f329f5889ffe8b8c57fa32c7a1cae25701ffea85c2a41dd18132e13b73be",
+    "platform/elks_mouse_packet.c": "c05fcc623faa95569dbf06de98994b11c42d827f862441551822b9ca739136d4",
+    "platform/elks_platform.c": "f2d9fb927f46792edac223814d7847280a8de4ad3b644d70d364752f63a24450",
+    "platform/elks_platform.h": "a5aebf8ad0ca234e94157de349a1800889d0f054c33722d00237c0d2515a4fdf",
+    "src/elksweb.h": "c631f28b7a8d3e2ea25238840cc9b22eba657648ea5e7fa13417d1b2c9770d42",
+    "src/html.c": "d03103c0580306791b1b52129efa38a36925f0625a95b65f107a82942aead0cd",
+    "src/images.c": "a7efe563e0f6aa73ee9ab415a647b76ff096690a27f60919467b41c7beb170c1",
+    "src/latin.h": "66d3584f05931d35d1ec3b014d77570ba7eeeed1e891f8f9e45e9b304acfacf4",
+    "src/main.c": "72b4e89cc64c3f6c84d98d9ee749353d35178aaa97ce01dd5e7007066b097251",
+    "src/memory.c": "cec9340af373b2771f2333c452e58d0bb91357ff7c2987993f8a8ed5e057f8a2",
+    "src/net.c": "c24c36e04c7ef6d61f567e2476855c98c6e159bafc35abaac45f285ad8776293",
+    "src/url.c": "ebe9d3161e7cd128221f29d1bd67e47e1f965e5cf0cc4e844a165ce9f0301c66"
+  },
+  "clean_build": {
+    "status": "pass",
+    "record": "CLEAN-BUILD-001.md",
+    "image_sha256": "1e0e9e567fdb7ef782d20616be8517c39da89fbf80030acedad234e1a28d60a1",
+    "executable_sha256": "0c2dad923fd4ad715d1e7a32721976af1b251abc33d334383e4ec77facd14d81",
+    "elf_sha256": "c4e51db82912ef5e6dad08f8c9bfd4b9f9e14274559cd6a5fc33aba25f33df79",
+    "source_archive_sha256": "49fd1bdbb9d7b4ed979cf575149f5fc434c9c6990c1c86eff54165f84f77e6ba",
+    "isa_pass": true,
+    "decoded_instructions": 25712,
+    "compiler_warnings": 0
+  },
+  "memory": {
+    "header_bytes": 32,
+    "header_version": 1,
+    "text_bytes": 64064,
+    "data_bytes": 12128,
+    "bss_bytes": 38432,
+    "header_heap_bytes": 0,
+    "header_stack_bytes": 0,
+    "effective_heap_bytes": 4096,
+    "effective_stack_bytes": 4096,
+    "near_static_bytes": 50560,
+    "near_total_before_arguments_environment": 58752,
+    "remaining_before_arguments_environment": 6768,
+    "minimum_argument_environment_reserve": 1024,
+    "memory_gate_pass": true,
+    "note": "Zero header heap/stack fields select ELKS INIT_HEAP/INIT_STACK defaults of 4096 each. argv/envp also consume near space."
+  },
+  "runtime": {
+    "qemu": {
+      "status": "pass_scoped",
+      "record": "QA-BUILD005.json",
+      "cpu": "486",
+      "fixtures_passed": 39,
+      "fields_passed": 8,
+      "history_cancel_passed": 12,
+      "mouse_passed": 3
+    },
+    "windows86box": {
+      "status": "pass_scoped",
+      "cpu_configured": "Intel 8088 4.772728 MHz",
+      "ram_kib": 640,
+      "mode": "CGA640x200",
+      "staged_image_sha256": "aedf8b184f34344ba2bbbf2935d0f1dfc1e371b02aee68458e1a801bf8f2d7ae",
+      "image_changes": "NE2000 boot configuration, local fixture and short QA launchers; browser executable unchanged",
+      "checks": [
+        "interactive CGA selector",
+        "local FrogFind GIF",
+        "keyboard link to local results",
+        "clean console exit and root login",
+        "live68k homepage",
+        "PageDown to later stories"
+      ],
+      "vm_paused": true,
+      "configuration_sha256": "381580515bdbc14e4042741cdfb881c43e17ba6457533aea86ff1fb619da1a70",
+      "independent_visual_review": "Two complete native news frames reviewed; no visual blocker. No timing or new preference vote."
+    }
+  },
+  "comparison": {
+    "blind_content_build004": {
+      "reviewers": 1,
+      "elksweb": 5,
+      "microweb": 0,
+      "tie": 1
+    },
+    "identity_visible_fullframe_build004": {
+      "reviewers": 1,
+      "elksweb": 1,
+      "microweb": 3,
+      "tie": 4
+    },
+    "clean_content_regression": {
+      "equal": 17,
+      "total": 17,
+      "crop": "x0..639,y22..191",
+      "new_vote": false
+    },
+    "actual_DOS_traces": {
+      "identical": 6,
+      "cases": 10,
+      "intentional_differences": 4
+    },
+    "record": "COMPARISON.md"
+  },
+  "limitations": [
+    "Performance excluded from first-beta readiness.",
+    "Physical8088, HP200LX/Hornet and physical adapters untested.",
+    "Live68k tested article returned upstream extraction error in both browsers.",
+    "Static allocation budgets are not peak memory measurements.",
+    "No universal MicroWeb parity or whole-image byte reproducibility claim."
+  ],
+  "release_approved": false,
+  "screenshots": [
+    {
+      "path": "docs/screenshots/68k-news-build005-86box-scrolled.png",
+      "sha256": "3aac73f956fd3ff47f6ce642c7d29546cd17a44f773e988ecf8ba47c8e7353f0"
+    },
+    {
+      "path": "docs/screenshots/68k-news-build005-86box.png",
+      "sha256": "4e08a0a41718ac5fe37219d6a9d4869d9ad26b84a5fb060fa566760fb6f0f709"
+    },
+    {
+      "path": "docs/screenshots/68k-news-build005-qemu.png",
+      "sha256": "08e514d760add342db2aa7336d6286133d7a78dc8d7096e502c9fc56143f942f"
+    },
+    {
+      "path": "docs/screenshots/frogfind-build005-cga-86box.png",
+      "sha256": "753574dd616e78320546d07d9482badb9ba533a9d343a6e5a7c20a02591b5b2f"
+    },
+    {
+      "path": "docs/screenshots/frogfind-build005-qemu.png",
+      "sha256": "9bbaf3ed44da6ed56bd49ed7cd9a691241ea82c6d50771252d0a4a014ffbd92e"
+    }
+  ],
+  "checkpoint": "Scoped first-beta gates pass; private and paused pending owner approval"
+}

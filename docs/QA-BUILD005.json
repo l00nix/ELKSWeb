@@ -1,0 +1,139 @@
+{
+  "reviewed_utc": "2026-10-16T16:46:59.292801+00:00",
+  "candidate_image_sha256": "1e0e9e567fdb7ef782d20616be8517c39da89fbf80030acedad234e1a28d60a1",
+  "source_commit": "4fa4907bff0a5a11d82ec26ce503a255e5d9bf74",
+  "scope": "Independent native local QEMU functional/visual review. This QEMU lane uses486; actual8088 evidence belongs to separate Windows86Box lane. No timing gate, universal parity or physical hardware claim.",
+  "status": "pass_scoped_first_beta_local_gates",
+  "gates": {
+    "fixtures": {
+      "status": "pass",
+      "passed": 39,
+      "total": 39,
+      "evidence": "fixtures/summary.json",
+      "scope": "Required request presence and exact assertions where defined; not all possible behavior."
+    },
+    "fields": {
+      "status": "pass",
+      "passed": 8,
+      "total": 8,
+      "evidence": "fields/summary.json",
+      "scope": "Required request presence and exact assertions where defined; not all possible behavior."
+    },
+    "history_receive_cancel": {
+      "status": "pass",
+      "passed": 12,
+      "total": 12,
+      "checks": {
+        "http_back_to_local_no_request": true,
+        "http_back_to_local_content": true,
+        "local_forward_to_http": true,
+        "backspace": true,
+        "toolbar_forward": true,
+        "branch_discards_forward": true,
+        "failed_back_requested_previous": true,
+        "failed_back_preserves_index": true,
+        "cancel_requested_stalled_response": true,
+        "cancel_preserves_rendered_document": true,
+        "navigation_after_cancel": true,
+        "eight_entry_limit": true
+      },
+      "evidence": "history/result.json",
+      "limitation": "Escape tested during socket input polling only; no parse-cancellation or latency assertion."
+    },
+    "mouse": {
+      "status": "pass",
+      "passed": 3,
+      "total": 3,
+      "evidence": "mouse/result.json"
+    },
+    "display": {
+      "status": "pass",
+      "evidence": "display/result.json",
+      "observations": [
+        "Interactive menu readable; CGA640x200, EGA640x350 and VGA640x480 content and bottom status/chrome in bounds.",
+        "CGA uses halved vertical image geometry; EGA/VGA full-height image. No stripe regression.",
+        "All three restore readable720x400 console; CGA/EGA restoration screenshots share identical hash.",
+        "Selector Q remains text mode; invalid -video reports choose cga, ega or vga then returns to login."
+      ],
+      "limitation": "One common display fixture; exhaustive feature-by-mode coverage not claimed."
+    },
+    "mime_download": {
+      "status": "pass",
+      "evidence": "mime/result.json",
+      "saved_binary_size": 4108,
+      "observations": [
+        "Literal text preserved; GIF decoded; PNG pixel limitation visible.",
+        "Saved binary and edited filename match expected bytes including NUL.",
+        "Existing distinct sentinel preserved; invalid destination shows error; later HTTP navigation succeeds.",
+        "Cancel returns browser; clean console and sync."
+      ]
+    },
+    "disk_full": {
+      "status": "pass",
+      "evidence": "disk-full/result.json",
+      "observations": [
+        "Actual isolated FAT exhaustion removes partial file.",
+        "Visible save failure then local welcome recovery and console restoration."
+      ],
+      "limitation": "Unlink failure message branch established by host injection, not forced on native FAT."
+    },
+    "address_input": {
+      "status": "pass",
+      "evidence": "input/result.json",
+      "observations": [
+        "Mouse link hit, address edit,316-byte address exact.",
+        "Explicit file:/root/welcome.htm fromHTTP shows actual local welcome withoutHTTP.",
+        "Back returns exactHTTP URL; browser exits, relaunches and exits to readable shell."
+      ]
+    },
+    "wide_hover": {
+      "status": "pass",
+      "evidence": "wide/result.json",
+      "observations": [
+        "Rightmost link visible after horizontal scroll; hover footer and exact clicked target agree."
+      ]
+    },
+    "bounded_errors": {
+      "status": "pass",
+      "evidence": "fixtures/candidate/",
+      "observations": [
+        "Truncated body shows Incomplete HTTP body; malformed response shows Invalid HTTP response.",
+        "Large-page end shows Page truncated: memory limit reached rather than silently claiming complete content.",
+        "Auto-column table rendering remains within intended layout."
+      ]
+    },
+    "reference_comparison": {
+      "status": "pass_scoped_with_documented_differences",
+      "evidence": "functional-comparison.json",
+      "exact_traces": 6,
+      "total_cases": 10,
+      "differences": [
+        "select actual value instead of reference label",
+        "textarea retains initial content",
+        "entity decoding and safe serialization",
+        "relative Location redirect resolution"
+      ],
+      "limitation": "Intentional differences mean strict MicroWeb equivalence is not achieved."
+    },
+    "live": {
+      "status": "pass_navigation_with_upstream_content_exception",
+      "evidence": "live/independent-review.json",
+      "mirror_article_pass": true,
+      "news_article_content_pass": false
+    }
+  },
+  "visual_regression": {
+    "evidence": "visual-regression.json",
+    "equal": 17,
+    "total": 17,
+    "scope": "FrogFind content crop x0..639,y22..191 exact to004; full frames retained. No new blind vote."
+  },
+  "runtime_shutdown": {
+    "completed_utc": "2026-10-16T16:46:59.292801+00:00",
+    "lane_a_exit": 0,
+    "lane_b_exit": 0,
+    "process_check": "No qemu-system, run_clean_lane or QA harness process remains; only process-inspection shell/rg matched.",
+    "input_image_sha256_unchanged": "1e0e9e567fdb7ef782d20616be8517c39da89fbf80030acedad234e1a28d60a1"
+  },
+  "release_approval": false
+}

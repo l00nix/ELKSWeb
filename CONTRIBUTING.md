@@ -6,4 +6,4 @@ For a bug report, include the ELKS version, emulator/hardware and CPU speed, gra
 
 Changes should include focused verification appropriate to the behavior. Host tests alone do not establish native correctness or 8088 usability. Record timing and memory separately from functional and visual results. Do not label a screenshot or successful request as full parity.
 
-Current priorities are documented in [STATUS.md](docs/STATUS.md). Public-beta readiness has not been reached.
+Current priorities are documented in [STATUS.md](docs/STATUS.md). The scoped first-beta checks and their limitations are recorded there; publication awaits owner approval.

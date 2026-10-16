@@ -1,29 +1,29 @@
 # Building and running
 
-The application uses ELKS's IA16 GCC toolchain, not the host C compiler or a DOS C++ toolchain. The current private beta-preparation candidate was built with ia16-elf-gcc 6.3.0 and exercised on ELKS 0.9.2-dev. These instructions have not yet been validated as a fresh-machine bootstrap; a self-contained reproducible release recipe remains a beta prerequisite.
+The application uses ELKS's IA16 GCC toolchain, not the host C compiler or a DOS C++ toolchain. The current private beta-preparation candidate was built with ia16-elf-gcc 6.3.0 and exercised on ELKS 0.9.2-dev. The source bootstrap below was validated on 2026-10-16 in a new Ubuntu 22.04 container, including a freshly compiled toolchain, libc, kernel and image. See [the clean-build record](CLEAN-BUILD-001.md) for pins, hashes, the dependency correction and remaining reproducibility limits.
 
 ## Native application
 
 On a Linux build host, prepare an isolated ELKS checkout and build its toolchain, libc and host tools following the [upstream ELKS instructions](https://github.com/ghaerr/elks). The scripts require bash, Python 3, sha256sum, and the ELKS tools `elf2elks`, `objdump86` and `disasm`, in addition to IA16 GCC/binutils.
 
-The recorded build tree was based on ELKS commit `89d09706f17c123f9e0f5ef7cba2eb6745e8478c`. Its generic configuration enabled `CONFIG_CONSOLE_DIRECT`, `CONFIG_KEYBOARD_SCANCODE`, `CONFIG_CHAR_DEV_MEM`, `CONFIG_INET` and `CONFIG_ETH_NE2K`. Direct-console graphics/raw-keyboard ioctls must be available; a serial-only kernel is insufficient. The exact tested configuration is retained as [config/elks-generic.config](config/elks-generic.config). It records the established build environment; a successful fresh-checkout rebuild using it remains pending. The actual ELKS builder directory has no Git metadata, so the commit above is a recorded base rather than a verified clean checkout; local modifications cannot be audited with Git. A fresh rebuild is required before claiming reproducibility.
+The recorded build tree was based on ELKS commit `89d09706f17c123f9e0f5ef7cba2eb6745e8478c`. Its generic configuration enabled `CONFIG_CONSOLE_DIRECT`, `CONFIG_KEYBOARD_SCANCODE`, `CONFIG_CHAR_DEV_MEM`, `CONFIG_INET` and `CONFIG_ETH_NE2K`. Direct-console graphics/raw-keyboard ioctls must be available; a serial-only kernel is insufficient. The exact tested configuration is retained as [config/elks-generic.config](config/elks-generic.config). The clean validation used a verified checkout of that commit, with no upstream source changes before packaging; its configuration remained byte-identical during the system build. Packaging then applied the documented browser startup and filesystem changes.
 
-## Clean-checkout validation procedure (pending)
+## Clean-checkout validation procedure
 
-Use a separate disposable Linux VM or container with its own filesystem, CPU allocation and output directory. Do not mount the established builder's ELKS checkout or `cross/` directory writable, or reuse its generated libc, headers, kernel, root template or disk images. A second directory on the same busy builder still competes for its CPU and disk. The following is an audited procedure, **not a claim that a clean build has passed**.
+Use a separate disposable Linux VM or container with its own filesystem, CPU allocation and output directory. Do not mount the established builder's ELKS checkout or `cross/` directory writable, or reuse its generated libc, headers, kernel, root template or disk images. A second directory on the same busy builder still competes for its CPU and disk. The following procedure was exercised by the clean-build validation, with the required `xxd` package added after the first attempt exposed its absence.
 
-The pinned ELKS tree's `BUILD.md` and CI use Ubuntu 22.04 and require a host C/C++ build environment, Bash, Git, wget, Python 3, texinfo, ncurses development headers, libelf development headers, ncompress, bison, flex and SDL2 development headers. Also provide `file`, coreutils, tar, gzip, bzip2 and mtools; QEMU is needed only for subsequent runtime checks. On a disposable Ubuntu 22.04 host the corresponding package preparation is:
+The pinned ELKS tree's `BUILD.md` and CI use Ubuntu 22.04 and require a host C/C++ build environment, Bash, Git, wget, Python 3, texinfo, ncurses development headers, libelf development headers, ncompress, bison, flex and SDL2 development headers. Also provide `file`, coreutils, tar, gzip, bzip2, mtools and xxd (used to generate bootblock headers); QEMU is needed only for subsequent runtime checks. On a disposable Ubuntu 22.04 host the corresponding package preparation is:
 
 ```sh
 sudo apt-get update
 sudo apt-get install build-essential git wget ca-certificates python3 file \
   texinfo libncurses5-dev libelf-dev ncompress bison flex libsdl2-dev \
-  mtools bzip2
+  mtools bzip2 xxd
 ```
 
 Record the host image digest or OS release and installed package versions. Host packages and downloaded archive checksums are not currently locked by this repository. The ELKS commit pins IA16 GCC source at `ca893320926dc93552390b892a202e9373d040c0`, binutils at `69e12ea2c125ff830580abbe4699d35ba002148b`, emu86 at `16dfcf0d68dccf9211a575c2a6ff90d5a192dd61`, and GMP/MPFR/MPC at 6.1.2/3.1.5/1.0.3. Its toolchain builder downloads these inputs; record SHA256 values of the resulting `cross/dist/` archives. No OpenWatcom or external ELKS applications are needed for this recipe.
 
-First commit the intended ELKSWeb candidate and set `ELKSWEB_REV` to that full commit ID. The private repository must be readable by the validation host. A clone contains committed files only; current working-tree edits are not a clean-checkout input. Run the following in Bash, keeping the fresh paths free of spaces because upstream ELKS make rules assume that:
+First commit the intended ELKSWeb candidate and set `ELKSWEB_REV` to that full commit ID. The private repository must be readable by the validation host. A clone contains committed files only; current working-tree edits are not a clean-checkout input. If the build host cannot authenticate to the private repository, create a bundle with `git bundle create browser.bundle HEAD`, retain its SHA256, transfer it privately, and substitute that file for the browser clone URL below. Verify the checked-out commit with `git rev-parse HEAD`; the bundle must contain the intended commit. Run the following in Bash, keeping the fresh paths free of spaces because upstream ELKS make rules assume that:
 
 ```sh
 set -euo pipefail
@@ -42,6 +42,7 @@ git -C "$repro_root/elks" checkout --detach 89d09706f17c123f9e0f5ef7cba2eb6745e8
   make -C tools all > "$repro_root/logs/cross.log" 2>&1
   make defconfig > "$repro_root/logs/config.log" 2>&1
   cp "$repro_root/browser/docs/config/elks-generic.config" .config
+  cp .config "$repro_root/logs/config.before"
   make all > "$repro_root/logs/system.log" 2>&1
   cp .config "$repro_root/logs/config.after"
 )
@@ -50,14 +51,14 @@ export ELKSWEB_SOURCE="$repro_root/browser"
 export LC_ALL=C TZ=UTC
 cd "$ELKSWEB_SOURCE"
 bash toolchain/build-app.sh > "$repro_root/logs/browser.log" 2>&1
-ELKSWEB_VIDEO=cga bash toolchain/package-image.sh > "$repro_root/logs/image.log" 2>&1
+bash toolchain/package-image.sh > "$repro_root/logs/image.log" 2>&1
 ```
 
-`make defconfig` is intentional: it creates the generated keyboard configuration include needed by a pristine ELKS tree, before our saved configuration replaces its defaults. Copying `.config` then immediately running `make all` can otherwise fail on that missing include. Do not substitute upstream `build.sh auto`: it selects its own configurations and later builds other architectures. The toolchain and system stages above build and install ELKS libc and headers into this checkout's `cross/`, and produce the native `elf2elks`, `objdump86`, `disasm`, boot blocks and image prerequisites.
+`make defconfig` is intentional: it creates the generated keyboard configuration include needed by a pristine ELKS tree, before our saved configuration replaces its defaults. Copying `.config` then immediately running `make all` can otherwise fail on that missing include. If recovering from an earlier missing-`xxd` failure, run `make -C bootblocks clean` after installing it: that failure can leave an empty `mbr_autogen.c` beside an apparently current `mbr.bin`. Do not substitute upstream `build.sh auto`: it selects its own configurations and later builds other architectures. The toolchain and system stages above build and install ELKS libc and headers into this checkout's `cross/`, and produce the native `elf2elks`, `objdump86`, `disasm`, boot blocks and image prerequisites.
 
 Review any configuration changes in `logs/config.after` against the saved input; retain both, the source revisions, logs, tool versions, archive checksums, browser executable/ELF hashes, map and ISA/memory reports. Verify that compiler and native-tool paths resolve inside the fresh checkout. Then boot the fresh image through the native display/history/form/image checks. A successful build alone is not a runtime pass. Repeat in a second empty workspace to assess byte equality of the browser executable.
 
-Whole-image byte reproducibility is a separate unresolved gate: the pinned ELKS kernel embeds the build date in `compiler-generated.h`, while FAT packaging preserves source file modification times and creates metadata. Setting `SOURCE_DATE_EPOCH` alone does not remove the kernel's explicit `date` command. A differing image hash therefore needs diagnosis, not an automatic claim of failure or reproducibility. The current release gate requires a demonstrated clean build and tested image; no byte-identical image claim is made.
+Whole-image byte equality is an optional reproducibility check, not a first-beta release gate: the pinned ELKS kernel embeds the build date in `compiler-generated.h`, while FAT packaging preserves source file modification times and creates metadata. Setting `SOURCE_DATE_EPOCH` alone does not remove the kernel's explicit `date` command. A differing image hash therefore needs diagnosis, not an automatic claim of failure or reproducibility. The current release gate requires a demonstrated clean build and tested image; no byte-identical image claim is made.
 
 ## Building against an already prepared ELKS tree
 
@@ -116,7 +117,7 @@ See the fixture [instructions](../tests/fixtures/frogfind/README.txt), [provenan
 
 ## 86Box 8088 configuration
 
-The historical candidate was demonstrated with the following setup; the current candidate still needs its 8088 timing and navigation rerun. The setup uses 86Box 4.2.1 build 6130, IBM XT (1986), Intel 8088 at 4.772728 MHz, 640 KB RAM, CGA, a Monster FDC with Multi-Floppy BIOS 2.7, and a 2.88 MB drive A. BIOS setup selects type 6 for logical/physical drive 0, disables other drives, and uses the Floppy BIOS IPL. Obtain required ROMs separately; none are bundled.
+Clean build005 passed CGA startup selection, local FrogFind GIF/link navigation, console restoration, live 68k.news rendering and Page Down in the following setup. Build004 separately exercised EGA and VGA; clean005 repeated all three modes in QEMU. Speed and responsiveness are excluded from this first-beta decision. The setup uses 86Box 4.2.1 build 6130, IBM XT (1986), Intel 8088 at 4.772728 MHz, 640 KB RAM, CGA, a Monster FDC with Multi-Floppy BIOS 2.7, and a 2.88 MB drive A. BIOS setup selects type 6 for logical/physical drive 0, disables other drives, and uses the Floppy BIOS IPL. Obtain required ROMs separately; none are bundled.
 
 Network: NE2000 Compatible 8-bit, SLiRP, I/O 0x300, IRQ 3; disable conflicting serial ports. Guest address 10.0.2.15, gateway 10.0.2.2, mask 255.255.255.0. In a separate 86Box image copy, set:
 
@@ -137,7 +138,7 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 python3 -m unittest discover -s platform/tests -p 'test_*.py'
 ```
 
-The latest full `tests/` run passed 254 tests using the bundled Python environment with Pillow available. The display tests include actual driver memory operations against simulated BIOS/console I/O, all three framebuffer layouts, clipped drawing/cursor restoration, unsupported adapters, menu cancellation and image geometry. Nine driver scenarios also passed ASan/UBSan.
+The latest full `tests/` run passed 264 tests using the bundled Python environment with Pillow available. The display tests include actual driver memory operations against simulated BIOS/console I/O, all three framebuffer layouts, clipped drawing/cursor restoration, unsupported adapters, menu cancellation and image geometry. Nine driver scenarios also passed ASan/UBSan.
 
 Host tests do not validate 16-bit ABI, far pointers or 8088 timing. For actual-reference comparison, see [tests/README.md](../tests/README.md). Supply a separately obtained MicroWeb reference image explicitly; it is not bundled.
 

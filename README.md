@@ -4,11 +4,11 @@ An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation; MicroWeb is the visual and behavioral comparison reference.
 
-**Private beta preparation — not ready for public beta.** The current candidate adds display selection and fixes local-file history. Native QEMU checks pass; clean-build and remaining functional validation are pending. Speed and responsiveness are accepted limitations for the first beta, not release blockers. See [known issues and test evidence](docs/STATUS.md).
+**Private beta candidate — awaiting owner review.** The current candidate includes display selection and corrected local-file history. A fresh native ELKS build and the scoped final-image QEMU functional, recovery and visual gates pass. The final 8088 emulator run also passes local navigation, live news rendering and scrolling. Speed and responsiveness are accepted limitations for the first beta, not release blockers. See [known issues and test evidence](docs/STATUS.md).
 
-![ELKSWeb displaying live 68k.news on an emulated 8088](docs/screenshots/68k-news-build003-86box.png)
+![ELKSWeb displaying live 68k.news on an emulated 8088](docs/screenshots/68k-news-build005-86box.png)
 
-Build003: actual 640×200 CGA framebuffer from Windows 86Box, 16 October 2026. Intel 8088 at 4.77 MHz, 640 KB RAM. The first live 68k.news viewport was first observed roughly 5–9 minutes after launch; Page Down responded and completed by the next observation. This is a documented first-beta limitation. Build004 subsequently fixes reduced GIF rendering; its [latest 68k.news capture](docs/screenshots/68k-news-build004-qemu.png) and [FrogFind mirror capture](docs/screenshots/frogfind-build004-qemu.png) are from QEMU, not 8088 timing tests. Earlier [scrolled view](docs/screenshots/68k-page-down.png) and [footer](docs/screenshots/68k-footer.png) remain historical evidence.
+Build005: actual 640×200 CGA framebuffer from Windows 86Box, 16 October 2026, captured at 16:55 UTC. Configured Intel 8088 at 4.77 MHz, 640 KB RAM. The first complete live 68k.news viewport was observed roughly eight minutes after launch; [Page Down reached the next stories](docs/screenshots/68k-news-build005-86box-scrolled.png). This is an observation, not a controlled benchmark; speed is excluded from the first-beta decision. The [QEMU news capture](docs/screenshots/68k-news-build005-qemu.png) and [FrogFind mirror capture](docs/screenshots/frogfind-build005-qemu.png) are separate integration evidence. See the [8088 validation scope](docs/8088-VALIDATION.md), including the guest CPU-label discrepancy.
 
 ## Design
 
@@ -35,13 +35,14 @@ HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, f
 
 ## Limitations
 
-- 8088 page loads remain slow: build003 took roughly 5–9 minutes to the first live news viewport. Source-cache and parsing improvements are implemented; build004 timing and controlled same-content benchmarks remain pending.
-- Local-file history is fixed and passed nine native QEMU checks; broader regression and resource-failure coverage remain release gates.
+- 8088 page loads remain slow: the build005 live news viewport was observed roughly eight minutes after launch. Controlled same-content benchmarks and responsiveness improvements are deferred follow-up work.
+- Local-file history is fixed and passed nine native QEMU checks; the final-image regression and scoped resource-failure checks also pass. Physical hardware and exhaustive feature combinations remain untested.
 - HTTP only; no native TLS, CSS or JavaScript. `HTTP_PROXY` is supported, but HTTPS conversion requires an external service and is not provided here.
 - Adapter detection is conservative: unsupported or unrecognized modes are rejected. EGA image aspect correction is approximate, and displayed images retain a 200-row limit in every mode.
 - Large or complex pages can exceed fixed layout limits. HTML source is capped at 120 KB; layout at 24 KB of text, 1,024 runs and 256 links.
 - Some accented characters are transliterated rather than rendered faithfully.
-- No claim of complete MicroWeb parity, physical 8088 certification or public-beta readiness.
+- Form fields retain at most 79 UTF-8 bytes; textarea editing is single-line. HTML `maxlength` and `size` semantics are not fully implemented. Form support does not imply modern HTML standards compliance.
+- No claim of complete MicroWeb parity or physical 8088 certification. Publication remains subject to owner approval.
 
 ## Keyboard shortcuts
 
@@ -85,7 +86,7 @@ These projects are credited for their respective work; no endorsement or affilia
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). First-beta priorities are completing current-candidate visual and functional review, resource-failure validation, and a clean build/install check. Speed and responsiveness improvements are follow-up work and do not gate the first public beta. The repository remains private during this work.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). The scoped candidate visual, functional, resource-recovery and clean-build checks are recorded in STATUS; broader compatibility testing remains valuable. Speed and responsiveness improvements are follow-up work and do not gate the first public beta. The repository remains private during this work.
 
 ## License and attribution
 
