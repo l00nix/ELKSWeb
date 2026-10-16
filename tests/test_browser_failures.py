@@ -29,6 +29,7 @@ class BrowserFailures(unittest.TestCase):
         for name in ('qa_browser_status','qa_browser_current','qa_title','qa_link'):
             getattr(cls.lib,name).restype=C.c_char_p
         cls.lib.ew_image_lookup.argtypes=[C.c_char_p,C.c_void_p,C.c_void_p]
+        cls.lib.qa_run_data.restype=C.c_void_p
         cls.home=folder/'home.htm'
         cls.home.write_bytes(b'<title>Safe home</title><p>Retained page</p><a href="next.htm">Next</a>')
         cls.next=folder/'next.htm';cls.next.write_bytes(b'<title>Next page</title><p>Recovered</p>')
@@ -63,9 +64,11 @@ class BrowserFailures(unittest.TestCase):
         self.assertEqual(self.lib.qa_title(),b'Next page')
         self.lib.qa_browser_back();self.assertEqual(self.lib.qa_title(),b'Safe home')
 
+    def binary_response(self):
+        return b'HTTP/1.0 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: '+str(len(self.payload)).encode()+b'\r\n\r\n'+self.payload
+
     def binary(self):
-        response=b'HTTP/1.0 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: '+str(len(self.payload)).encode()+b'\r\n\r\n'+self.payload
-        server=OneHTTP(response)
+        server=OneHTTP(self.binary_response())
         try:self.assertEqual(self.lib.qa_browser_load(server.url.encode()+b'/download.bin'),0)
         finally:server.close()
         self.assertTrue(self.lib.qa_browser_download_open())
@@ -131,13 +134,89 @@ class BrowserFailures(unittest.TestCase):
             self.assertNotIn(b'removed',self.lib.qa_browser_status())
         self.lib.qa_browser_cancel_download();self.recover()
 
-    def test_save_cache_read_failure_removes_file_and_recovers(self):
-        self.binary();self.lib.qa_io_reset(8)
-        with tempfile.TemporaryDirectory(prefix='ew-save-') as folder:
-            path=pathlib.Path(folder)/'out.bin'
-            self.lib.qa_browser_save(os.fsencode(path),0,0)
-            self.assertFalse(path.exists())
-        self.lib.qa_browser_cancel_download();self.recover()
+    def test_save_cache_read_failure_requires_refetch_then_saves_exactly(self):
+        server=OneHTTP([self.binary_response(),self.binary_response()])
+        server.sock.settimeout(2)
+        url=server.url.encode()+b'/download.bin'
+        try:
+            self.assertEqual(self.lib.qa_browser_load(url),0)
+            self.assertTrue(self.lib.qa_browser_download_open())
+            self.lib.qa_io_reset(8)
+            with tempfile.TemporaryDirectory(prefix='ew-save-') as folder:
+                path=pathlib.Path(folder)/'out.bin'
+                self.lib.qa_browser_save(os.fsencode(path),0,0)
+                self.assertFalse(path.exists())
+                self.assertTrue(self.lib.qa_browser_download_open())
+                # The cache error is sticky: clearing the fault does not make
+                # the already damaged resource safe to save in this dialog.
+                self.lib.qa_io_reset(0)
+                other=pathlib.Path(folder)/'retry.bin'
+                self.lib.qa_browser_save(os.fsencode(other),0,0)
+                self.assertFalse(other.exists())
+                self.assertIn(b'incomplete file removed',self.lib.qa_browser_status())
+                self.assertEqual(len(server.requests),1)
+                self.lib.qa_browser_cancel_download()
+                self.assertFalse(self.lib.qa_browser_download_open())
+                self.assertEqual(self.lib.qa_browser_load(url),0)
+                self.assertTrue(self.lib.qa_browser_download_open())
+                self.lib.qa_browser_save(os.fsencode(path),0,0)
+                self.assertEqual(path.read_bytes(),self.payload)
+                self.assertFalse(self.lib.qa_browser_download_open())
+            self.assertEqual(len(server.requests),2)
+            self.assertEqual([r.split(b'\r\n',1)[0] for r in server.requests],
+                             [b'GET /download.bin HTTP/1.0']*2)
+        finally:server.close()
+        self.recover()
+
+    def test_history_slot_allocation_failure_preserves_navigation(self):
+        before=self.lib.qa_allocator_live()
+        # Document buffers and URL bank are already retained from home;
+        # loading this text-only page next allocates only its history slot.
+        self.lib.qa_allocator_reset(1)
+        self.assertEqual(self.lib.qa_browser_load(os.fsencode(self.next)),1)
+        self.assertEqual(self.lib.qa_title(),b'Next page')
+        self.assertIn(b'History unavailable',self.lib.qa_browser_status())
+        self.assertEqual(self.lib.qa_browser_history_count(),1)
+        self.assertEqual(self.lib.qa_allocator_live(),before)
+        self.lib.qa_browser_back()
+        self.assertEqual(self.lib.qa_title(),b'Safe home')
+        self.assertEqual(self.lib.qa_browser_current(),os.fsencode(self.home))
+        self.lib.qa_allocator_reset(0)
+        self.assertEqual(self.lib.qa_browser_load(os.fsencode(self.next)),1)
+        self.assertEqual(self.lib.qa_browser_history_count(),2)
+        with tempfile.TemporaryDirectory(prefix='ew-history-') as folder:
+            last=pathlib.Path(folder)/'last.htm';last.write_bytes(b'<title>Last page</title>Last')
+            self.assertEqual(self.lib.qa_browser_load(os.fsencode(last)),1)
+            self.assertEqual(self.lib.qa_browser_history_count(),3)
+            self.lib.qa_browser_back();self.assertEqual(self.lib.qa_title(),b'Next page')
+            self.lib.qa_browser_back();self.assertEqual(self.lib.qa_title(),b'Safe home')
+
+    def test_embedded_gif_allocation_failure_keeps_text_and_allows_retry(self):
+        gif=ROOT/'tests/fixtures/frogfind/frog.gif'
+        with tempfile.TemporaryDirectory(prefix='ew-embedded-') as folder:
+            page=pathlib.Path(folder)/'embedded.htm'
+            page.write_bytes(b'<title>Embedded image</title><p>Before embedded</p><img src="'+
+                             os.fsencode(gif)+b'" alt="Frog"><p>After embedded</p><a href="'+
+                             os.fsencode(self.next)+b'">Continue</a>')
+            self.assertEqual(self.lib.qa_browser_load(os.fsencode(page)),1)
+            self.assertGreaterEqual(self.lib.ew_image_lookup(os.fsencode(gif),None,None),0)
+            scratch=set(pathlib.Path('/tmp').glob(f'ei{os.getpid()&65535:04x}*.gif'))
+            # Reload reuses document/history storage. Embedded URL and
+            # compressed bytes allocate first, then decoder pixels fail.
+            self.lib.qa_allocator_reset(3)
+            self.assertEqual(self.lib.qa_browser_load(os.fsencode(page)),1)
+            self.assertLess(self.lib.ew_image_lookup(os.fsencode(gif),None,None),0)
+            text=b''.join(C.string_at(self.lib.qa_run_data(i),self.lib.qa_run_length(i))
+                          for i in range(self.lib.qa_runs()) if self.lib.qa_run_kind(i)==0)
+            self.assertIn(b'Before embedded',text);self.assertIn(b'After embedded',text)
+            self.assertEqual(self.lib.qa_link(0),os.fsencode(self.next))
+            self.assertEqual(set(pathlib.Path('/tmp').glob(f'ei{os.getpid()&65535:04x}*.gif')),scratch)
+            self.lib.qa_allocator_reset(0)
+            self.assertEqual(self.lib.qa_browser_load(os.fsencode(self.next)),1)
+            self.assertEqual(self.lib.qa_title(),b'Next page')
+            self.lib.qa_browser_back()
+            self.assertEqual(self.lib.qa_title(),b'Embedded image')
+            self.assertGreaterEqual(self.lib.ew_image_lookup(os.fsencode(gif),None,None),0)
 
     def test_first_document_allocation_failure_allows_retry(self):
         for fault in (1,2):
@@ -162,7 +241,7 @@ class BrowserFailures(unittest.TestCase):
                 self.assertEqual(self.lib.qa_browser_load(os.fsencode(self.next)),1)
                 self.assertEqual(self.lib.qa_title(),b'Next page')
 
-    def test_image_allocation_failures_are_explicit_and_recoverable(self):
+    def test_direct_image_allocation_failures_are_explicit_and_recoverable(self):
         gif=ROOT/'tests/fixtures/frogfind/frog.gif'
         for fault in range(1,6):
             self.lib.qa_allocator_reset(fault)
