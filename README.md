@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="artwork/elksweb-wordmark-blue-gold.png" alt="ELKSWeb logo" width="640">
+  <img src="artwork/elksweb-wordmark-yellow-globe.png" alt="ELKSWeb logo" width="640">
 </p>
 
 # ELKSWeb 0.1
