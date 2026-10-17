@@ -12,6 +12,8 @@ ELKSWeb is an original C graphical browser for ELKS Linux, built with the native
 
 ## Installation and testing
 
+For a download-only installation with no compiler, follow [Install ELKSWeb from a release](INSTALL.md). It covers the runtime package, standalone executable, host checksum verification, transfer destinations, upgrades and HP 200LX startup.
+
 Read the package's `README.txt`, then verify it with `sha256sum -c SHA256SUMS`.
 
 For an existing ELKS installation, install the supplied executable as `/bin/elksweb`, `share/welcome.htm` as `/root/welcome.htm`, and `share/elksweb.gif` as `/root/elksweb.gif`; retain the accompanying notices. A graphics-capable console and writable `/tmp` are required. HTTP browsing additionally requires configured native ELKS networking. Launching without a URL opens the default help page. Neither offline website fixtures nor the project's `webfrog`/`webnews` launchers are needed.

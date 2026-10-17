@@ -84,13 +84,29 @@ Without `-video`, ELKSWeb displays a text-console selector before entering graph
 
 `--version` prints the version without entering graphics. `-noimages` disables image loading. It does not establish a performance target. EMS and XMS options are not implemented.
 
-## Getting started and building
+## How to install a release
 
-The normal runtime package contains the native executable, its default HTML help page, an original GIF logo and required notices. Install the executable as `/bin/elksweb`, the help page as `/root/welcome.htm`, and the logo as `/root/elksweb.gif`; launching `elksweb` without a URL opens the help page.
+**No compiler is needed.** ELKSWeb runs on an existing compatible ELKS installation with a graphics console and writable `/tmp`; it does not install ELKS itself. Download the files using a modern computer: GitHub uses HTTPS, which ELKSWeb cannot access directly. The repository and release draft are currently private, so access requires an authorized GitHub account.
 
-Corresponding source is supplied separately. The QEMU test image and offline fixtures are optional testing downloads, not runtime requirements. The project-specific `webfrog` and `webnews` launchers are not part of the normal package. Verify the checksums supplied with the chosen artifact. The repository and release draft remain private. Runtime, corresponding-source and optional test-image archives are provided separately with checksum sidecars. The first 86Box welcome-page run had an unresolved cold-boot exit anomaly; a normal-shell welcome/scroll/exit repeat passed. See [the current QA hold](docs/8088-VALIDATION.md#exact-01-follow-up--incomplete).
+1. Open [Releases](https://github.com/l00nix/ELKSWeb/releases) and expand the 0.1 **Assets** list.
+2. For a first installation, download **`ELKSWeb-0.1-runtime.tar.gz`** and its `.sha256` file. It includes the compiled browser, welcome HTML, GIF logo and notices. Download **`elksweb-0.1`** and its `.sha256` instead if you only need the executable to update an existing installation.
+3. Verify the checksum on the modern computer, then extract the runtime archive there. Transfer files to the ELKS disk using your existing binary-safe serial transfer, network transfer or mounted-disk workflow. The [installation guide](docs/INSTALL.md) gives checksum commands and the exact source/destination file list.
+4. Stage the executable as `/root/ew-new`. For a first installation, also place the welcome page at `/root/welcome.htm`, logo at `/root/elksweb.gif` and logo provenance at `/root/logo-src.txt`; retain the supplied notices. Exit any running browser, then run these commands **on the ELKS graphics console as root**:
 
-See [BUILDING.md](docs/BUILDING.md) for native compilation, optional image packaging and QEMU testing. Emulator boot success must be evaluated separately from slow 8088 behavior.
+```sh
+cp /root/ew-new /bin/elksweb
+chmod 755 /bin/elksweb
+elksweb --version
+elksweb
+```
+
+The version should report **0.1**. Choose a detected display mode; the local welcome page should open without a network connection. Escape exits. For online browsing, configure ELKS networking first, then try `elksweb http://68k.news/`.
+
+On the tested HP 200LX ELKS 3.8 beta 1 setup, run `export ELKSWEB_COOKED_KEYS=1` before launching the browser. Graphics appear on the machine's own screen, not in the serial terminal. See [full installation, upgrade and troubleshooting instructions](docs/INSTALL.md).
+
+The source archive and QEMU test image are separate optional downloads. Neither offline website fixtures nor `webfrog`/`webnews` launchers are needed for normal installation. The first 86Box cold-boot exit anomaly remains unresolved; see [validation status](docs/8088-VALIDATION.md#exact-01-follow-up--incomplete).
+
+For building from source or emulator testing, see [BUILDING.md](docs/BUILDING.md).
 
 ## Test sites and related projects
 
