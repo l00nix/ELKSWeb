@@ -1,6 +1,6 @@
-# ELKSWeb 0.1 — experimental beta (private staging)
+# ELKSWeb 0.1 — experimental beta
 
-ELKSWeb is an original C graphical browser for ELKS Linux, built with the native ELKS IA16 toolchain for 8088-compatible processors. Inspired by the ELKS graphical-browser discussion and MicroWeb, it uses native ELKS networking and direct graphics without Microwindows or a C++ runtime. The scoped QA and owner hardware feedback support preparing this version for public beta. The repository and release draft remain private. Runtime, corresponding-source and optional test-image packages are supplied separately. The original cold-boot 86Box exit anomaly remains unresolved; the later normal-shell welcome/scroll/exit sequence passed. This is an experimental beta, not a claim that all QA gates are closed.
+ELKSWeb is an original C graphical browser for ELKS Linux, built with the native ELKS IA16 toolchain for 8088-compatible processors. Inspired by the ELKS graphical-browser discussion and MicroWeb, it uses native ELKS networking and direct graphics without Microwindows or a C++ runtime. The scoped QA and owner hardware feedback informed this experimental public beta. The repository and release downloads are public. Runtime, corresponding-source and optional test-image packages are supplied separately. The original cold-boot 86Box exit anomaly remains unresolved; the later normal-shell welcome/scroll/exit sequence passed. This is an experimental beta, not a claim that all QA gates are closed.
 
 ## Included in 0.1
 
@@ -63,7 +63,7 @@ Scrolling now avoids repeated drawing, but page loading and other operations can
 
 Optional offline FrogFind fixtures use fixed sample results with their retained license and provenance. They are separate from the normal runtime package. The default help page may link to live sites; the runtime package does not bundle captured news articles. No MicroWeb executable, proprietary BIOS ROM or physical-disk writing tool is included.
 
-The repository and release remain private. Public publication and a discussion announcement await owner approval.
+The repository and [0.1 experimental prerelease](https://github.com/l00nix/ELKSWeb/releases/tag/v0.1) are public. The discussion announcement remains a draft.
 
 ### Current final-QA hold
 

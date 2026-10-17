@@ -6,7 +6,7 @@ You need a graphics-capable ELKS console, a writable `/tmp`, and CGA, supported 
 
 ## 1. Download on a modern computer
 
-Open [ELKSWeb releases](https://github.com/l00nix/ELKSWeb/releases), select 0.1 and expand **Assets**. GitHub requires HTTPS, so use a modern computer to download, then transfer the files to ELKS. While the repository and release draft remain private, only authorized GitHub accounts can access them.
+Open [ELKSWeb releases](https://github.com/l00nix/ELKSWeb/releases), select 0.1 and expand **Assets**. GitHub requires HTTPS, so use a modern computer to download, then transfer the files to ELKS. The [0.1 experimental prerelease](https://github.com/l00nix/ELKSWeb/releases/tag/v0.1) and its downloads are public.
 
 | Download | Use |
 | --- | --- |

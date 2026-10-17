@@ -88,7 +88,7 @@ Without `-video`, ELKSWeb displays a text-console selector before entering graph
 
 ## How to install a release
 
-**No compiler is needed.** ELKSWeb runs on an existing compatible ELKS installation with a graphics console and writable `/tmp`; it does not install ELKS itself. Download the files using a modern computer: GitHub uses HTTPS, which ELKSWeb cannot access directly. The repository and release draft are currently private, so access requires an authorized GitHub account.
+**No compiler is needed.** ELKSWeb runs on an existing compatible ELKS installation with a graphics console and writable `/tmp`; it does not install ELKS itself. Download the files using a modern computer: GitHub uses HTTPS, which ELKSWeb cannot access directly. The [0.1 experimental prerelease and downloads](https://github.com/l00nix/ELKSWeb/releases/tag/v0.1) are publicly available.
 
 1. Open [Releases](https://github.com/l00nix/ELKSWeb/releases) and expand the 0.1 **Assets** list.
 2. For a first installation, download **`ELKSWeb-0.1-runtime.tar.gz`** and its `.sha256` file. It includes the compiled browser, welcome HTML, GIF logo and notices. Download **`elksweb`** and its `.sha256` instead if you only need the executable to update an existing installation.
@@ -119,7 +119,7 @@ These projects are credited for their respective work; no endorsement or affilia
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). The scoped 0.1 visual, functional, resource-recovery and build checks, plus historical clean-build evidence, are recorded in STATUS; broader compatibility testing remains valuable. Speed and responsiveness improvements are follow-up work and do not gate the first public beta. The repository remains private during this work.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). The scoped 0.1 visual, functional, resource-recovery and build checks, plus historical clean-build evidence, are recorded in STATUS; broader compatibility testing remains valuable. Speed and responsiveness improvements are follow-up work and do not gate the first public beta. Testers and feedback are welcome.
 
 ## License and attribution
 
