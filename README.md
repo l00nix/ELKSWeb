@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="artwork/elksweb-wordmark-blue.png" alt="ELKSWeb logo" width="640">
+</p>
+
 # ELKSWeb 0.1
 
 An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr/elks), written in C with the native ELKS IA16 toolchain and targeting 8088-compatible machines.
