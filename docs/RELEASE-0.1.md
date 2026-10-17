@@ -63,7 +63,7 @@ Scrolling now avoids repeated drawing, but page loading and other operations can
 
 Optional offline FrogFind fixtures use fixed sample results with their retained license and provenance. They are separate from the normal runtime package. The default help page may link to live sites; the runtime package does not bundle captured news articles. No MicroWeb executable, proprietary BIOS ROM or physical-disk writing tool is included.
 
-The repository and [0.1 experimental prerelease](https://github.com/l00nix/ELKSWeb/releases/tag/v0.1) are public. The discussion announcement remains a draft.
+The repository and [0.1 experimental prerelease](https://github.com/l00nix/ELKSWeb/releases/tag/v0.1) are public. The [discussion announcement](https://github.com/ghaerr/elks/discussions/2185#discussioncomment-18987882) has been posted.
 
 ### Current final-QA hold
 
