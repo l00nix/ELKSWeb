@@ -6,9 +6,9 @@
 
 An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr/elks), written in C with the native ELKS IA16 toolchain and targeting 8088-compatible machines.
 
-Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation; MicroWeb is the visual and behavioral comparison reference.
+Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Version 0.1 — experimental beta, staged privately; final QA remains open.** This release adds display selection, a stable application frame and incremental vertical scrolling: existing pixels move and only the exposed strip is rendered again. It remains an original C implementation built with the native ELKS toolchain. See [0.1 release notes](docs/RELEASE-0.1.md) for exact artifacts, validation and limits. The owner confirms this exact version runs on both the standard HP 200LX and the owner-identified DS HP 200LX, and reports smoother scrolling on the standard HP. This is owner feedback, not an independently captured hardware benchmark. Speed and responsiveness remain outside the first-beta release decision.
+**Version 0.1 — experimental beta.** This release features display selection and smooth scrolling. It remains an original C implementation built with the native ELKS toolchain. See [0.1 release notes](docs/RELEASE-0.1.md) for exact artifacts, validation and limits. This version has been confirmed to run on both the standard HP 200LX and a modified double-speed (DS) HP 200LX.
 
 ![ELKSWeb 0.1 default welcome page in QEMU CGA](docs/screenshots/0.1/welcome-cga-qemu.png)
 
@@ -18,7 +18,7 @@ Additional 0.1 live-site captures: [68k.news homepage](docs/screenshots/68k-news
 
 ## Design
 
-The discussion's C++, networking, graphics-dependency and memory concerns guide the implementation:
+The C++, networking, graphics-dependency and memory concerns raised in [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) guide the implementation:
 
 - **C and the native ELKS toolchain:** IA16 GCC and ELKS libc; no C++ runtime or OpenWatcom requirement.
 - **ELKS networking:** native sockets and the ELKS `ktcp` service; no DOS packet driver or mTCP dependency. Direct access is HTTP only.
@@ -33,22 +33,20 @@ The discussion's C++, networking, graphics-dependency and memory concerns guide 
 - A writable `/tmp` for page caching.
 - Keyboard navigation; PS/2 mouse support exists but was not tested in the 8088 run.
 
-640 KB is the tested configuration, not a proven minimum. General ELKS compatibility is the priority. On the tested HP 200LX 3.8 beta 1 firmware, set `ELKSWEB_COOKED_KEYS=1` to use its translated keyboard input.
+640 KB is the tested configuration, not a proven minimum. General ELKS compatibility is the priority. On the tested HP 200LX setup ([ELKS Linux on the HP 200LX](https://github.com/l00nix/elks-on-hp200lx)), set `ELKSWEB_COOKED_KEYS=1` to use its translated keyboard input.
 
 ## Current features
 
-HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, forms, tables, lists, monochrome GIF images and binary downloads. PNG/JPEG dimensions are recognized for layout, but their pixels are not decoded. JPEG decoding is explicitly outside the 0.1 scope. Features have differing levels of test coverage; see [tests](tests/README.md).
+HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, forms, tables, lists, monochrome GIF images and binary downloads. PNG/JPEG dimensions are recognized for layout, but their pixels are not decoded. JPEG decoding is outside the 0.1 scope and is likely to remain outside future releases, similar to MicroWeb. Features have differing levels of test coverage; see [tests](tests/README.md).
 
 ## Limitations
 
-- 8088 page loads remain slow: the build005 live news viewport was observed roughly eight minutes after launch. Incremental scrolling reduces repeated drawing, but physical timing benchmarks remain pending.
-- History and receive cancellation pass 12 native QEMU checks; the final-image regression and scoped resource-failure checks also pass. Owner reports cover startup/use on two physical HP systems; exhaustive feature combinations and independently captured physical-hardware QA remain untested.
 - HTTP only; no native TLS, CSS or JavaScript. `HTTP_PROXY` is supported, but HTTPS conversion requires an external service and is not provided here.
-- Adapter detection is conservative: unsupported or unrecognized modes are rejected. EGA image aspect correction is approximate, and displayed images retain a 200-row limit in every mode.
+- Graphics adapter detection is conservative: unsupported or unrecognized modes are rejected. EGA image aspect correction is approximate, and displayed images retain a 200-row limit in every mode.
 - Large or complex pages can exceed fixed layout limits. HTML source is capped at 120 KB; layout at 24 KB of text, 1,024 runs and 256 links.
 - Some accented characters are transliterated rather than rendered faithfully.
 - Form fields retain at most 79 UTF-8 bytes; textarea editing is single-line. HTML `maxlength` and `size` semantics are not fully implemented. Form support does not imply modern HTML standards compliance.
-- No claim of complete MicroWeb parity or physical 8088 certification. Publication remains subject to owner approval.
+- No claim of complete MicroWeb parity or physical 8088 certification. Further beta testing and feature enhancements are ongoing.
 
 ## Future enhancements
 
@@ -93,12 +91,12 @@ Without `-video`, ELKSWeb displays a text-console selector before entering graph
 **No compiler is needed.** ELKSWeb runs on an existing compatible ELKS installation with a graphics console and writable `/tmp`; it does not install ELKS itself. Download the files using a modern computer: GitHub uses HTTPS, which ELKSWeb cannot access directly. The repository and release draft are currently private, so access requires an authorized GitHub account.
 
 1. Open [Releases](https://github.com/l00nix/ELKSWeb/releases) and expand the 0.1 **Assets** list.
-2. For a first installation, download **`ELKSWeb-0.1-runtime.tar.gz`** and its `.sha256` file. It includes the compiled browser, welcome HTML, GIF logo and notices. Download **`elksweb-0.1`** and its `.sha256` instead if you only need the executable to update an existing installation.
+2. For a first installation, download **`ELKSWeb-0.1-runtime.tar.gz`** and its `.sha256` file. It includes the compiled browser, welcome HTML, GIF logo and notices. Download **`elksweb`** and its `.sha256` instead if you only need the executable to update an existing installation.
 3. Verify the checksum on the modern computer, then extract the runtime archive there. Transfer files to the ELKS disk using your existing binary-safe serial transfer, network transfer or mounted-disk workflow. The [installation guide](docs/INSTALL.md) gives checksum commands and the exact source/destination file list.
-4. Stage the executable as `/root/ew-new`. For a first installation, also place the welcome page at `/root/welcome.htm`, logo at `/root/elksweb.gif` and logo provenance at `/root/logo-src.txt`; retain the supplied notices. Exit any running browser, then run these commands **on the ELKS graphics console as root**:
+4. Transfer the executable to `/root/elksweb`. For a first installation, also place the welcome page at `/root/welcome.htm`, logo at `/root/elksweb.gif` and logo provenance at `/root/logo-src.txt`; retain the supplied notices. Exit any running browser, then run these commands **on the ELKS graphics console as root**:
 
 ```sh
-cp /root/ew-new /bin/elksweb
+cp /root/elksweb /bin/elksweb
 chmod 755 /bin/elksweb
 elksweb --version
 elksweb
@@ -106,9 +104,7 @@ elksweb
 
 The version should report **0.1**. Choose a detected display mode; the local welcome page should open without a network connection. Escape exits. For online browsing, configure ELKS networking first, then try `elksweb http://68k.news/`.
 
-On the tested HP 200LX ELKS 3.8 beta 1 setup, run `export ELKSWEB_COOKED_KEYS=1` before launching the browser. Graphics appear on the machine's own screen, not in the serial terminal. See [full installation, upgrade and troubleshooting instructions](docs/INSTALL.md).
-
-The source archive and QEMU test image are separate optional downloads. Neither offline website fixtures nor `webfrog`/`webnews` launchers are needed for normal installation. The first 86Box cold-boot exit anomaly remains unresolved; see [validation status](docs/8088-VALIDATION.md#exact-01-follow-up--incomplete).
+On the tested HP 200LX ELKS Linux setup, run `export ELKSWEB_COOKED_KEYS=1` before launching the browser. See [full installation, upgrade and troubleshooting instructions](docs/INSTALL.md).
 
 For building from source or emulator testing, see [BUILDING.md](docs/BUILDING.md).
 

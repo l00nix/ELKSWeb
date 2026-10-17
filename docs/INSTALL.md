@@ -11,7 +11,7 @@ Open [ELKSWeb releases](https://github.com/l00nix/ELKSWeb/releases), select 0.1 
 | Download | Use |
 | --- | --- |
 | `ELKSWeb-0.1-runtime.tar.gz` and matching `.sha256` | Recommended first installation: compiled binary, welcome HTML, GIF logo and notices |
-| `elksweb-0.1` and matching `.sha256` | Standalone compiled binary, useful for an existing installation |
+| `elksweb` and matching `.sha256` | Standalone compiled binary, useful for an existing installation |
 | `ELKSWeb-0.1-source.tar.gz` | Corresponding source, for rebuilding or redistribution; not needed to run the browser |
 | `ELKSWeb-0.1-test-image.tar.gz` | Optional generic ELKS/QEMU test environment; not an HP installer |
 
@@ -36,7 +36,7 @@ Get-Content .\ELKSWeb-0.1-runtime.tar.gz.sha256
 tar -xzf .\ELKSWeb-0.1-runtime.tar.gz
 ```
 
-Compare the displayed hashes; letter case does not matter. If your Windows installation has no `tar`, use an archive utility that handles `.tar.gz` files. For the standalone binary, substitute `elksweb-0.1` and `elksweb-0.1.sha256` in the checksum commands; no extraction is needed.
+Compare the displayed hashes; letter case does not matter. If your Windows installation has no `tar`, use an archive utility that handles `.tar.gz` files. For the standalone binary, substitute `elksweb` and `elksweb.sha256` in the checksum commands; no extraction is needed.
 
 The runtime archive extracts into `ELKSWeb-0.1-runtime/`. You can also verify its individual files on the host by entering that directory and running `sha256sum -c SHA256SUMS` (Linux) or `shasum -a 256 -c SHA256SUMS` (macOS). ELKS itself does not need these host verification tools.
 
@@ -46,21 +46,21 @@ Use your existing binary-safe serial/file-transfer method, configured network tr
 
 | File inside `ELKSWeb-0.1-runtime/` | Destination on ELKS |
 | --- | --- |
-| `bin/elksweb` | `/root/ew-new` (temporary staging name) |
+| `bin/elksweb` | `/root/elksweb` |
 | `share/welcome.htm` | `/root/welcome.htm` |
 | `share/elksweb.gif` | `/root/elksweb.gif` |
 | `share/logo-source.txt` | `/root/logo-src.txt` |
 
 Retain the entire downloaded package and its notices with the installation. If storing the notices on ELKS, create `/root/ewdocs` with `mkdir /root/ewdocs` and copy `COPYING`, `font/COPYING`, `licenses/ELKS-LICENSE.txt` and `licenses/ELKS-libc-notices.txt` there under distinct short names such as `COPYING`, `FONT.txt`, `ELKS.txt` and `LIBC.txt`. Keep the source archive available for redistribution.
 
-For a standalone-binary upgrade, transfer the downloaded `elksweb-0.1` to `/root/ew-new`; existing welcome files can remain in place. A binary-only first installation will not include the default welcome page: use the runtime package for that page, or launch with an explicit local file or HTTP URL.
+For a standalone-binary upgrade, transfer the downloaded `elksweb` to `/root/elksweb`; existing welcome files can remain in place. A binary-only first installation will not include the default welcome page: use the runtime package for that page, or launch with an explicit local file or HTTP URL.
 
 ## 4. Install and start on ELKS
 
 Exit any running ELKSWeb instance. If upgrading, first save the old executable with `cp /bin/elksweb /bin/ew-old`. Then, as root, install the staged file:
 
 ```sh
-cp /root/ew-new /bin/elksweb
+cp /root/elksweb /bin/elksweb
 chmod 755 /bin/elksweb
 elksweb --version
 ```
@@ -79,8 +79,6 @@ On the tested HP 200LX ELKS 3.8 beta 1 setup, enable translated keyboard input i
 export ELKSWEB_COOKED_KEYS=1
 elksweb -video cga /root/welcome.htm
 ```
-
-The browser displays on the palmtop or emulator screen. A serial terminal is useful for transferring files and console administration, but is not the graphical browser display.
 
 ## 5. Try a page
 
