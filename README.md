@@ -16,6 +16,12 @@ Actual default help page and original GIF logo, QEMU CGA, 16 October 2026. [Disp
 
 Additional 0.1 live-site captures: [68k.news homepage](docs/screenshots/68k-news-0.1-qemu.png) · [Scrolled news viewport](docs/screenshots/68k-news-0.1-qemu-scrolled.png) · [FrogFind mirror](docs/screenshots/frogfind-0.1-qemu.png). These captures exercise the validated 0.1 QEMU image, before the later help-page/logo packaging refresh; QEMU uses a 486 CPU for ELKS integration testing. The earlier [build005 Windows 86Box capture](docs/screenshots/68k-news-build005-86box.png) used an Intel 8088 at 4.77 MHz with 640 KB RAM. See the [8088 validation scope](docs/8088-VALIDATION.md), including the guest CPU-label discrepancy.
 
+The [FrogFind mirror](http://frogfind.8088retro.com/) homepage with its frog GIF, followed by search results for “elks linux”, in ELKSWeb 0.1. Actual live-site captures from QEMU CGA, 16 October 2026.
+
+![FrogFind mirror homepage and frog GIF in ELKSWeb 0.1](docs/screenshots/frogfind-0.1-qemu.png)
+
+![FrogFind mirror search results for elks linux in ELKSWeb 0.1](docs/screenshots/frogfind-search-0.1-qemu.png)
+
 ## Design
 
 The C++, networking, graphics-dependency and memory concerns raised in [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) guide the implementation:
