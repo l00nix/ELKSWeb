@@ -12,11 +12,9 @@ I have been trying it out on my HP 200LX systems as well as in emulators, and it
 
 ![ELKSWeb 0.1 displaying 68k.news in QEMU](https://raw.githubusercontent.com/l00nix/ELKSWeb/main/docs/screenshots/68k-news-0.1-qemu.png)
 
-Here is my [FrogFind mirror](http://frogfind.8088retro.com/) in ELKSWeb 0.1, showing the homepage with its frog GIF and search results for “elks linux”. These were captured in QEMU on 16 October 2026.
+Here is my [FrogFind mirror](http://frogfind.8088retro.com/) in ELKSWeb 0.1, showing the homepage with its frog GIF. This was captured in QEMU on 16 October 2026.
 
 ![FrogFind mirror homepage and frog GIF in ELKSWeb 0.1](https://raw.githubusercontent.com/l00nix/ELKSWeb/main/docs/screenshots/frogfind-0.1-qemu.png)
-
-![FrogFind mirror search results for elks linux in ELKSWeb 0.1](https://raw.githubusercontent.com/l00nix/ELKSWeb/main/docs/screenshots/frogfind-search-0.1-qemu.png)
 
 The downloads, installation instructions, known limitations and more technical details are on GitHub: **[ELKSWeb](https://github.com/l00nix/ELKSWeb)**.
 
