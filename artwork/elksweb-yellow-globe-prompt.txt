@@ -1,0 +1,5 @@
+Built-in image generation edit, 2026-10-16; generated alpha preserved.
+Input: artwork/elksweb-wordmark-blue-gold.png.
+Output: artwork/elksweb-wordmark-yellow-globe.png.
+Prompt: Make one precise colour change to this existing transparent ELKSWeb logo: recolour ALL the globe linework to the same warm gold-yellow as Web, using the ELKS yellow #FFD166 as the colour reference. The right hemisphere must become yellow too; no blue anywhere in the globe. Preserve the globe's exact circle, meridians, equator, stroke widths and transparent interior openings. Keep ELKS deep blue and Web gold-yellow exactly as they are, preserve exact lettering, italic typography, positions, scale, wide composition and alpha transparency. No new background, outline, shadow, glow, texture or redesign. Clean smooth antialiased edges. Transparent PNG.
+GitHub branding asset only; installed 0.1 monochrome logo and executable unchanged.
