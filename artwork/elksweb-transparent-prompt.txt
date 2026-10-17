@@ -1,0 +1,4 @@
+Built-in image generation edit: background removal, 2026-10-16.
+Edit target: artwork/elksweb-wordmark-blue.png.
+Output: artwork/elksweb-wordmark-transparent.png; generated RGBA alpha preserved.
+Prompt: Use case: background-extraction. Edit the provided ELKSWeb logo only: remove the entire white background and all white interior negative spaces (including within the globe and letters) to genuine alpha transparency. Preserve the existing globe geometry, lettering ELKSWeb exactly, typography, proportions, placement, deep blue ELKS and black Web and globe. Keep clean antialiased edges without white halos. No redesign, no new outlines, no shadows, no additional text, no checkerboard baked into the image. Output a transparent PNG with the same wide composition.
