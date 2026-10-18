@@ -1,6 +1,6 @@
-# ELKSWeb 0.1 — public-beta preparation
+# ELKSWeb 0.1 — validation status
 
-**Version 0.1 is staged privately as an experimental beta; the original 86Box cold-boot exit anomaly remains open.** The repository and release draft remain private; publication and any discussion announcement require owner approval. Speed and responsiveness remain excluded from the first-beta decision.
+**Version 0.1 is publicly available as an experimental beta.** The [repository](https://github.com/l00nix/ELKSWeb), [prerelease](https://github.com/l00nix/ELKSWeb/releases/tag/v0.1) and [discussion announcement](https://github.com/ghaerr/elks/discussions/2185#discussioncomment-18987882) are public. The original 86Box cold-boot exit anomaly remains open. Speed and responsiveness remain known limitations.
 
 The unchanged 77,024-byte executable has SHA256 `5c652079e7cc27884091c9e3b1730fea5d37fa3cbeb690535fed94af16dcfce2`. See [0.1 release notes](RELEASE-0.1.md) for artifact identity, memory limits and validation scope.
 
@@ -11,13 +11,13 @@ The unchanged 77,024-byte executable has SHA256 `5c652079e7cc27884091c9e3b1730fe
 | Native QEMU | 39 fixture scenarios, 12 history/cancellation checks, display selection/restoration, downloads and scoped disk-full recovery pass |
 | New default help/logo | Refreshed image `3c865e5edb81f67c50b88554ee0d040f07c474423e1a200313925db37c79711d`: all three modes pass no-URL startup, help anchor, scrolling/Home, inversion and console restoration; 20 original frames reviewed without a defect; a separate 16-frame review found no visual blocker. [Welcome](screenshots/0.1/welcome-cga-qemu.png) · [Selector](screenshots/0.1/selector-qemu.png) |
 | Incremental scrolling | All 54 QEMU incremental/full-redraw pairs match across CGA/EGA/VGA; independent reviewer recomputed every pair and inspected 59 frames across the visual review |
-| Live sites | FrogFind mirror homepage/GIF/search/article/Back and 68k.news homepage/scroll/article response/Back reviewed; the selected news article returns an upstream extraction error |
+| Live sites in QEMU | FrogFind mirror homepage/GIF/search/article/Back and 68k.news homepage/scroll/article response/Back reviewed; the selected news article returns an upstream extraction error |
 | Standard HP 200LX | Exact executable identity/version verified; owner confirms it runs and scrolling is smoother |
-| DS HP 200LX | Exact executable identity/version verified on the owner-identified DS system; owner confirms it works |
+| DS HP 200LX | Earlier installation identity/version verified; subsequent live Accton Ethernet test loaded and rendered 68k.news and FrogFind/GIF, with physical photographs and framebuffer captures. Experimental HP kernel with local NIC fixes; see [hardware report](HP200LX-INTERNET-TEST.md) |
 | Exact-version 8088 emulator | Exact-0.1 welcome/scroll/normal-shell exit pass; original cold-boot exit anomaly and live-site follow-up remain open |
 | Normal runtime packaging | Executable, default HTML help, original GIF logo and notices; separate runtime/source/test-image archives with SHA256 sidecars and internal manifests. Source is separate, QEMU image/website fixtures optional; no normal-package `webfrog` or `webnews` helpers |
 
-The HP and DS identity records are retained locally in the parent project's `output/elksweb-hp01/` and `output/elksweb-ds01/`. Their installation-time “graphics test pending” fields precede the owner's subsequent confirmations. These reports are not independent graphics captures, controlled performance measurements or complete physical-hardware qualification. The help/logo packaging refresh leaves the executable unchanged; its new image hash appears above, separately from the earlier full-suite image in [QA-0.1.json](QA-0.1.json). Distribution archive checksums are supplied as release-asset sidecars. JPEG decoding is explicitly outside 0.1 scope: GIF pixels are supported, while JPEG/PNG dimensions alone are recognized.
+The HP and DS identity records are retained locally in the parent project's `output/elksweb-hp01/` and `output/elksweb-ds01/`. Their installation-time “graphics test pending” fields precede the owner's subsequent confirmations. Those earlier owner reports were not independent graphics captures or controlled performance measurements. The subsequent [DS HP Internet test](HP200LX-INTERNET-TEST.md) adds photographs and framebuffer captures of both homepages, but does not establish complete hardware feature coverage or a timing benchmark. The help/logo packaging refresh leaves the executable unchanged; its new image hash appears above, separately from the earlier full-suite image in [QA-0.1.json](QA-0.1.json). Distribution archive checksums are supplied as release-asset sidecars. JPEG decoding is explicitly outside 0.1 scope: GIF pixels are supported, while JPEG/PNG dimensions alone are recognized.
 
 ## Historical build005/006 qualification record
 
@@ -86,4 +86,4 @@ Build005's final source/artifact manifest is [candidate-build005.json](candidate
 
 ### Current final-QA hold
 
-The exact 0.1 8088 follow-up found an unresolved exit anomaly in its first welcome-page run. A narrower local-FrogFind retry exited and logged in successfully; 640 KB QEMU also passed exit and a shell command. After host unlock, a repeat launched from the normal shell passed welcome, PageDown, Escape and `pwd` returning `/root`. This is narrower than the original cold-boot autorun sequence; that failure remains unexplained. Exact-version live 86Box captures remain pending. See [8088 validation](8088-VALIDATION.md). Public release readiness is not signed off while this investigation is incomplete.
+The exact 0.1 8088 follow-up found an unresolved exit anomaly in its first welcome-page run. A narrower local-FrogFind retry exited and logged in successfully; 640 KB QEMU also passed exit and a shell command. After host unlock, a repeat launched from the normal shell passed welcome, PageDown, Escape and `pwd` returning `/root`. This is narrower than the original cold-boot autorun sequence; that failure remains unexplained. Exact-version live 86Box captures remain pending. See [8088 validation](8088-VALIDATION.md). The public experimental release does not close this outstanding validation issue.

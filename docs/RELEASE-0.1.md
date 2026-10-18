@@ -31,6 +31,10 @@ The generic floppy image is intended for emulator testing; use the executable on
 
 The verified executable is 77,024 bytes with MD5 `9618c7abec60bc79d5ce539b2516b04c` and the SHA256 below. Local installation records are retained in the parent project's `output/elksweb-hp01/` and `output/elksweb-ds01/`. They verify identity and version separately from the later owner feedback; their earlier “graphics test pending” fields describe the installation-time state. The DS machine is identified by the owner; no clock-speed claim is inferred from its name.
 
+## Subsequent physical Internet test
+
+A double-speed HP 200LX has now loaded and rendered live 68k.news and FrogFind over an Accton EN2216 R02 PCMCIA NIC using native ELKS networking. The [hardware test report](HP200LX-INTERNET-TEST.md) includes the owner photographs, verified network checks, slow 68k.news parsing observation and the experimental kernel/NIC-fix scope. This supplements the earlier installation and owner reports above; it does not replace the published executable or release archives. Physical link navigation and form submission remain untested in this session. Amstrad PPC 512 testing is planned.
+
 ## Validation and identity
 
 Final validation is recorded in `QA-0.1.json` in the browser source documentation. The native application was rebuilt against the prepared toolchain from clean-build001; this was not another fresh compiler/system bootstrap. The validated QEMU image derives from clean-build005 with the new executable, the earlier welcome page and attributed offline fixtures installed. The subsequent default-help/logo packaging refresh does not rebuild or change the executable; its image identity and dedicated welcome-page QA are recorded separately below. Each distribution archive has a SHA256 sidecar and an internal file manifest. The executable and test-image identities below remain unchanged by this documentation refresh.
@@ -67,4 +71,4 @@ The repository and [0.1 experimental prerelease](https://github.com/l00nix/ELKSW
 
 ### Current final-QA hold
 
-The exact 0.1 8088 follow-up found an unresolved exit anomaly in its first welcome-page run. A narrower local-FrogFind retry exited and logged in successfully; 640 KB QEMU also passed exit and a shell command. After host unlock, a repeat launched from the normal shell passed welcome, PageDown, Escape and `pwd` returning `/root`. This is narrower than the original cold-boot autorun sequence; that failure remains unexplained. Exact-version live 86Box captures remain pending. See [8088 validation](8088-VALIDATION.md). Public release readiness is not signed off while this investigation is incomplete.
+The exact 0.1 8088 follow-up found an unresolved exit anomaly in its first welcome-page run. A narrower local-FrogFind retry exited and logged in successfully; 640 KB QEMU also passed exit and a shell command. After host unlock, a repeat launched from the normal shell passed welcome, PageDown, Escape and `pwd` returning `/root`. This is narrower than the original cold-boot autorun sequence; that failure remains unexplained. Exact-version live 86Box captures remain pending. See [8088 validation](8088-VALIDATION.md). The public experimental release does not close this outstanding validation issue.

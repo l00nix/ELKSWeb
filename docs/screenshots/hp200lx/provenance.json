@@ -1,0 +1,29 @@
+{
+  "description": "Owner photographs of ELKSWeb on a physical HP 200LX; rectangular crops only, with original decoded pixels preserved. No resizing, retouching or AI-generated image content.",
+  "photos": [
+    {
+      "source": "1-27180.jpg",
+      "output": "68k-news-photo.png",
+      "box": [
+        245,
+        195,
+        1110,
+        625
+      ],
+      "pixel_equality_verified": true,
+      "sha256": "2f5bb552613509c1985653f80ec4b04934a690a30a15975f6c9664b80327a472"
+    },
+    {
+      "source": "2-27181.jpg",
+      "output": "frogfind-photo.png",
+      "box": [
+        285,
+        285,
+        1065,
+        675
+      ],
+      "pixel_equality_verified": true,
+      "sha256": "8a7d792bf4a28ff98d6925fa67d1615aef13a7007072506433e02e0dd7b02e3c"
+    }
+  ]
+}

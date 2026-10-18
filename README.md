@@ -10,6 +10,22 @@ Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/g
 
 **Version 0.1 — experimental beta.** This release features display selection and smooth scrolling. It remains an original C implementation built with the native ELKS toolchain. See [0.1 release notes](docs/RELEASE-0.1.md) for exact artifacts, validation and limits. This version has been confirmed to run on both the standard HP 200LX and a modified double-speed (DS) HP 200LX.
 
+## Live Internet browsing on the HP 200LX
+
+ELKSWeb 0.1 successfully loaded and rendered **68k.news** and the **FrogFind mirror** on a physical double-speed HP 200LX over an Accton EN2216 R02 PCMCIA Ethernet card, using the native ELKS `ktcp` stack. These are photographs of the actual palmtop, cropped around the screen and HP 200LX logo with the original pixels preserved.
+
+![68k.news rendered by ELKSWeb on a physical HP 200LX](docs/screenshots/hp200lx/68k-news-photo.png)
+
+![FrogFind mirror and frog GIF rendered by ELKSWeb on a physical HP 200LX](docs/screenshots/hp200lx/frogfind-photo.png)
+
+DNS resolution and a LAN HTTP download with a matching checksum also passed. The roughly 92 KB 68k.news page eventually rendered after a long **Parsing...** stage; no controlled timing measurement was made. This run confirms homepage loading and rendering, including the FrogFind GIF. Link navigation and search submission on this hardware remain to be tested.
+
+The run used an experimental HP-specific ELKS build with local Accton compatibility and interrupt-routing fixes. The permanent routing fix has been built and tested in software but still needs installation and a fresh hardware boot. These results do not mean the stock kernel or published browser package includes those NIC fixes. See the [hardware test report](docs/HP200LX-INTERNET-TEST.md) for scope and findings.
+
+Testing on an **Amstrad PPC 512** is planned in the coming days; no PPC 512 result is claimed yet.
+
+## Emulator screenshots
+
 ![ELKSWeb 0.1 default welcome page in QEMU CGA](docs/screenshots/0.1/welcome-cga-qemu.png)
 
 Actual default help page and original GIF logo, QEMU CGA. [Display selector](docs/screenshots/0.1/selector-qemu.png) · [EGA welcome](docs/screenshots/0.1/welcome-ega-qemu.png) · [VGA welcome](docs/screenshots/0.1/welcome-vga-qemu.png). No-URL startup, the keyboard-help anchor, scrolling, inversion and console restoration passed in all three modes on the refreshed help/logo image.

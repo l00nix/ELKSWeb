@@ -12,6 +12,10 @@ These source observations provide a plausible explanation for a false V20 label.
 
 QEMU uses a 486 CPU for general ELKS integration testing. It supplies no 8088 timing evidence. The owner confirms exact ELKSWeb 0.1 runs on the standard HP 200LX and the owner-identified DS HP 200LX, with smoother scrolling reported on the standard HP. These are owner observations, not independently captured graphics tests or controlled timings. Physical Intel 8088 and broader physical display-adapter compatibility remain unvalidated. Speed and responsiveness are disclosed observations, excluded from the first-beta release decision.
 
+## Subsequent physical HP 200LX Internet test
+
+The earlier owner-only observations above are now supplemented by photographs and framebuffer captures from a double-speed HP 200LX running ELKSWeb 0.1. Both 68k.news and the FrogFind mirror rendered over a real Accton EN2216 R02 Ethernet connection. See the [hardware test report](HP200LX-INTERNET-TEST.md). This establishes scoped HP hardware results, not physical Intel 8088 certification or controlled performance measurements. Amstrad PPC 512 testing is planned and remains pending.
+
 ## Exact version 0.1 evidence
 
 The 77,024-byte executable has SHA256 `5c652079e7cc27884091c9e3b1730fea5d37fa3cbeb690535fed94af16dcfce2` and MD5 `9618c7abec60bc79d5ce539b2516b04c`. Installation/version checks are retained locally in the parent project's `output/elksweb-hp01/` and `output/elksweb-ds01/`; later owner reports confirm use after those records were written. The DS system reported `ELKS0.9.2-dev hp200lx-3.8-beta1`. Its designation alone does not establish a clock frequency.
