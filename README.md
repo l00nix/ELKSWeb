@@ -12,7 +12,7 @@ Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/g
 
 ## Live Internet browsing on the HP 200LX
 
-ELKSWeb 0.1 successfully loaded and rendered **68k.news** and the **FrogFind mirror** on a physical double-speed HP 200LX over an Accton EN2216 R02 PCMCIA Ethernet card, using the native ELKS `ktcp` stack. These are photographs of the actual palmtop, cropped around the screen and HP 200LX logo with the original pixels preserved.
+ELKSWeb 0.1 successfully loaded and rendered **68k.news** and the **FrogFind mirror** on a physical double-speed HP 200LX over an Accton EN2216 R02 PCMCIA Ethernet card, using the native ELKS `ktcp` stack. These are photographs of the actual palmtop.
 
 ![68k.news rendered by ELKSWeb on a physical HP 200LX](docs/screenshots/hp200lx/68k-news-photo.png)
 
