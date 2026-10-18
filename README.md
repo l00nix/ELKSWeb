@@ -22,8 +22,6 @@ DNS resolution and a LAN HTTP download with a matching checksum also passed. The
 
 The run used an experimental HP-specific ELKS build with local Accton compatibility and interrupt-routing fixes. The permanent routing fix has been built and tested in software but still needs installation and a fresh hardware boot. These results do not mean the stock kernel or published browser package includes those NIC fixes. See the [hardware test report](docs/HP200LX-INTERNET-TEST.md) for scope and findings.
 
-Testing on an **Amstrad PPC 512** is planned in the coming days; no PPC 512 result is claimed yet.
-
 ## Emulator screenshots
 
 ![ELKSWeb 0.1 default welcome page in QEMU CGA](docs/screenshots/0.1/welcome-cga-qemu.png)
