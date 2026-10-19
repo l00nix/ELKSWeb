@@ -2,7 +2,31 @@
 
 The application uses ELKS's IA16 GCC toolchain, not the host C compiler or a DOS C++ toolchain. Version 0.1 was built with ia16-elf-gcc 6.3.0 and exercised on ELKS 0.9.2-dev. The source bootstrap below was validated on 2026-10-16 in a new Ubuntu 22.04 container, including a freshly compiled toolchain, libc, kernel and image. See [the clean-build record](CLEAN-BUILD-001.md) for pins, hashes, the dependency correction and remaining reproducibility limits.
 
-## Native application
+## Minimal build for upstream ELKS
+
+For a prepared ELKS checkout with its IA16 toolchain, libc and host tools built:
+
+```sh
+ELKSWEB_ELKS=/absolute/path/to/elks sh toolchain/build-external.sh
+```
+
+This produces `build/elksweb` and a linker map. It compiles every source afresh
+and needs only a POSIX shell, standard host utilities and the ELKS toolchain.
+Python, `sha256sum`, OpenWatcom and the optional audit tools are not required.
+The compiler flags retain the 8086 instruction target and small memory model.
+Use the audited build below for release validation and stack/ISA reports.
+
+The proposed upstream integration adds `./buildext.sh elksweb` (also included
+in `./buildext.sh all`). It checks out this repository in `extapps/ELKSWeb`,
+passes the ELKS tree as `ELKSWEB_ELKS`, and runs this minimal build script.
+The companion `elkscmd/ExtApplications` entries install the executable as
+`/bin/elksweb`, welcome page and logo under `/root`, and notices under
+`/lib/elksweb`. They select hard-disk images only, with no floppy-size tags.
+Publish this script before enabling the upstream integration, since upstream
+clones the public repository. No browser autostart, network configuration,
+HP-specific keyboard setting or kernel change is part of this integration.
+
+## Native application with developer audits
 
 On a Linux build host, prepare an isolated ELKS checkout and build its toolchain, libc and host tools following the [upstream ELKS instructions](https://github.com/ghaerr/elks). The scripts require bash, Python 3, sha256sum, and the ELKS tools `elf2elks`, `objdump86` and `disasm`, in addition to IA16 GCC/binutils.
 
