@@ -11,7 +11,7 @@ Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/g
 
 **Version 0.2 — experimental beta.** Clearer fixed fonts, improved serial-mouse handling, fewer navigation/image redraws, a GIF decoding optimization, and automatic `http://` prefixes for addresses. See the [changelog and feedback credits](CHANGELOG.md), [0.2 release notes](docs/RELEASE-0.2.md) and [downloads](https://github.com/l00nix/ELKSWeb/releases/tag/v0.2).
 
-Development candidates were tested on the Amstrad PPC 512 with PicoMEM 2. The new release binary has automated and emulator checks; a separate 0.2 hardware retest remains open. The HP 200LX results and screenshots below are historical 0.1 evidence. General IBM PC compatibility remains the goal.
+Development candidates were tested on the Amstrad PPC 512 with PicoMEM 2. General IBM PC compatibility remains the goal.
 
 ## Live browsing on retro hardware
 
@@ -28,10 +28,6 @@ ELKSWeb 0.1 successfully loaded and rendered **68k.news** and the **FrogFind mir
 ![68k.news rendered by ELKSWeb on a physical HP 200LX](docs/screenshots/hp200lx/68k-news-photo.png)
 
 ![FrogFind mirror and frog GIF rendered by ELKSWeb on a physical HP 200LX](docs/screenshots/hp200lx/frogfind-photo.png)
-
-DNS resolution and a LAN HTTP download with a matching checksum also passed. The roughly 92 KB 68k.news page eventually rendered after a long **Parsing...** stage; no controlled timing measurement was made. This run confirms homepage loading and rendering, including the FrogFind GIF. Link navigation and search submission on this hardware remain to be tested.
-
-The run used an experimental HP-specific ELKS build with local Accton compatibility and interrupt-routing fixes. The permanent routing fix has been built and tested in software but still needs installation and a fresh hardware boot. These results do not mean the stock kernel or published browser package includes those NIC fixes. See the [hardware test report](docs/HP200LX-INTERNET-TEST.md) for scope and findings.
 
 ## Design
 
