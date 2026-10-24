@@ -50,7 +50,18 @@ The C++, networking, graphics-dependency and memory concerns raised in [the ELKS
 - A writable `/tmp` for page caching.
 - Keyboard navigation and serial-mouse input; 0.2 development candidates were exercised with Microsoft serial mice on the PPC 512. PS/2 coverage remains limited.
 
-640 KB is the tested configuration, not a proven minimum. General ELKS compatibility is the priority. On the tested HP 200LX setup ([ELKS Linux on the HP 200LX](https://github.com/l00nix/elks-on-hp200lx)), set `ELKSWEB_COOKED_KEYS=1` to use its translated keyboard input.
+640 KB is the tested configuration, not a proven minimum. General ELKS compatibility is the priority.
+
+### HP 200LX keyboard compatibility
+
+On the [tested HP-specific ELKS setup](https://github.com/l00nix/elks-on-hp200lx), set this flag in the same shell before launching the browser:
+
+```sh
+export ELKSWEB_COOKED_KEYS=1
+elksweb
+```
+
+`ELKSWEB_COOKED_KEYS=1` keeps ELKS-translated keyboard input (characters and escape sequences) instead of enabling the browser's default raw scan-code input. It is a compatibility setting for that HP setup, not a general requirement for IBM PCs or the PPC 512. Leave it unset for normal operation; use `unset ELKSWEB_COOKED_KEYS` to restore the default for subsequent launches.
 
 ## Current features
 
