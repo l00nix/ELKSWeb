@@ -9,15 +9,9 @@ An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Version 0.2 — experimental beta.** Clearer fixed fonts, improved serial-mouse
-handling, fewer navigation/image redraws, a GIF decoding optimization, and automatic
-`http://` prefixes for addresses. See the [changelog and feedback credits](CHANGELOG.md),
-[0.2 release notes](docs/RELEASE-0.2.md) and [downloads](https://github.com/l00nix/ELKSWeb/releases/tag/v0.2).
+**Version 0.2 — experimental beta.** Clearer fixed fonts, improved serial-mouse handling, fewer navigation/image redraws, a GIF decoding optimization, and automatic `http://` prefixes for addresses. See the [changelog and feedback credits](CHANGELOG.md), [0.2 release notes](docs/RELEASE-0.2.md) and [downloads](https://github.com/l00nix/ELKSWeb/releases/tag/v0.2).
 
-Development candidates were tested on the Amstrad PPC 512 with PicoMEM 2. The
-new release binary has automated and emulator checks; a separate 0.2 hardware
-retest remains open. The HP 200LX results and screenshots below are historical
-0.1 evidence. General IBM PC compatibility remains the goal.
+Development candidates were tested on the Amstrad PPC 512 with PicoMEM 2. The new release binary has automated and emulator checks; a separate 0.2 hardware retest remains open. The HP 200LX results and screenshots below are historical 0.1 evidence. General IBM PC compatibility remains the goal.
 
 ## Live Internet browsing on the HP 200LX
 
@@ -115,11 +109,7 @@ Without `-video`, ELKSWeb displays a text-console selector before entering graph
 
 ## How to install a release
 
-Download the [0.2 beta runtime package](https://github.com/l00nix/ELKSWeb/releases/tag/v0.2)
-on a modern computer, verify its checksum, and transfer it to an existing ELKS
-installation. Install `bin/elksweb` as `/bin/elksweb` and the files in
-`lib/elksweb/` under `/lib/elksweb/`. The executable is always named `elksweb`.
-Keep the included notices and corresponding-source archive available.
+Download the [0.2 beta runtime package](https://github.com/l00nix/ELKSWeb/releases/tag/v0.2) on a modern computer, verify its checksum, and transfer it to an existing ELKS installation. Install `bin/elksweb` as `/bin/elksweb` and the files in `lib/elksweb/` under `/lib/elksweb/`. The executable is always named `elksweb`. Keep the included notices and corresponding-source archive available.
 
 ```sh
 chmod 755 /bin/elksweb
@@ -127,13 +117,9 @@ elksweb --version
 elksweb
 ```
 
-The version reports **0.2**. Choose a detected display mode to open the local
-welcome page. Configure native ELKS networking and run `net start` before using
-HTTP. Enter a hostname such as `68k.news` in the address field or an explicit URL.
+The version reports **0.2**. Choose a detected display mode to open the local welcome page. Configure native ELKS networking and run `net start` before using HTTP. Enter a hostname such as `68k.news` in the address field or an explicit URL.
 
-See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse settings
-and upgrades. The runtime is a standalone application package, not an ELKS disk
-image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
+See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse settings and upgrades. The runtime is a standalone application package, not an ELKS disk image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
 
 ## Test sites and related projects
 
