@@ -13,7 +13,15 @@ Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/g
 
 Development candidates were tested on the Amstrad PPC 512 with PicoMEM 2. The new release binary has automated and emulator checks; a separate 0.2 hardware retest remains open. The HP 200LX results and screenshots below are historical 0.1 evidence. General IBM PC compatibility remains the goal.
 
-## Live Internet browsing on the HP 200LX
+## Live browsing on retro hardware
+
+### Amstrad PPC 512
+
+The FrogFind mirror and its frog GIF displayed on the Amstrad PPC 512's original LCD during ELKSWeb testing with PicoMEM 2. Photograph by l00nix.
+
+![FrogFind mirror and frog GIF displayed by ELKSWeb on the Amstrad PPC 512 LCD](docs/screenshots/ppc512/frogfind-lcd-photo.jpg)
+
+### HP 200LX
 
 ELKSWeb 0.1 successfully loaded and rendered **68k.news** and the **FrogFind mirror** on a physical double-speed HP 200LX over an Accton EN2216 R02 PCMCIA Ethernet card, using the native ELKS `ktcp` stack. These are photographs of the actual palmtop.
 
