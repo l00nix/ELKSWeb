@@ -10,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
@@ -24,7 +25,7 @@ typedef unsigned char __far *far_bytes;
 #define FAR_BYTES(seg, off) ((far_bytes)(((unsigned long)(seg) << 16) | (unsigned)(off)))
 #endif
 
-static int console_fd = -1;
+static int console_fd = -1, shared_flags = -1;
 static int locked, raw_keys, term_saved, old_mode = -1;
 static struct termios saved_term;
 static struct ew_key_state keys;
@@ -75,8 +76,8 @@ static unsigned video_capabilities(void)
 }
 static int video_choose(const char *name, unsigned caps)
 {
-    char choice='\n', tail;
-    int mode;
+    char choice[16];
+    int mode, n;
     if (!name) {
         if (!isatty(0)) { last_error="Use -video cga, ega or vga without a terminal"; return -1; }
         puts("ELKSWeb " EW_VERSION " display (monochrome):");
@@ -84,10 +85,16 @@ static int video_choose(const char *name, unsigned caps)
         if (caps&2) puts("  2 EGA 640x350");
         if (caps&4) puts("  3 VGA 640x480");
         fputs("Select 1/2/3 or Q to quit, then press Enter: ",stdout); fflush(stdout);
-        if (read(0,&choice,1)!=1) return 0;
-        if (choice!='\n') while (read(0,&tail,1)==1 && tail!='\n') {}
-        if (choice=='q' || choice=='Q' || choice==27) return 0;
-        name=choice=='\n' || choice=='1' ? "cga" : choice=='2' ? "ega" : choice=='3' ? "vga" : "";
+        /* ELKS canonical editing applies within one read, so read the whole
+         * selection before entering raw mode. Reject and drain long lines. */
+        n = read(0,choice,sizeof(choice));
+        if (n <= 0) return 0;
+        if (choice[n-1] != '\n') {
+            while ((n=read(0,choice,sizeof(choice)))>0 && choice[n-1]!='\n') {}
+            choice[0] = 0;
+        } else if (n > 2) choice[0] = 0;
+        if (choice[0]=='q' || choice[0]=='Q' || choice[0]==27) return 0;
+        name=choice[0]=='\n' || choice[0]=='1' ? "cga" : choice[0]=='2' ? "ega" : choice[0]=='3' ? "vga" : "";
     }
     mode=!strcmp(name,"cga") ? EW_VIDEO_CGA : !strcmp(name,"ega") ? EW_VIDEO_EGA :
          !strcmp(name,"vga") ? EW_VIDEO_VGA : -1;
@@ -121,13 +128,30 @@ int ew_platform_init(const char *requested)
 {
     struct termios term;
     const char *cooked;
-    int mode;
+    int mode, flags;
     if (console_fd >= 0) return 0;
     mode=video_choose(requested,video_capabilities());
     if (mode<=0) return mode ? -1 : 1;
     last_error = "Cannot open the controlling console";
     console_fd = open("/dev/tty", O_RDWR | O_NONBLOCK);
+    if (console_fd < 0 && (errno==ENODEV || errno==ENXIO || errno==ENOENT) && isatty(0)) {
+        /* Some ELKS sessions cannot resolve /dev/tty despite a usable stdin.
+         * Borrow only that terminal, never an unrelated /dev/console. The
+         * graphics lock below rejects serial/PTY input before changing it. */
+        flags = fcntl(0, F_GETFL);
+        if (flags >= 0 && (flags & O_ACCMODE) == O_RDWR) {
+            console_fd = dup(0);
+            if (console_fd >= 0) shared_flags = flags;
+        }
+    }
     if (console_fd < 0) return -1;
+    last_error = "Console is busy or does not support graphics";
+    if (ioctl(console_fd, DCGET_GRAPH, (void *)0) < 0) goto failed;
+    locked = 1;
+    if (shared_flags >= 0) {
+        last_error = "Cannot set console input flags";
+        if (fcntl(console_fd, F_SETFL, shared_flags | O_NONBLOCK) < 0) goto failed;
+    }
     last_error = "Cannot read console settings";
     if (tcgetattr(console_fd, &saved_term) < 0) goto failed;
     term_saved = 1;
@@ -139,9 +163,6 @@ int ew_platform_init(const char *requested)
     last_error = "Cannot set console input mode";
     if (tcsetattr(console_fd, TCSAFLUSH, &term) < 0) goto failed;
     drain_input();
-    last_error = "Console is busy or does not support graphics";
-    if (ioctl(console_fd, DCGET_GRAPH, (void *)0) < 0) goto failed;
-    locked = 1;
     cooked = getenv("ELKSWEB_COOKED_KEYS");
     if (!cooked || cooked[0] != '1') {
         last_error = "Cannot enable raw console keyboard";
@@ -186,7 +207,7 @@ void ew_platform_shutdown(void)
         ioctl(console_fd, DCREL_KRAW, (void *)0);
         raw_keys = 0;
     }
-    drain_input();
+    if (term_saved) drain_input();
     if (old_mode >= 0) {
         bios_video((unsigned)old_mode,0);
         old_mode = -1;
@@ -201,6 +222,10 @@ void ew_platform_shutdown(void)
     }
     /* Synchronize the kernel's logical cursor with the cleared BIOS screen. */
     if (had_video) write(console_fd, "\033[H\033[2J", 7);
+    if (shared_flags >= 0) {
+        fcntl(console_fd, F_SETFL, shared_flags);
+        shared_flags = -1;
+    }
     close(console_fd);
     console_fd = -1;
 }

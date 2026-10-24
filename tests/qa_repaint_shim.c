@@ -213,3 +213,18 @@ void qa_repaint_click_link(int index) {
   }
   mouse_event(&e);if(dirty)draw();
 }
+
+/* Compare the actual painted address row with a requested address, restoring
+ * the framebuffer afterward so a slow-response observer does not alter it. */
+unsigned qa_address_painted_matches(const char *url) {
+  const char *saved_loading=loading_url;
+  int saved_dirty=dirty, saved_editing=editing, saved_download=download_edit;
+  unsigned different;
+  qa_repaint_snapshot();loading_url=url;editing=download_edit=0;
+  dirty=DRAW_ADDRESS;draw();
+  different=qa_repaint_difference(64,NAV_Y+1,640,NAV_Y+EW_CONTROL_HEIGHT-1);
+  memcpy(pixels,snapshot,sizeof(pixels));
+  loading_url=saved_loading;dirty=saved_dirty;editing=saved_editing;download_edit=saved_download;
+  return !different;
+}
+const char *qa_current_url(void) {return current;}

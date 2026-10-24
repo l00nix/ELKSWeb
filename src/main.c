@@ -14,6 +14,7 @@
 #include <errno.h>
 
 static char current[EW_URL], address[EW_URL], status[96];
+static const char *loading_url;
 static char EW_FAR *history[EW_HISTORY];
 static short scroll, hscroll, painted_scroll, painted_hscroll;
 static int painted_focus = -1;
@@ -353,7 +354,7 @@ static void draw(void) {
             strlen(temp), f, b, 0);
     }
     if (dirty & DRAW_ADDRESS) {
-      const char *s = editing || download_edit ? address : current;
+      const char *s = editing || download_edit ? address : loading_url ? loading_url : current;
       unsigned len = strlen(s), start = 0;
       ew_fillrect(64, NAV_Y+1, 575, EW_CONTROL_HEIGHT-2, b);
       if (editing && !selectall) {
@@ -489,9 +490,15 @@ static int load(const char *url, const char *post, int add_history) {
     message("Address is too long");
     return 0;
   }
+  /* Keep the pending URL visible without changing the current page's base
+   * or history before the request succeeds. target survives progress draws. */
+  loading_url = target;
+  dirty |= DRAW_ADDRESS;
   message("Loading...");
   draw();
   n = ew_fetch_document(target, resolved, err, sizeof(err), post);
+  loading_url = NULL;
+  dirty |= DRAW_ADDRESS;
   if (n < 0) {
     message(err);
     draw();

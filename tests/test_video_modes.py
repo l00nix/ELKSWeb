@@ -19,6 +19,8 @@ extern unsigned char test_cga[65536], test_planar[65536];
 #define DCREL_GRAPH 4
 int test_open(const char *, int, ...);
 int test_close(int);
+int test_dup(int);
+int test_fcntl(int,int,...);
 ssize_t test_read(int, void *, size_t);
 ssize_t test_write(int, const void *, size_t);
 int test_ioctl(int, unsigned long, ...);
@@ -29,6 +31,8 @@ unsigned ew_test_bios_video(unsigned, unsigned *);
 void ew_test_video_register(unsigned, unsigned);
 #define open test_open
 #define close test_close
+#define dup test_dup
+#define fcntl test_fcntl
 #define read test_read
 #define write test_write
 #define ioctl test_ioctl
@@ -38,6 +42,7 @@ void ew_test_video_register(unsigned, unsigned);
 '''
 SOURCE = r'''
 #include <assert.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -47,21 +52,36 @@ static unsigned char expected[65536];
 static int oracle_right=640, oracle_top, oracle_bottom=480;
 static int adapter=3, current_mode=3, mode_failure, terminal=1;
 static int opens, closes, sets, graphics_lock, keyboard_lock, mice;
+static int open_error, borrowed, stdin_flags=O_RDWR, graph_failure, flag_failure;
 static unsigned port_count, port_values[8], port_numbers[8];
 static struct termios console_term, initial_term;
 static const char *input="";
 int test_open(const char *path,int flags,...) {
- (void)flags;assert(!strcmp(path,"/dev/tty"));++opens;return 3;
+ (void)flags;assert(!strcmp(path,"/dev/tty"));if(open_error){errno=open_error;return -1;}++opens;return 3;
+}
+int test_dup(int fd) {assert(fd==0);++borrowed;++opens;return 3;}
+int test_fcntl(int fd,int cmd,...) {
+ va_list ap;int value;
+ if(cmd==F_GETFL){assert(fd==0);return stdin_flags;}
+ assert(fd==3 && cmd==F_SETFL);va_start(ap,cmd);value=va_arg(ap,int);va_end(ap);
+ if(flag_failure && (value&O_NONBLOCK))return -1;
+ stdin_flags=value;return 0;
 }
 int test_close(int fd) {assert(fd==3);++closes;return 0;}
 ssize_t test_read(int fd,void *p,size_t n) {
+ size_t i=0;char ch,*out=p;
  if(fd!=0 || !*input || !n)return -1;
- *(char*)p=*input++;return 1;
+ /* ELKS ntty.c processes canonical erase within each individual read. */
+ while(i<n && (ch=*input++)) {
+  if(ch==8 || ch==127){if(i)--i;continue;}
+  out[i++]=ch;if(ch=='\n')break;
+ }
+ return i;
 }
 ssize_t test_write(int fd,const void *p,size_t n) {(void)p;assert(fd==3);return n;}
 int test_ioctl(int fd,unsigned long request,...) {
  assert(fd==3);
- if(request==DCGET_GRAPH)++graphics_lock;
+ if(request==DCGET_GRAPH){if(graph_failure)return -1;++graphics_lock;}
  else if(request==DCREL_GRAPH)--graphics_lock;
  else if(request==DCSET_KRAW)++keyboard_lock;
  else if(request==DCREL_KRAW)--keyboard_lock;
@@ -101,6 +121,7 @@ static void setup(void) {
  console_term=initial_term;
 }
 static void restored(void) {
+ assert(stdin_flags==O_RDWR);assert(shared_flags==-1);
  assert(current_mode==3);assert(opens==closes);assert(!graphics_lock && !keyboard_lock && !mice);
  assert(!memcmp(&initial_term,&console_term,sizeof(initial_term)));
 }
@@ -177,6 +198,17 @@ int main(int argc,char **argv) {
  else if(!strcmp(which,"cancel")) {input="q\n";assert(ew_platform_init(0)==1);untouched();}
  else if(!strcmp(which,"nonterminal")) {terminal=0;assert(ew_platform_init(0)==-1);untouched();}
  else if(!strcmp(which,"prompt")) {input="2\n";assert(!ew_platform_init(0));assert(ew_screen_height==350);ew_platform_shutdown();restored();}
+ else if(!strcmp(which,"backspace")) {input="2\b3\n";assert(!ew_platform_init(0));assert(ew_screen_height==480);ew_platform_shutdown();restored();}
+ else if(!strcmp(which,"delete")) {input="3\1772\n";assert(!ew_platform_init(0));assert(ew_screen_height==350);ew_platform_shutdown();restored();}
+ else if(!strcmp(which,"erase_default")) {input="3\b\n";assert(!ew_platform_init(0));assert(ew_screen_height==200);ew_platform_shutdown();restored();}
+ else if(!strcmp(which,"extra")) {input="23\n";assert(ew_platform_init(0)==-1);untouched();}
+ else if(!strcmp(which,"long")) {input="22222222222222222222222222\n";assert(ew_platform_init(0)==-1);assert(!*input);untouched();}
+ else if(!strcmp(which,"noctty")) {open_error=ENODEV;assert(!ew_platform_init("cga"));assert(borrowed==1);assert(stdin_flags&O_NONBLOCK);ew_platform_shutdown();restored();}
+ else if(!strcmp(which,"serial")) {open_error=ENODEV;graph_failure=1;assert(ew_platform_init("cga")==-1);assert(!sets);restored();}
+ else if(!strcmp(which,"flags")) {open_error=ENODEV;flag_failure=1;assert(ew_platform_init("cga")==-1);restored();}
+ else if(!strcmp(which,"readonly")) {open_error=ENODEV;stdin_flags=O_RDONLY;assert(ew_platform_init("cga")==-1);assert(!borrowed);untouched();}
+ else if(!strcmp(which,"denied")) {open_error=EACCES;assert(ew_platform_init("cga")==-1);assert(!borrowed);untouched();}
+ else if(!strcmp(which,"redirected")) {open_error=ENODEV;terminal=0;assert(ew_platform_init("cga")==-1);assert(!borrowed);untouched();}
  else if(!strcmp(which,"reinit")) {assert(!ew_platform_init("vga"));ew_platform_shutdown();assert(!ew_platform_init("cga"));assert(ew_screen_height==200);ew_platform_shutdown();restored();}
  else assert(0);
  return 0;
@@ -212,6 +244,17 @@ class VideoModes(unittest.TestCase):
     def test_menu_cancel_without_graphics(self): self.run_case('cancel')
     def test_menu_requires_terminal(self): self.run_case('nonterminal')
     def test_menu_selects_ega(self): self.run_case('prompt')
+    def test_menu_backspace_reselects(self): self.run_case('backspace')
+    def test_menu_delete_reselects(self): self.run_case('delete')
+    def test_menu_erased_choice_defaults_to_cga(self): self.run_case('erase_default')
+    def test_menu_rejects_multiple_choices(self): self.run_case('extra')
+    def test_menu_drains_overlong_selection(self): self.run_case('long')
+    def test_missing_controlling_tty_uses_graphics_stdin_and_restores_flags(self): self.run_case('noctty')
+    def test_fallback_rejects_serial_before_changing_terminal(self): self.run_case('serial')
+    def test_fallback_flag_failure_restores_console(self): self.run_case('flags')
+    def test_fallback_rejects_readonly_stdin(self): self.run_case('readonly')
+    def test_access_denied_does_not_fallback(self): self.run_case('denied')
+    def test_fallback_rejects_redirected_stdin(self): self.run_case('redirected')
     def test_shutdown_and_reinit_geometry(self): self.run_case('reinit')
 
 if __name__ == '__main__': unittest.main()

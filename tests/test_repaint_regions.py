@@ -35,6 +35,8 @@ class RepaintRegions(unittest.TestCase):
         cls.lib.qa_repaint_progress.argtypes=[C.c_char_p]
         for name in ("load","bad_address","save"):
             getattr(cls.lib,"qa_repaint_"+name).argtypes=[C.c_char_p]
+        cls.lib.qa_address_painted_matches.argtypes=[C.c_char_p]
+        cls.lib.qa_current_url.restype=C.c_char_p
         cls.lib.qa_address_value.restype=C.c_char_p
         cls.lib.qa_address_status.restype=C.c_char_p
         cls.lib.qa_address_base.argtypes=[C.c_char_p]
@@ -64,6 +66,34 @@ class RepaintRegions(unittest.TestCase):
             finally:server.close()
             self.assertTrue(server.request.startswith(b'GET /path?q=hello HTTP/1.0'))
             self.assertEqual(self.lib.qa_address_value(),url.encode())
+    def test_pending_url_is_painted_before_response_without_changing_page_base(self):
+        for failure in (False,True):
+            self.prepare()
+            previous=self.lib.qa_current_url()
+            seen=[]
+            def response(server):
+                seen.append((self.lib.qa_address_painted_matches(url),self.lib.qa_current_url()))
+                return (b'broken response' if failure else
+                        b'HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\nNew page')
+            server=OneHTTP(response);url=(server.url+'/new').encode()
+            try:self.lib.qa_repaint_bad_address(url)
+            finally:server.close()
+            self.assertEqual(seen,[(1,previous)])
+            final=previous if failure else url
+            self.assertEqual(self.lib.qa_current_url(),final)
+            self.assertEqual(self.lib.qa_address_painted_matches(final),1)
+    def test_pending_url_survives_redirect_then_shows_final_url(self):
+        self.prepare();seen=[]
+        def response(server):
+            seen.append(self.lib.qa_address_painted_matches(requested))
+            if len(seen)==1:
+                return b'HTTP/1.0 302 Found\r\nLocation: /final\r\n\r\n'
+            return b'HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\nFinal'
+        server=OneHTTP([response,response]);requested=(server.url+'/start').encode()
+        try:self.lib.qa_repaint_bad_address(requested)
+        finally:server.close()
+        self.assertEqual(seen,[1,1])
+        self.assertEqual(self.lib.qa_address_painted_matches((server.url+'/final').encode()),1)
     def test_address_bar_keeps_explicit_scheme_and_local_paths(self):
         self.prepare()
         self.lib.qa_repaint_bad_address(b'https://example.invalid/')
@@ -286,7 +316,7 @@ class RepaintRegions(unittest.TestCase):
                 self.assertGreater(self.count(63,14,640,31),0);self.reset()
     def test_hover_updates_footer_only(self):
         self.prepare();self.lib.qa_repaint_hover(5,35)
-        self.no_full_clear();self.assertEqual(self.count(0,0,640,188),0)
+        self.no_full_clear();self.assertEqual(self.count(0,32,640,188),0)
         self.assertGreater(self.count(0,188,640,200),0)
     def test_straddling_glyph_box_rule_clipped_from_chrome(self):
         for h in (200,350,480):
@@ -305,10 +335,10 @@ class RepaintRegions(unittest.TestCase):
         self.assertEqual(self.count(0,0,640,13),0)
         self.assertEqual(self.count(0,14,63,32),0)
         self.assertGreater(self.count(0,32,624,188),0)
-    def test_failed_navigation_status_only_preserves_page(self):
+    def test_failed_navigation_restores_address_and_preserves_page(self):
         self.prepare();self.lib.qa_repaint_snapshot()
         self.assertEqual(self.lib.qa_repaint_load(b'file:/nonexistent-ew-repaint.htm'),0)
-        self.no_full_clear();self.assertEqual(self.count(0,0,640,188),0)
+        self.no_full_clear();self.assertEqual(self.count(0,32,640,188),0)
         self.assertEqual(self.lib.qa_repaint_difference(0,0,640,188),0)
         self.assertGreater(self.count(0,189,640,200),0)
     def test_failed_address_submit_exits_editor_without_frame_repaint(self):
