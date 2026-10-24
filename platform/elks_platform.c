@@ -35,7 +35,7 @@ static unsigned video_bytes=16384;
 static int clip_right=640, clip_top, clip_bottom=480;
 static unsigned long escape_started;
 static int cursor_x = -1, cursor_y;
-static unsigned char cursor_saved[12][2];
+static unsigned char cursor_saved[24][3];
 static unsigned char cursor_hand;
 
 /* BIOS owns its register conventions; preserve C's segment/frame registers.
@@ -326,13 +326,13 @@ void ew_rect(int x, int y, int width, int height, int white)
 
 void ew_cursor_hide(void)
 {
-    int row;
+    int row, col;
     unsigned offset;
     if (cursor_x < 0) return;
-    for (row = 0; row < 12 && cursor_y + row < EW_SCREEN_HEIGHT; ++row) {
+    for (row = 0; row < 24 && cursor_y + row < EW_SCREEN_HEIGHT; ++row) {
         offset = scan_offset(cursor_x, cursor_y + row);
-        video[offset] = cursor_saved[row][0];
-        if ((cursor_x >> 3) < 79) video[offset + 1] = cursor_saved[row][1];
+        for (col = 0; col < 3 && (cursor_x >> 3) + col < 80; ++col)
+            video[offset + col] = cursor_saved[row][col];
     }
     cursor_x = -1;
 }
@@ -340,28 +340,23 @@ void ew_cursor_hide(void)
 void ew_cursor_show(int x, int y)
 {
     /* Original ELKSWeb arrow and pointing hand, drawn for this backend.
-     * Both fit the same eight-column/twelve-row saved-background footprint.
+     * Double each bitmap pixel for a visible 16-column/24-row pointer.
      * The raised index finger begins at the logical pointer position. */
-    static const unsigned char outline[2][12] = {
-        {0x80,0xc0,0xe0,0xf0,0xf8,0xfc,0xfe,0xff,0xf8,0xd8,0x8c,0x0c},
-        {0xc0,0xe0,0xe0,0xe0,0xfc,0xfe,0xff,0xff,0xff,0x7e,0x3e,0x3c}
-    };
-    static const unsigned char interior[2][12] = {
-        {0,0,0x40,0x60,0x70,0x78,0x7c,0x60,0x60,0x40,0,0},
-        {0,0x40,0x40,0x40,0x40,0x54,0x54,0x7e,0x3e,0x3c,0x1c,0}
-    };
+#include "cursor_bitmap.h"
     int row, col;
     unsigned offset;
+    const unsigned char *bits, *line;
+    if (x == cursor_x && y == cursor_y) return;
     ew_cursor_hide();
     if (x < 0 || x >= EW_SCREEN_WIDTH || y < 0 || y >= EW_SCREEN_HEIGHT) return;
     cursor_x = x; cursor_y = y;
-    for (row = 0; row < 12 && y + row < EW_SCREEN_HEIGHT; ++row) {
+    bits = &cursor_bitmap[cursor_hand][x & 7][0][0];
+    for (row = 0; row < 24 && y + row < EW_SCREEN_HEIGHT; ++row) {
         offset = scan_offset(x, y + row);
-        cursor_saved[row][0] = video[offset];
-        if ((x >> 3) < 79) cursor_saved[row][1] = video[offset + 1];
-        for (col = 0; col < 8; ++col) {
-            if (outline[cursor_hand][row] & (0x80U >> col))
-                ew_pixel(x + col, y + row, !!(interior[cursor_hand][row] & (0x80U >> col)));
+        line = bits + (row >> 1) * 6;
+        for (col = 0; col < 3 && (x >> 3) + col < 80; ++col) {
+            cursor_saved[row][col] = video[offset + col];
+            video[offset + col] = (cursor_saved[row][col] & ~line[col]) | line[col + 3];
         }
     }
 }

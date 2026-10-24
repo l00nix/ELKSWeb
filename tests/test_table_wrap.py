@@ -53,7 +53,7 @@ class TableWrap(unittest.TestCase):
 
     def test_padding_reduces_content_bound(self):
         counts=[]
-        for padding in [0,10]:
+        for padding in [0,15]:
             self.parse('<table border=1 cellpadding='+str(padding)+'><td width=100>'+('one two three '*8)+'</table>')
             self.assertLessEqual(self.text_extent(self.texts()),100-2*padding)
             counts.append(len({r['y'] for r in self.texts()}))

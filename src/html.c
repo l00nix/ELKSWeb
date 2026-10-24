@@ -9,6 +9,7 @@
 #include <string.h>
 
 struct ew_document ew_doc;
+int ew_image_reflow;
 unsigned char ew_document_charset;
 static unsigned char parse_charset;
 static short px, py, indent, lineheight;
@@ -166,7 +167,7 @@ static void newline(int gap) {
   if (px > indent) {
     py += lineheight + gap;
     px = indent;
-    lineheight = style & EW_SMALL ? 6 : style & EW_LARGE ? 10 : 8;
+    lineheight = style & EW_SMALL ? EW_SMALL_HEIGHT : style & EW_LARGE ? EW_LARGE_HEIGHT : EW_BODY_HEIGHT;
   } else if (gap && py) {
     py += gap;
   }
@@ -206,10 +207,10 @@ static unsigned run_height(const struct ew_run EW_FAR *r) {
   if (r->kind == EW_RUN_RULE)
     return 1;
   if (r->kind == EW_RUN_TEXT)
-    return r->style & EW_SMALL ? 6 : r->style & EW_LARGE ? 10 : 8;
+    return r->style & EW_SMALL ? EW_SMALL_HEIGHT : r->style & EW_LARGE ? EW_LARGE_HEIGHT : EW_BODY_HEIGHT;
   if (r->kind == EW_RUN_BULLET)
     return 8;
-  return 12;
+  return EW_CONTROL_HEIGHT;
 }
 static void align_line(void) {
   unsigned i;
@@ -305,7 +306,7 @@ static void table_cell_close(void) {
   indent=table.cell_indent;
   style=table.cell_style;
   px=indent;
-  lineheight=8;
+  lineheight=EW_BODY_HEIGHT;
 }
 static void table_box(long x, long y, long width, long height) {
   struct ew_run EW_FAR *r;
@@ -407,7 +408,7 @@ static void table_finish(void) {
   indent=px=restore_indent;
   style=restore_style;
   py=table_position(bottom);
-  lineheight=8;
+  lineheight=EW_BODY_HEIGHT;
   line_first=ew_doc.run_count;
 }
 /* Explicit cell widths constrain normal text, while intrinsic items may grow
@@ -480,7 +481,7 @@ static void word(const char *s, unsigned n, int space) {
       r->n = take;
     }
     {
-      int height = style & EW_SMALL ? 6 : style & EW_LARGE ? 10 : 8;
+      int height = style & EW_SMALL ? EW_SMALL_HEIGHT : style & EW_LARGE ? EW_LARGE_HEIGHT : EW_BODY_HEIGHT;
       if (r == &ew_doc.runs[line_first] || lineheight < height)
         lineheight = height;
     }
@@ -935,7 +936,7 @@ static void control_run(unsigned kind) {
   r=run(kind);
   if (r) r->w=w;
   px+=w+3;
-  if (lineheight<12) lineheight=12;
+  if (lineheight<EW_CONTROL_HEIGHT) lineheight=EW_CONTROL_HEIGHT;
 }
 static void select_finish(void) {
   unsigned short saved_link=linkid;
@@ -1121,6 +1122,7 @@ static void parse_document(const char *base, int plain_mode) {
   char quote = 0;
   struct ew_run EW_FAR *r;
   struct ew_link *l;
+  ew_image_reflow = 0;
   if (ew_document_reset())
     return;
   field_count = 0;
@@ -1134,7 +1136,7 @@ static void parse_document(const char *base, int plain_mode) {
   table_ignored = 0;
   px = indent = 0;
   py = 0;
-  lineheight = plain_mode ? 6 : 8;
+  lineheight = plain_mode ? EW_SMALL_HEIGHT : EW_BODY_HEIGHT;
   style = plain_mode ? EW_MONO | EW_SMALL : 0;
   heading_bold = 0;
   size_depth = size_overflow = 0;
@@ -1454,7 +1456,7 @@ static void parse_document(const char *base, int plain_mode) {
             table.cell_x=px;
             table.cell_y=py;
             line_first=ew_doc.run_count;
-            lineheight=8;
+            lineheight=EW_BODY_HEIGHT;
             attr(tag,"colspan",value,sizeof(value));
             table.span=table_number(value,8);
             if (!table.span) table.span=1;
@@ -1660,6 +1662,7 @@ static void parse_document(const char *base, int plain_mode) {
         r = run(EW_RUN_IMAGE);
         if (!r)
           continue;
+        if (!has_width || !has_height) ew_image_reflow = 1;
         r->off = ew_doc.text_len;
         r->n = width;
         r->w = height;

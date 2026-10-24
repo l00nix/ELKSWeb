@@ -28,12 +28,12 @@ class Monospace(unittest.TestCase):
 
     def test_fixed_cell_metrics(self):
         lib = core.LIB
-        for size, width, height in [(0, 8, 6), (1, 9, 8), (2, 12, 10)]:
+        for size, width, height in [(0, 6, 10), (1, 6, 13), (2, 7, 14)]:
             for bold in (0, 1):
                 self.assertEqual({lib.ew_mono_char_width(c, bold, size)
-                                  for c in range(32, 127)}, {width + bold})
+                                  for c in range(32, 127)}, {width + (bold if size == 0 else 0)})
                 self.assertEqual(lib.ew_mono_width(b'Wi.!', 4, bold, size),
-                                 4 * (width + bold))
+                                 4 * (width + (bold if size == 0 else 0)))
             self.assertEqual(lib.ew_mono_height(size), height)
 
     def test_aliases_and_nested_style_restore(self):
@@ -46,16 +46,16 @@ class Monospace(unittest.TestCase):
         self.assertEqual(len(runs), 1)
         self.assertEqual(runs[0][0], b' A  B C')
         self.assertEqual(runs[0][1], 0)
-        self.assertEqual(core.LIB.ew_mono_width(runs[0][0], len(runs[0][0]), 0, 1), 63)
+        self.assertEqual(core.LIB.ew_mono_width(runs[0][0], len(runs[0][0]), 0, 1), 42)
 
     def test_pre_tab_stops_and_crlf(self):
         runs = self.parse(b'<pre>A\tB\r\n  C\tD</pre>')
         self.assertEqual([r[0] for r in runs], [b'A       B', b'  C     D'])
-        self.assertEqual(runs[1][2] - runs[0][2], 8)
+        self.assertEqual(runs[1][2] - runs[0][2], 13)
 
     def test_pre_empty_lines(self):
         runs = self.parse(b'<pre>A\n\n\nB</pre>')
-        self.assertEqual(runs[1][2] - runs[0][2], 24)
+        self.assertEqual(runs[1][2] - runs[0][2], 39)
 
     def test_pre_entity_decoding_still_html(self):
         runs = self.parse(b'<pre>&lt;b&gt;&amp;</pre>')
@@ -77,7 +77,7 @@ class Monospace(unittest.TestCase):
             runs = self.runs()
             self.assertEqual([r[0] for r in runs], [b'<b>A</b> &amp;', b'X       Y'])
             self.assertTrue(all(r[3] & 64 and r[3] & 32 for r in runs))
-            self.assertEqual(runs[1][2] - runs[0][2], 12)
+            self.assertEqual(runs[1][2] - runs[0][2], 20)
             runs = self.parse(b'<b>normal</b>')
             self.assertEqual(runs[0][0], b'normal')
             self.assertFalse(runs[0][3] & 64)

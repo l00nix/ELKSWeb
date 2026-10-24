@@ -263,9 +263,12 @@ int ew_gif_decode_aspect(const unsigned char EW_GIF_FAR *data, unsigned length,
             out->pixels[i] = 0;
             if (out->opacity) out->opacity[i] = 0;
         }
-        for (y = 0; y < out->height; ++y)
-            for (x = 0; x < out->width; ++x)
-                emit(out, x, y, background, 0, r.dither_shift);
+        /* A full-canvas first frame writes every pixel, including transparent
+         * indices. Only partial frames need the logical-screen background. */
+        if (left || top || width != out->width || height != out->height)
+            for (y = 0; y < out->height; ++y)
+                for (x = 0; x < out->width; ++x)
+                    emit(out, x, y, background, 0, r.dither_shift);
         result = decode_pixels(&r, out, left, top, width, height, flags & 0x40,
                                gray, colors, transparent, workspace);
         far_free(workspace);

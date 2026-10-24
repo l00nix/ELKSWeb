@@ -56,7 +56,7 @@ class Tables(unittest.TestCase):
         self.assertEqual((a['x'], a['y']), (4, 4))
         self.assertEqual(b['x'], 4 + aw + 4 + 2)
         self.assertEqual(len(self.boxes()), 3)
-        self.assertEqual(self.boxes()[-1]['height'], 16)
+        self.assertEqual(self.boxes()[-1]['height'], 21)
         self.assertFalse(self.lib.qa_truncated())
 
     def test_zero_padding_spacing_are_honored(self):
@@ -64,7 +64,7 @@ class Tables(unittest.TestCase):
         a, b = self.texts()
         self.assertEqual((a['x'], a['y']), (0, 0))
         self.assertEqual(b['x'], self.lib.ew_body_width(b'A', 1, 0))
-        self.assertEqual(self.boxes()[-1]['height'], 8)
+        self.assertEqual(self.boxes()[-1]['height'], 13)
 
     def test_explicit_table_width_is_distributed(self):
         self.parse('<table border=1 width=300><tr><td>A</td><td>B</td></tr></table>')

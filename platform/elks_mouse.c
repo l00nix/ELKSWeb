@@ -19,15 +19,17 @@ void ew_mouse_init(void)
     const char *type = getenv("ELKSWEB_MOUSE");
     const char *port;
     struct termios term;
-    if (mouse_fd >= 0 || (type && !strcmp(type, "none"))) return;
-    protocol = type && !strcmp(type, "ms");
-    if (type && !protocol && strcmp(type, "ps2")) return;
+    if (!type || !*type) type = getenv("MOUSE_TYPE");
+    if (!type || !*type) type = "ms";
+    if (mouse_fd >= 0 || !strcmp(type, "none")) return;
+    protocol = !strcmp(type, "ms");
+    if (!protocol && strcmp(type, "ps2")) return;
     port = getenv("ELKSWEB_MOUSE_PORT");
-    if (!port || !*port) {
-        /* Never seize a serial console or network connection by guessing. */
-        if (protocol) return;
-        port = "/dev/psaux";
-    }
+    if (!port || !*port) port = protocol ? getenv("MOUSE_PORT") : "/dev/psaux";
+    if (!port || !*port)
+        port = protocol ? (getenv("QEMU") ? "/dev/ttyS1" : "/dev/ttyS0")
+                        : "/dev/psaux";
+    if (!strcmp(port, "none")) return;
     mouse_fd = open(port, O_RDONLY | O_EXCL | O_NOCTTY | O_NONBLOCK);
     if (mouse_fd < 0) return;
     if (tcgetattr(mouse_fd, &mouse_term) < 0) goto failed;
@@ -44,8 +46,9 @@ void ew_mouse_init(void)
     }
     if (tcsetattr(mouse_fd, TCSANOW, &term) < 0) goto failed;
     memset(&packet, 0, sizeof(packet));
-    mouse_x = EW_SCREEN_WIDTH / 2;
-    mouse_y = EW_SCREEN_HEIGHT / 2;
+    /* Positions retain half-pixel motion, including tiny negative steps. */
+    mouse_x = EW_SCREEN_WIDTH;
+    mouse_y = EW_SCREEN_HEIGHT;
     mouse_buttons = 0;
     return;
 failed:
@@ -67,28 +70,30 @@ int ew_mouse_read(struct ew_mouse_event *event)
 {
     unsigned char byte;
     unsigned buttons;
-    int n, budget = 24, dx, dy, x, y;
+    int n, budget = 96, pending = 0, dx, dy, x, y;
     if (!event || mouse_fd < 0) return 0;
     while (budget--) {
         n = read(mouse_fd, &byte, 1);
         if (n != 1) {
             if (n < 0 && errno != EAGAIN && errno != EINTR) ew_mouse_shutdown();
-            return 0;
+            return pending;
         }
         if (!ew_mouse_packet_byte(&packet, byte, protocol, &dx, &dy, &buttons)) continue;
         x = mouse_x + dx;
         y = mouse_y + dy;
         if (x < 0) x = 0;
         if (y < 0) y = 0;
-        if (x >= EW_SCREEN_WIDTH) x = EW_SCREEN_WIDTH - 1;
-        if (y >= EW_SCREEN_HEIGHT) y = EW_SCREEN_HEIGHT - 1;
+        if (x >= EW_SCREEN_WIDTH * 2) x = EW_SCREEN_WIDTH * 2 - 1;
+        if (y >= EW_SCREEN_HEIGHT * 2) y = EW_SCREEN_HEIGHT * 2 - 1;
         if (x == mouse_x && y == mouse_y && buttons == mouse_buttons) continue;
-        event->x = mouse_x = x;
-        event->y = mouse_y = y;
+        event->x = (mouse_x = x) >> 1;
+        event->y = (mouse_y = y) >> 1;
         event->pressed = buttons & ~mouse_buttons;
         event->released = mouse_buttons & ~buttons;
         event->buttons = mouse_buttons = buttons;
-        return 1;
+        pending = 1;
+        /* Coalesce queued motion, but deliver every button edge in order. */
+        if (event->pressed || event->released) return 1;
     }
-    return 0;
+    return pending;
 }

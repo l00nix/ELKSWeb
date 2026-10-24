@@ -54,22 +54,22 @@ class ScrollBlit(unittest.TestCase):
             with self.subTest(height=height):
                 self.mixed(height)
                 self.move(500); self.equal_full()
-                view = height - 30
+                view = height - 44
                 for delta in (1, -1, 3, -3, 10, -10, 17, -17, view-1, 1-view):
                     with self.subTest(height=height, delta=delta):
                         before = self.lib.qa_scroll_position(); self.reset()
                         self.move(before + delta)
                         self.assertEqual(self.lib.qa_scroll_copies(), 1)
                         self.assertEqual(self.lib.qa_scroll_delta(), delta)
-                        self.assertEqual(self.lib.qa_scroll_top(), 22)
-                        self.assertEqual(self.lib.qa_scroll_bottom(), height-8)
-                        self.assertEqual(self.count(0, 0, 640, 22), 0)
+                        self.assertEqual(self.lib.qa_scroll_top(), 32)
+                        self.assertEqual(self.lib.qa_scroll_bottom(), height-12)
+                        self.assertEqual(self.count(0, 0, 640, 32), 0)
                         if delta > 0:
-                            self.assertEqual(self.count(0, 22, 624, height-8-delta), 0)
-                            self.assertGreater(self.count(0, height-8-delta, 624, height-8), 0)
+                            self.assertEqual(self.count(0, 32, 624, height-12-delta), 0)
+                            self.assertGreater(self.count(0, height-12-delta, 624, height-12), 0)
                         else:
-                            self.assertEqual(self.count(0, 22-delta, 624, height-8), 0)
-                            self.assertGreater(self.count(0, 22, 624, 22-delta), 0)
+                            self.assertEqual(self.count(0, 32-delta, 624, height-12), 0)
+                            self.assertGreater(self.count(0, 32, 624, 32-delta), 0)
                         self.equal_full()
 
     def test_missing_image_alt_crossing_viewport_and_exposed_strip(self):
@@ -106,7 +106,7 @@ class ScrollBlit(unittest.TestCase):
 
     def test_large_jumps_and_geometry_changes_fall_back(self):
         for height in (200, 350, 480):
-            for delta in (height-30, height+1):
+            for delta in (height-44, height+1):
                 with self.subTest(height=height, delta=delta):
                     self.mixed(height); self.reset(); self.move(delta)
                     self.assertEqual(self.lib.qa_scroll_copies(), 0); self.equal_full()

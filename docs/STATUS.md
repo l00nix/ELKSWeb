@@ -1,3 +1,10 @@
+# Current release: ELKSWeb 0.2 experimental beta
+
+See [0.2 release notes](RELEASE-0.2.md) and [the changelog](../CHANGELOG.md) for
+current behavior and evidence boundaries. Detailed development validation remains
+local. The records below describe 0.1 and older candidates; their executable
+identities and hardware results must not be attributed to the 0.2 binary.
+
 # ELKSWeb 0.1 — validation status
 
 **Version 0.1 is publicly available as an experimental beta.** The [repository](https://github.com/l00nix/ELKSWeb), [prerelease](https://github.com/l00nix/ELKSWeb/releases/tag/v0.1) and [discussion announcement](https://github.com/ghaerr/elks/discussions/2185#discussioncomment-18987882) are public. The original 86Box cold-boot exit anomaly remains open. Speed and responsiveness remain known limitations.

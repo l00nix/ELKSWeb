@@ -452,7 +452,7 @@ class Core(unittest.TestCase):
         LIB.ew_parse(b'<select><option selected>A</option></select>',b'http://host/')
         self.assertGreater(wide,LIB.qa_run_width_field(0));self.assertLessEqual(wide,240)
     def test_select_actual_width_controls_wrap_and_following_text(self):
-        LIB.ew_parse(b'.'*150+b'<select><option>A</option></select>tail',b'http://host/')
+        LIB.ew_parse(b'.'*90+b'<select><option>A</option></select>tail',b'http://host/')
         index=next(i for i in range(LIB.qa_runs()) if LIB.qa_run_kind(i)==10)
         self.assertEqual(LIB.qa_y(index),LIB.qa_y(0));self.assertEqual(LIB.qa_x(index+1),LIB.qa_x(index)+LIB.qa_run_width_field(index)+3)
     def test_empty_select_and_unclosed_select_render_bounded_control(self):

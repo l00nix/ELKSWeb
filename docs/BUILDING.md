@@ -1,3 +1,16 @@
+# Building the current 0.2 release
+
+The lightweight external builder and audited developer builder remain separate.
+Install the binary as `/bin/elksweb`; see [INSTALL.md](INSTALL.md) for assets under
+`/lib/elksweb`. Source and runtime release archives are generated with
+`toolchain/package-release-0.2.py --help`; the original `package-release.py` remains
+pinned to 0.1 for historical reproducibility. The new packager requires the exact
+source revision, audited binary hash and matching ELKS source archive. Packaging
+is a host-side operation and adds no dependencies to the external builder.
+
+The historical clean-build pins and 0.1 qualification records below retain their
+original scope; they are not claims about a fresh 0.2 hardware test.
+
 # Building and running
 
 The application uses ELKS's IA16 GCC toolchain, not the host C compiler or a DOS C++ toolchain. Version 0.1 was built with ia16-elf-gcc 6.3.0 and exercised on ELKS 0.9.2-dev. The source bootstrap below was validated on 2026-10-16 in a new Ubuntu 22.04 container, including a freshly compiled toolchain, libc, kernel and image. See [the clean-build record](CLEAN-BUILD-001.md) for pins, hashes, the dependency correction and remaining reproducibility limits.
@@ -16,14 +29,16 @@ Python, `sha256sum`, OpenWatcom and the optional audit tools are not required.
 The compiler flags retain the 8086 instruction target and small memory model.
 Use the audited build below for release validation and stack/ISA reports.
 
-The proposed upstream integration adds `./buildext.sh elksweb` (also included
+The merged upstream integration provides `./buildext.sh elksweb` (also included
 in `./buildext.sh all`). It checks out this repository in `extapps/ELKSWeb`,
 passes the ELKS tree as `ELKSWEB_ELKS`, and runs this minimal build script.
 The companion `elkscmd/ExtApplications` entries install the executable as
 `/bin/elksweb`, welcome page and logo under `/root`, and notices under
 `/lib/elksweb`. They select hard-disk images only, with no floppy-size tags.
-Publish this script before enabling the upstream integration, since upstream
-clones the public repository. No browser autostart, network configuration,
+Upstream clones the public repository. Its current asset mapping still uses the
+legacy `/root` layout, supported by the 0.2 fallback. Moving those upstream entries
+to `/lib/elksweb` is a separate follow-up; the standalone 0.2 runtime already uses
+the new layout. No browser autostart, network configuration,
 HP-specific keyboard setting or kernel change is part of this integration.
 
 ## Native application with developer audits
@@ -96,7 +111,7 @@ bash toolchain/build-app.sh
 
 The script targets `-march=i8086 -mtune=i8086 -mcmodel=small -melks-libc`. Outputs go to `build/`, including the executable, retained ELF, linker map, compiler identity, disassembly, stack report and static ISA audit. The ISA audit is not a substitute for runtime testing.
 
-Install `build/elksweb` as executable `/bin/elksweb`, `share/welcome.htm` as `/root/welcome.htm`, and `share/elksweb.gif` as `/root/elksweb.gif` on a suitable ELKS installation. Retain the logo provenance from `share/logo-source.txt` as `/root/logo-src.txt`, and keep the supplied browser, font and ELKS/libc notices with redistributed packages. Running `elksweb` without a URL opens this local help page; website fixtures are not required. Start ELKS networking using its documented configuration before loading HTTP pages. The browser needs a writable `/tmp` and a graphics-capable controlling console. It opens a text-mode display selector by default. Press 1/2/3 and Enter, or Q and Enter to cancel. Available modes are genuine monochrome CGA 640×200, EGA 640×350 and VGA 640×480; EGA requires a color display and at least 128 KB video RAM. Detection rejects unavailable modes before changing the console. QEMU validation does not certify physical adapters.
+Install `build/elksweb` as executable `/bin/elksweb`, `share/welcome.htm` as `/lib/elksweb/welcome.htm`, and `share/elksweb.gif` as `/lib/elksweb/elksweb.gif` on a suitable ELKS installation. Retain the logo provenance from `share/logo-source.txt` as `/lib/elksweb/logo-src.txt`, and keep the supplied browser, font and ELKS/libc notices with redistributed packages. Running `elksweb` without a URL opens this local help page; website fixtures are not required. Start ELKS networking using its documented configuration before loading HTTP pages. The browser needs a writable `/tmp` and a graphics-capable controlling console. It opens a text-mode display selector by default. Press 1/2/3 and Enter, or Q and Enter to cancel. Available modes are genuine monochrome CGA 640×200, EGA 640×350 and VGA 640×480; EGA requires a color display and at least 128 KB video RAM. Detection rejects unavailable modes before changing the console. QEMU validation does not certify physical adapters.
 
 For an explicit mode, including unattended tests:
 

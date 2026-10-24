@@ -127,7 +127,7 @@ void qa_repaint_save(const char *path) {
 }
 
 void qa_repaint_click_back(void) {
-  struct ew_mouse_event e;memset(&e,0,sizeof(e));e.x=15;e.y=12;
+  struct ew_mouse_event e;memset(&e,0,sizeof(e));e.x=15;e.y=NAV_Y+2;
   e.buttons=e.pressed=EW_MOUSE_LEFT;mouse_event(&e);if(dirty)draw();
 }
 int qa_repaint_editing(void) {return editing;}
@@ -164,4 +164,52 @@ int qa_scroll_loaded_images(void) {
   unsigned i;int count=0;
   for(i=0;i<ew_doc.run_count;i++)if(ew_doc.runs[i].kind==EW_RUN_IMAGE && ew_doc.runs[i].style!=255)count++;
   return count;
+}
+
+void qa_focus_step(int direction) {focus_next(direction); if(dirty)draw();}
+void qa_focus_noimages(int enabled) {load_images=!enabled;}
+
+/* Reference the original complete reparse/paint after image loading, not just
+ * the optimized document's current runs. This catches stale layout as well as
+ * missed/transparent pixels in the incremental image update. */
+unsigned qa_repaint_reparse_equivalence(void) {
+  qa_repaint_snapshot();
+  ew_parse_source(current);measure_page();dirty=DRAW_ALL;draw();
+  return qa_repaint_difference(0,0,640,ew_screen_height);
+}
+
+void qa_repaint_complete_images(void) {
+  ew_images_load();dirty=DRAW_IMAGES;draw();
+}
+unsigned long qa_repaint_outside_images(void) {
+  int x,y;unsigned i;unsigned long total=0;
+  for(y=0;y<ew_screen_height;y++)for(x=0;x<640;x++) {
+    for(i=0;i<ew_doc.run_count;i++) {
+      const struct ew_run *r=&ew_doc.runs[i];
+      if(r->kind==EW_RUN_IMAGE && r->style!=255 &&
+          x>=r->x-hscroll && x<r->x-hscroll+r->n &&
+          y>=top()+r->y-scroll && y<top()+r->y-scroll+r->w)break;
+    }
+    if(i==ew_doc.run_count)total+=writes[y][x];
+  }
+  return total;
+}
+
+const char *qa_address_value(void) {return address;}
+const char *qa_address_status(void) {return status;}
+void qa_address_base(const char *url) {strcpy(current,url);}
+
+/* Dispatch a real left-button edge at a parsed link/control or blank viewport. */
+void qa_repaint_click_link(int index) {
+  unsigned i;
+  struct ew_mouse_event e;
+  memset(&e,0,sizeof(e));e.buttons=e.pressed=EW_MOUSE_LEFT;
+  e.x=500;e.y=bottom()-5;
+  for(i=0;i<ew_doc.run_count;i++) {
+    struct ew_run *r=&ew_doc.runs[i];
+    if(index>=0 && (int)r->link==index+1) {
+      e.x=r->x-hscroll+2;e.y=top()+r->y-scroll+2;break;
+    }
+  }
+  mouse_event(&e);if(dirty)draw();
 }

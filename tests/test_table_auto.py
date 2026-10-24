@@ -26,7 +26,7 @@ class AutomaticTables(unittest.TestCase):
 
     def test_probe_targets_and_link_identity(self):
         self.parse((Path(__file__).parent/'fixtures/auto-columns.htm').read_text())
-        self.assertEqual([r['width'] for r in self.boxes()],[35,239,35,239,280,325,293,624])
+        self.assertEqual([r['width'] for r in self.boxes()],[34,240,34,240,280,330,288,624])
         linked=[r for r in self.texts() if self.lib.qa_run_link(r['i'])]
         self.assertEqual(len(linked),2)
         self.assertTrue(all(self.lib.qa_run_link(r['i'])==1 for r in linked))

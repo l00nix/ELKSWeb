@@ -82,6 +82,8 @@ struct ew_document {
   short height;
 };
 extern struct ew_document ew_doc;
+/* HTML images without both dimensions require layout after image loading. */
+extern int ew_image_reflow;
 extern char EW_FAR *ew_source;
 int ew_source_init(void);
 void ew_source_free(void);

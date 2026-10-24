@@ -10,7 +10,7 @@ from parity import Machine, prepare_reference, read_ppm, normalize, png, digest
 
 HERE=pathlib.Path(__file__).resolve().parent
 ROOT=HERE.parent.parent
-SITES={'frogfind':'http://frogfind.8088retro.com/','68k':'http://68k.news/'}
+SITES={'frogfind':'http://frogfind.8088retro.com/','68k':'http://68k.news/','httpedia':'http://httpedia.com/'}
 
 def capture(machine,directory,name):
     raw=directory/(name+'.ppm');machine.capture(raw);pic=read_ppm(raw.read_bytes())

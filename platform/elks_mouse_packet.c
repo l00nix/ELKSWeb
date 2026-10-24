@@ -9,7 +9,9 @@ int ew_mouse_packet_byte(struct ew_mouse_packet *s, unsigned char byte,
     int x, y;
     if (protocol) {
         if (byte & 0x40) { s->bytes[0] = byte; s->count = 1; return 0; }
-        if (!s->count || (byte & 0x80)) { s->count = 0; return 0; }
+        /* ELKS UARTs receive 8-bit words: a 7-bit serial mouse's stop bit
+         * may occupy bit 7. Only bits 0..6 belong to Microsoft packets. */
+        if (!s->count) return 0;
     } else if (!s->count && !(byte & 0x08)) return 0;
     s->bytes[s->count++] = byte;
     if (s->count < 3) return 0;

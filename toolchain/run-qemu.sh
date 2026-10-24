@@ -5,7 +5,7 @@ script_dir=$(cd "$(dirname "$0")" && pwd)
 app_dir=$(cd "$script_dir/.." && pwd)
 qemu=${ELKSWEB_QEMU:-qemu-system-i386}
 disk=${ELKSWEB_IMAGE:-$app_dir/build/elksweb.img}
-url=${1:-/root/welcome.htm}
+url=${1:-/lib/elksweb/welcome.htm}
 if [[ $# -gt 1 ]]; then
     printf 'Usage: %s [http://address/ or guest-file-path]\n' "$0" >&2
     exit 2

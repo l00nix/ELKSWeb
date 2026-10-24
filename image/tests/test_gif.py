@@ -66,6 +66,8 @@ def main():
         lib.ew_gif_decode.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.POINTER(Gif)]
         lib.ew_gif_decode.restype = ctypes.c_int
         lib.ew_gif_free.argtypes = [ctypes.POINTER(Gif)]
+        lib.ew_gif_decode_aspect.argtypes = [ctypes.c_void_p, ctypes.c_uint,
+                                            ctypes.POINTER(Gif), ctypes.c_uint]
 
         def decode(blob):
             result = Gif()
@@ -98,6 +100,49 @@ def main():
                                 assert bool(output.pixels[offset] & mask) == expected, ("pixel", x, y)
                     lib.ew_gif_free(ctypes.byref(output))
                     assert not output.pixels and not output.opacity
+                    cases += 1
+
+        # Full frames can skip logical-screen background emission, but offset
+        # frames must retain it. Use white background so zeroing alone fails.
+        for partial in (False, True):
+            for transparent in (None, 0):
+                blob = bytearray(encoded(9, 7, 2, 42, transparent=transparent))
+                blob[11] = 1
+                if partial:
+                    pos = 13 + 3 * (2 << (blob[10] & 7))
+                    while blob[pos] == 0x21:
+                        pos += 2
+                        while blob[pos]:
+                            pos += blob[pos] + 1
+                        pos += 1
+                    assert blob[pos] == 0x2c
+                    blob[6:10] = (15).to_bytes(2, "little") + (12).to_bytes(2, "little")
+                    blob[pos+1:pos+5] = (3).to_bytes(2, "little") + (2).to_bytes(2, "little")
+                blob = bytes(blob)
+                reference = Image.open(io.BytesIO(blob)).convert("RGBA")
+                for aspect in (1, 2):
+                    output = Gif()
+                    assert lib.ew_gif_decode_aspect(blob, len(blob), ctypes.byref(output), aspect) == 0
+                    for y in range(output.height):
+                        for x in range(output.width):
+                            at, mask = y * output.stride + x // 8, 128 >> (x & 7)
+                            outside = partial and not (3 <= x < 12 and 2 <= y < 9)
+                            if outside:
+                                # The decoder preserves background color bits even
+                                # when the first-frame transparency mask hides them.
+                                assert output.pixels[at] & mask
+                                if transparent is None: assert not output.opacity
+                                if transparent is not None:
+                                    assert not (output.opacity[at] & mask)
+                                continue
+                            r, g, b, a = reference.getpixel((x, y))
+                            opaque = bool(output.opacity[at] & mask) if output.opacity else True
+                            assert opaque == bool(a)
+                            if opaque:
+                                gray = (r * 77 + g * 150 + b * 29) >> 8
+                                expected = gray > BAYER[((y // aspect) & 3) * 4 + (x & 3)] * 16 + 7
+                                assert bool(output.pixels[at] & mask) == expected
+                    lib.ew_gif_free(ctypes.byref(output))
                     cases += 1
 
         minimal = encoded(1, 1, 2, 0)

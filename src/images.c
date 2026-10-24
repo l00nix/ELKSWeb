@@ -213,7 +213,7 @@ static void image_placeholder(const struct ew_run EW_FAR *r,int x,int y,
   }
   /* Keep glyphs inside the image; the active display clip crops partial
    * rows at viewport/exposed-strip edges, just like ordinary page text. */
-  if (y+10<=top || y+2>=bottom || r->w<12) return;
+  if (y+2+EW_BODY_HEIGHT<=top || y+2>=bottom || r->w<EW_BODY_HEIGHT+4) return;
   if (x+2>=0 && (long)x+11<right && x+11<EW_SCREEN_WIDTH)
     ew_body_draw(x+2,y+2,'?',color,-1,0,0);
   cursor=x+12;

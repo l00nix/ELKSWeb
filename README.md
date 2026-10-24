@@ -1,14 +1,23 @@
 <p align="center">
+
   <img src="artwork/elksweb-wordmark-yellow-globe.png" alt="ELKSWeb logo" width="640">
 </p>
 
-# ELKSWeb 0.1
+# ELKSWeb 0.2
 
 An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr/elks), written in C with the native ELKS IA16 toolchain and targeting 8088-compatible machines.
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Version 0.1 — experimental beta.** This release features display selection and smooth scrolling. It remains an original C implementation built with the native ELKS toolchain. See [0.1 release notes](docs/RELEASE-0.1.md) for exact artifacts, validation and limits. This version has been confirmed to run on both the standard HP 200LX and a modified double-speed (DS) HP 200LX.
+**Version 0.2 — experimental beta.** Clearer fixed fonts, improved serial-mouse
+handling, fewer navigation/image redraws, a GIF decoding optimization, and automatic
+`http://` prefixes for addresses. See the [changelog and feedback credits](CHANGELOG.md),
+[0.2 release notes](docs/RELEASE-0.2.md) and [downloads](https://github.com/l00nix/ELKSWeb/releases/tag/v0.2).
+
+Development candidates were tested on the Amstrad PPC 512 with PicoMEM 2. The
+new release binary has automated and emulator checks; a separate 0.2 hardware
+retest remains open. The HP 200LX results and screenshots below are historical
+0.1 evidence. General IBM PC compatibility remains the goal.
 
 ## Live Internet browsing on the HP 200LX
 
@@ -22,7 +31,7 @@ DNS resolution and a LAN HTTP download with a matching checksum also passed. The
 
 The run used an experimental HP-specific ELKS build with local Accton compatibility and interrupt-routing fixes. The permanent routing fix has been built and tested in software but still needs installation and a fresh hardware boot. These results do not mean the stock kernel or published browser package includes those NIC fixes. See the [hardware test report](docs/HP200LX-INTERNET-TEST.md) for scope and findings.
 
-## Emulator screenshots
+## Historical 0.1 emulator screenshots
 
 ![ELKSWeb 0.1 default welcome page in QEMU CGA](docs/screenshots/0.1/welcome-cga-qemu.png)
 
@@ -49,13 +58,13 @@ The C++, networking, graphics-dependency and memory concerns raised in [the ELKS
 - 8088-compatible processor target. Earlier candidates were exercised in 86Box with an Intel 8088 at 4.77 MHz and 640 KB RAM. The owner confirms the exact 0.1 executable runs on the standard HP 200LX and DS HP 200LX, with smoother scrolling reported on the standard HP. Installation identities were verified separately from those owner graphics reports. Exact-0.1 86Box welcome, scrolling and a normal-shell exit passed; an earlier cold-boot exit anomaly remains unresolved. See the release notes.
 - CGA 640×200, color EGA with at least 128 KB video RAM at 640×350, or VGA at 640×480. All browser modes are monochrome. Mode selection and console restoration are exercised in QEMU and Windows 86Box; 0.1-specific results are recorded in the release notes. [CGA capture](docs/screenshots/frogfind-build004-cga-86box.png) · [EGA capture](docs/screenshots/frogfind-build004-ega-86box.png) · [VGA capture](docs/screenshots/frogfind-build004-vga-86box.png).
 - A writable `/tmp` for page caching.
-- Keyboard navigation; PS/2 mouse support exists but was not tested in the 8088 run.
+- Keyboard navigation and serial-mouse input; 0.2 development candidates were exercised with Microsoft serial mice on the PPC 512. PS/2 coverage remains limited.
 
 640 KB is the tested configuration, not a proven minimum. General ELKS compatibility is the priority. On the tested HP 200LX setup ([ELKS Linux on the HP 200LX](https://github.com/l00nix/elks-on-hp200lx)), set `ELKSWEB_COOKED_KEYS=1` to use its translated keyboard input.
 
 ## Current features
 
-HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, forms, tables, lists, monochrome GIF images and binary downloads. PNG/JPEG dimensions are recognized for layout, but their pixels are not decoded. JPEG decoding is outside the 0.1 scope and is likely to remain outside future releases, similar to MicroWeb. Features have differing levels of test coverage; see [tests](tests/README.md).
+HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, forms, tables, lists, monochrome GIF images and binary downloads. PNG/JPEG dimensions are recognized for layout, but their pixels are not decoded. JPEG decoding is outside the current scope and is likely to remain outside future releases, similar to MicroWeb. Features have differing levels of test coverage; see [tests](tests/README.md).
 
 ## Limitations
 
@@ -68,14 +77,14 @@ HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, f
 
 ## Future enhancements
 
-Version 0.1 keeps the tested monochrome renderer. Follow-up work under consideration includes:
+Version 0.2 keeps the monochrome renderer. Follow-up work under consideration includes:
 
 - **EGA/VGA colour GIF rendering**, while retaining monochrome CGA and HP 200LX output. This requires palette-aware image storage, video-plane drawing, scrolling and cursor handling, plus work to fit the 64 KB code-segment limit. The blue logo artwork is prepared for this future work; it is not the installed 0.1 logo.
 - **Faster page loading and rendering**, with measured reductions in CPU, disk and memory use.
 - **Broader compatibility testing**, including additional ELKS systems, physical 8088 machines and display adapters, and investigation of the remaining 86Box cold-boot exit anomaly.
 - **HTML and input improvements**, including form controls, accented text and clearer handling of document limits.
 
-These are directions, not promised features or dates. JPEG decoding remains outside the planned scope; 0.1 displays GIF pixels and uses JPEG/PNG dimensions for placeholders.
+These are directions, not promised features or dates. JPEG decoding remains outside the planned scope; ELKSWeb displays GIF pixels and uses JPEG/PNG dimensions for placeholders.
 
 ## Keyboard shortcuts
 
@@ -106,30 +115,31 @@ Without `-video`, ELKSWeb displays a text-console selector before entering graph
 
 ## How to install a release
 
-**No compiler is needed.** ELKSWeb runs on an existing compatible ELKS installation with a graphics console and writable `/tmp`; it does not install ELKS itself. Download the files using a modern computer: GitHub uses HTTPS, which ELKSWeb cannot access directly. The [0.1 experimental prerelease and downloads](https://github.com/l00nix/ELKSWeb/releases/tag/v0.1) are publicly available.
-
-1. Open [Releases](https://github.com/l00nix/ELKSWeb/releases) and expand the 0.1 **Assets** list.
-2. For a first installation, download **`ELKSWeb-0.1-runtime.tar.gz`** and its `.sha256` file. It includes the compiled browser, welcome HTML, GIF logo and notices. Download **`elksweb`** and its `.sha256` instead if you only need the executable to update an existing installation.
-3. Verify the checksum on the modern computer, then extract the runtime archive there. Transfer files to the ELKS disk using your existing binary-safe serial transfer, network transfer or mounted-disk workflow. The [installation guide](docs/INSTALL.md) gives checksum commands and the exact source/destination file list.
-4. Transfer the executable to `/root/elksweb`. For a first installation, also place the welcome page at `/root/welcome.htm`, logo at `/root/elksweb.gif` and logo provenance at `/root/logo-src.txt`; retain the supplied notices. Exit any running browser, then run these commands **on the ELKS graphics console as root**:
+Download the [0.2 beta runtime package](https://github.com/l00nix/ELKSWeb/releases/tag/v0.2)
+on a modern computer, verify its checksum, and transfer it to an existing ELKS
+installation. Install `bin/elksweb` as `/bin/elksweb` and the files in
+`lib/elksweb/` under `/lib/elksweb/`. The executable is always named `elksweb`.
+Keep the included notices and corresponding-source archive available.
 
 ```sh
-cp /root/elksweb /bin/elksweb
 chmod 755 /bin/elksweb
 elksweb --version
 elksweb
 ```
 
-The version should report **0.1**. Choose a detected display mode; the local welcome page should open without a network connection. Escape exits. For online browsing, configure ELKS networking first, then try `elksweb http://68k.news/`.
+The version reports **0.2**. Choose a detected display mode to open the local
+welcome page. Configure native ELKS networking and run `net start` before using
+HTTP. Enter a hostname such as `68k.news` in the address field or an explicit URL.
 
-On the tested HP 200LX ELKS Linux setup, run `export ELKSWEB_COOKED_KEYS=1` before launching the browser. See [full installation, upgrade and troubleshooting instructions](docs/INSTALL.md).
-
-For building from source or emulator testing, see [BUILDING.md](docs/BUILDING.md).
+See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse settings
+and upgrades. The runtime is a standalone application package, not an ELKS disk
+image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
 
 ## Test sites and related projects
 
 - [68k.news](http://68k.news/) — used in the actual live screenshots; [ActionRetro/68k-news source](https://github.com/ActionRetro/68k-news).
 - [FrogFind](http://frogfind.com/) — current live QA uses the supplied [HTTP mirror](http://frogfind.8088retro.com/). The original hostname failed in the historical Windows run. Repeatable file and HTTP examples are under [tests/fixtures/frogfind](tests/fixtures/frogfind/README.txt); these are labelled fixed fixtures, not live search. [Source](https://github.com/ActionRetro/FrogFind).
+- [HTTPedia](http://httpedia.com/) — additional testing target; external availability may vary.
 - [MicroWeb](https://github.com/jhhoward/MicroWeb) — inspiration and independent comparison reference.
 - [ELKS](https://github.com/ghaerr/elks) — operating system, toolchain and networking.
 
@@ -137,8 +147,8 @@ These projects are credited for their respective work; no endorsement or affilia
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). The scoped 0.1 visual, functional, resource-recovery and build checks, plus historical clean-build evidence, are recorded in STATUS; broader compatibility testing remains valuable. Speed and responsiveness improvements are follow-up work and do not gate the first public beta. Testers and feedback are welcome.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). See the 0.2 release notes for current validation scope. Historical checks remain in STATUS; broader compatibility and performance feedback are welcome. Testers and feedback are welcome.
 
 ## License and attribution
 
-Original browser code is GPL-2.0-or-later; see [COPYING](COPYING). Independently sourced font data retains its [X.Org/Adobe/DEC notices](font/COPYING) and [provenance](font/provenance.json). No MicroWeb source, font, image assets or executable is embedded in ELKSWeb. The separately attributed FrogFind test fixture retains its GPL-3.0 license and provenance under [tests/fixtures/frogfind](tests/fixtures/frogfind/README.txt). Website content visible in screenshots belongs to its respective providers.
+Original browser code is GPL-2.0-or-later; see [COPYING](COPYING). Independently sourced font data retains its [X.Org public-domain notice](font/COPYING) and [provenance](font/provenance.json). No MicroWeb source, font, image assets or executable is embedded in ELKSWeb. The separately attributed FrogFind test fixture retains its GPL-3.0 license and provenance under [tests/fixtures/frogfind](tests/fixtures/frogfind/README.txt). Website content visible in screenshots belongs to its respective providers.
