@@ -23,11 +23,11 @@ The FrogFind mirror and its frog GIF displayed on the Amstrad PPC 512's original
 
 ### HP 200LX
 
-ELKSWeb 0.1 successfully loaded and rendered **68k.news** and the **FrogFind mirror** on a physical double-speed HP 200LX over an Accton EN2216 R02 PCMCIA Ethernet card, using the native ELKS `ktcp` stack. These are photographs of the actual palmtop.
+ELKSWeb 0.2 on a physical HP 200LX, showing the welcome page and the FrogFind mirror with its GIF. Photographs by l00nix.
 
-![68k.news rendered by ELKSWeb on a physical HP 200LX](docs/screenshots/hp200lx/68k-news-photo.png)
+![ELKSWeb 0.2 welcome page on a physical HP 200LX](docs/screenshots/hp200lx/0.2/welcome-photo.png)
 
-![FrogFind mirror and frog GIF rendered by ELKSWeb on a physical HP 200LX](docs/screenshots/hp200lx/frogfind-photo.png)
+![ELKSWeb 0.2 displaying FrogFind and its frog GIF on a physical HP 200LX](docs/screenshots/hp200lx/0.2/frogfind-photo.png)
 
 ## Design
 
