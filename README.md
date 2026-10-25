@@ -21,6 +21,10 @@ The FrogFind mirror and its frog GIF displayed on the Amstrad PPC 512's original
 
 ![FrogFind mirror and frog GIF displayed by ELKSWeb on the Amstrad PPC 512 LCD](docs/screenshots/ppc512/frogfind-lcd-photo.jpg)
 
+HTTPedia displayed on the PPC 512 during 0.3-dev1 hardware testing. Photograph by l00nix.
+
+![HTTPedia displayed by ELKSWeb on the Amstrad PPC 512 LCD](docs/screenshots/ppc512/httpedia-lcd-photo.jpg)
+
 ### HP 200LX
 
 ELKSWeb 0.2 on a physical HP 200LX, showing the welcome page and the FrogFind mirror with its GIF. Photographs by l00nix.
