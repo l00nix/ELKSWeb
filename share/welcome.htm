@@ -1,11 +1,11 @@
-<html><head><title>Welcome to ELKSWeb 0.2 beta</title></head><body>
+<html><head><title>Welcome to ELKSWeb 0.3 beta</title></head><body>
 <center><img src="elksweb.gif" width="320" height="107" alt="ELKSWeb"><br>
-<b>ELKSWeb 0.2 beta - a small browser for ELKS</b></center>
+<b>ELKSWeb 0.3 beta - a small browser for ELKS</b></center>
 <hr>
 <p><b>Start browsing:</b> press <b>F6</b> or <b>Ctrl-L</b>, type a hostname or HTTP address,
 then press <b>Enter</b>. Or select a link below with <b>Tab</b> and press <b>Enter</b>.</p>
 <p><a href="http://frogfind.8088retro.com/">FrogFind search</a> |
-<a href="http://68k.news/">68k.news headlines</a> |
+<a href="http://68knews.8088retro.com/">68k news mirror</a> |
 <a href="http://httpedia.com/">HTTPedia</a> |
 <a href="#keys">Keyboard help</a></p>
 <a name="keys"></a><h3>Keyboard help</h3>
@@ -22,10 +22,11 @@ Use <b>file:/path/page.htm</b> to open another local page.</p>
 <p>Starting <b>elksweb</b> without options shows the display selector.
 Choose a listed mode and press Enter. Enter alone chooses CGA; Q quits.
 You can also start with <b>elksweb -video cga</b>, <b>-video ega</b> or <b>-video vga</b>.</p>
-<h3>New in 0.2 beta</h3>
-<p>Clearer fixed-width fonts, a larger serial-mouse pointer, fewer page redraws,
-and faster decoding of full-canvas GIF images. Internet addresses entered without
-<b>http://</b> now get that prefix automatically.</p>
+<h3>New in 0.3 beta</h3>
+<p>The requested address stays visible while a new page loads.
+Backspace now lets you correct your choice in the startup display selector.
+Console startup includes a guarded fallback; the reported intermittent
+console issue remains under investigation.</p>
 <h3>What to expect</h3>
 <p>ELKSWeb reads HTTP and local HTML or text. GIF images are displayed;
 JPEG and PNG dimensions are used for layout, with placeholders.
@@ -34,5 +35,5 @@ limits, and loading on an 8088 can take time.</p>
 <p>This help page works offline. The search and news links need a working
 ELKS network connection. Configure the network and run <b>net start</b>
 from the ELKS shell before opening HTTP pages; availability also depends on the sites.</p>
-<hr><p>Thanks to ghaerr, sammothxc and djohanse for feedback, and Alex (l00nix) for PPC 512 testing. Inspired by MicroWeb and the ELKS community. Happy browsing!</p>
+<hr><p>Thanks to ghaerr, sammothxc and djohanse for feedback, and l00nix for PPC 512 and HP 200LX testing. Inspired by MicroWeb and the ELKS community. Happy browsing!</p>
 </body></html>

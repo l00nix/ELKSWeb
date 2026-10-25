@@ -1,9 +1,9 @@
-# Current release: ELKSWeb 0.2 experimental beta
+# Current release: ELKSWeb 0.3 experimental beta
 
-See [0.2 release notes](RELEASE-0.2.md) and [the changelog](../CHANGELOG.md) for
+See [0.3 release notes](RELEASE-0.3.md) and [the changelog](../CHANGELOG.md) for
 current behavior and evidence boundaries. Detailed development validation remains
 local. The records below describe 0.1 and older candidates; their executable
-identities and hardware results must not be attributed to the 0.2 binary.
+identities and hardware results must not be attributed to the 0.3 binary.
 
 # ELKSWeb 0.1 — validation status
 

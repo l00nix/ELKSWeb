@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.3 — experimental beta (2026-10-25)
+
+- Keep the requested URL visible while fetching a new page. Successful redirects
+  show the final URL; failed loads restore the current page's address.
+- Read the startup display choice as a complete line so ELKS handles Backspace.
+  Erasing the choice and pressing Enter selects the default CGA mode.
+- When `/dev/tty` is unavailable, try a read/write terminal on standard input,
+  verify that it supports graphics, and restore shared terminal settings on exit.
+  This guarded fallback does not establish a fix for the intermittent upstream
+  console problem; that investigation remains open.
+
+These changes follow [@ghaerr's feedback](https://github.com/ghaerr/elks/discussions/2185#discussioncomment-19170548).
+Thanks also to @l00nix for the PPC 512 and HP 200LX DS hardware checklist,
+including serial-mouse checks on both devices.
+
+The welcome page identifies 0.3, describes the new behavior, and labels the
+updated `http://68knews.8088retro.com/` link **68k news mirror**. FrogFind and
+HTTPedia remain available. The standalone executable remains `elksweb`; runtime
+and corresponding-source packages remain separate. Both build workflows and
+the 8086/8088 target are preserved.
+
+User checks of 0.3-dev1 recorded 16 passes on the PPC and 17 on the HP, with
+address editing still partly open on both and the HP-only cooked-key test N/A
+on the PPC. These are candidate hardware observations, not controlled speed
+measurements or a separate retest of the newly versioned 0.3 executable.
+See [0.3 release notes](docs/RELEASE-0.3.md) for release validation and remaining
+limits, including the unresolved 86Box cold-boot exit anomaly.
+
+
 ## 0.2 — experimental beta (2026-10-24)
 
 ELKSWeb remains a native graphical HTTP browser for IBM PC compatibles running
