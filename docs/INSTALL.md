@@ -74,7 +74,7 @@ elksweb
 
 Choose one of the detected display modes and press Enter. The welcome page at `/lib/elksweb/welcome.htm` should open, with its GIF logo and keyboard help. Only supported modes are offered; a CGA-only machine showing just CGA is expected. Press Escape to exit.
 
-On the tested HP 200LX ELKS 3.8 beta 1 setup, enable translated keyboard input in the same shell before launch:
+On the tested HP-specific ELKS setups, including the HP 200LX DS with ELKS 4.0, enable translated keyboard input in the same shell before launch:
 
 ```sh
 export ELKSWEB_COOKED_KEYS=1
@@ -95,6 +95,36 @@ elksweb -video cga -invert
 `MOUSE_TYPE` and `MOUSE_PORT` are also honored; nonempty browser-specific values
 take precedence. Use `ELKSWEB_MOUSE=none` for keyboard-only operation. PS/2 uses
 `ELKSWEB_MOUSE=ps2` and defaults to `/dev/psaux`. No mouse setting is HP-specific.
+
+### HP 200LX serial mouse
+
+Mouse movement and clicking passed user hardware checks on the HP 200LX DS with
+the 0.3-dev1 candidate. The mouse settings are the same as on the PPC 512; keep
+the HP keyboard compatibility setting enabled as well.
+
+The standard HP Connectivity Pack cable already has null-modem wiring. For a
+serial mouse, add a null-modem adapter to cancel that crossover:
+
+**HP 200LX → HP connectivity cable → null-modem adapter → serial mouse**
+
+A dedicated straight-through HP mouse cable/adapter does not need the extra
+null-modem adapter. A connector gender changer alone does not change the wiring.
+See the [HP Palmtop Paper's cable explanation](https://www.palmtoppaper.com/PTPHTML/45/45c0000c.htm).
+
+Exit any serial shell from the connected computer and stop any serial login or
+SLIP service using `/dev/ttyS0` before disconnecting the computer and attaching
+the mouse. Then run these commands from the HP keyboard:
+
+```sh
+export ELKSWEB_COOKED_KEYS=1
+export ELKSWEB_MOUSE=ms
+export ELKSWEB_MOUSE_PORT=/dev/ttyS0
+elksweb -video cga
+```
+
+Use a Microsoft-protocol serial mouse. Add `-invert` if preferred, or press F2
+while browsing. The local `web_mouse` helper used during testing is not included
+in the release; the commands above work with the standard runtime installation.
 
 ## 5. Try a page
 

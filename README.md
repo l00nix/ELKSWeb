@@ -63,6 +63,8 @@ elksweb
 
 `ELKSWEB_COOKED_KEYS=1` keeps ELKS-translated keyboard input (characters and escape sequences) instead of enabling the browser's default raw scan-code input. It is a compatibility setting for that HP setup, not a general requirement for IBM PCs or the PPC 512. Leave it unset for normal operation; use `unset ELKSWEB_COOKED_KEYS` to restore the default for subsequent launches.
 
+Serial-mouse setup uses the same settings as the PPC 512, with the HP's cooked-key setting retained. The standard HP Connectivity Pack cable also needs a null-modem adapter for a mouse. See [HP 200LX mouse setup](docs/INSTALL.md#hp-200lx-serial-mouse) for wiring, port ownership and the complete launch command.
+
 ## Current features
 
 HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, forms, tables, lists, monochrome GIF images and binary downloads. PNG/JPEG dimensions are recognized for layout, but their pixels are not decoded. JPEG decoding is outside the current scope and is likely to remain outside future releases, similar to MicroWeb. Features have differing levels of test coverage; see [tests](tests/README.md).
