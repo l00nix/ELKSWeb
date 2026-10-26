@@ -130,6 +130,20 @@ The version reports **0.3**. Choose a detected display mode to open the local we
 
 See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse settings and upgrades. The runtime is a standalone application package, not an ELKS disk image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
 
+## Low-memory systems
+
+On memory-constrained systems, ELKSWeb may fail to start or display GIF images. Available memory depends on the ELKS configuration and running services; a GIF can fail even when its compressed file is small.
+
+From the machine's local graphics console, prefix your normal launch command with `exec` to replace the waiting shell and free its memory. For a standard installation:
+
+```sh
+exec elksweb
+```
+
+Keep any display options and mouse or keyboard environment settings you normally use. If you have a custom launcher, use `exec /root/startweb` instead. After exiting from a normal login session, log in again.
+
+This workaround allowed ELKSWeb 0.3 to render the welcome page and its GIF, then return cleanly to login, in an offline reduced-memory Amstrad PPC 512 hardware test. Online browsing at 512 KB remains unverified; networking and background services need additional memory. `-noimages` can also disable image loading, but does not guarantee that the browser will fit. See [issue #1](https://github.com/l00nix/ELKSWeb/issues/1) for measurements and planned improvements.
+
 ## Test sites and related projects
 
 - [68k news mirror](http://68knews.8088retro.com/) — linked from the welcome page; historical screenshots also used the original 68k.news site; [ActionRetro/68k-news source](https://github.com/ActionRetro/68k-news).
