@@ -25,7 +25,7 @@ typedef unsigned char __far *far_bytes;
 #define FAR_BYTES(seg, off) ((far_bytes)(((unsigned long)(seg) << 16) | (unsigned)(off)))
 #endif
 
-static int console_fd = -1, shared_flags = -1;
+static int console_fd = -1;
 static int locked, raw_keys, term_saved, old_mode = -1;
 static struct termios saved_term;
 static struct ew_key_state keys;
@@ -74,23 +74,26 @@ static unsigned video_capabilities(void)
     if (!(bx&0xff00) && (bx&255)>=1 && (bx&255)<=3) caps|=3;
     return caps;
 }
+static void console_puts(const char *text)
+{
+    write(console_fd, text, strlen(text));
+}
 static int video_choose(const char *name, unsigned caps)
 {
     char choice[16];
     int mode, n;
     if (!name) {
-        if (!isatty(0)) { last_error="Use -video cga, ega or vga without a terminal"; return -1; }
-        puts("ELKSWeb " EW_VERSION " display (monochrome):");
-        if (caps&1) puts("  1 CGA 640x200 (default)");
-        if (caps&2) puts("  2 EGA 640x350");
-        if (caps&4) puts("  3 VGA 640x480");
-        fputs("Select 1/2/3 or Q to quit, then press Enter: ",stdout); fflush(stdout);
+        console_puts("ELKSWeb " EW_VERSION " display (monochrome):\n");
+        if (caps&1) console_puts("  1 CGA 640x200 (default)\n");
+        if (caps&2) console_puts("  2 EGA 640x350\n");
+        if (caps&4) console_puts("  3 VGA 640x480\n");
+        console_puts("Select 1/2/3 or Q to quit, then press Enter: ");
         /* ELKS canonical editing applies within one read, so read the whole
          * selection before entering raw mode. Reject and drain long lines. */
-        n = read(0,choice,sizeof(choice));
+        n = read(console_fd,choice,sizeof(choice));
         if (n <= 0) return 0;
         if (choice[n-1] != '\n') {
-            while ((n=read(0,choice,sizeof(choice)))>0 && choice[n-1]!='\n') {}
+            while ((n=read(console_fd,choice,sizeof(choice)))>0 && choice[n-1]!='\n') {}
             choice[0] = 0;
         } else if (n > 2) choice[0] = 0;
         if (choice[0]=='q' || choice[0]=='Q' || choice[0]==27) return 0;
@@ -128,33 +131,42 @@ int ew_platform_init(const char *requested)
 {
     struct termios term;
     const char *cooked;
-    int mode, flags;
+    int mode;
     if (console_fd >= 0) return 0;
-    mode=video_choose(requested,video_capabilities());
-    if (mode<=0) return mode ? -1 : 1;
-    last_error = "Cannot open the controlling console";
-    console_fd = open("/dev/tty", O_RDWR | O_NONBLOCK);
-    if (console_fd < 0 && (errno==ENODEV || errno==ENXIO || errno==ENOENT) && isatty(0)) {
-        /* Some ELKS sessions cannot resolve /dev/tty despite a usable stdin.
-         * Borrow only that terminal, never an unrelated /dev/console. The
-         * graphics lock below rejects serial/PTY input before changing it. */
-        flags = fcntl(0, F_GETFL);
-        if (flags >= 0 && (flags & O_ACCMODE) == O_RDWR) {
-            console_fd = dup(0);
-            if (console_fd >= 0) shared_flags = flags;
-        }
-    }
+    /* Graphics always use the local display. Use its keyboard as well,
+     * regardless of the launching terminal or a serial /dev/console. */
+    last_error = "Keyboard not found on /dev/tty1";
+    console_fd = open("/dev/tty1", O_RDWR);
     if (console_fd < 0) return -1;
     last_error = "Console is busy or does not support graphics";
     if (ioctl(console_fd, DCGET_GRAPH, (void *)0) < 0) goto failed;
     locked = 1;
-    if (shared_flags >= 0) {
-        last_error = "Cannot set console input flags";
-        if (fcntl(console_fd, F_SETFL, shared_flags | O_NONBLOCK) < 0) goto failed;
-    }
     last_error = "Cannot read console settings";
     if (tcgetattr(console_fd, &saved_term) < 0) goto failed;
     term_saved = 1;
+    term = saved_term;
+    if (!requested) {
+        /* ELKS suppresses text and echo while graphics are locked. The
+         * initial probe rejects a busy console; reacquire after the menu. */
+        ioctl(console_fd, DCREL_GRAPH, (void *)0);
+        locked = 0;
+        term.c_lflag |= ICANON | ECHO;
+        term.c_iflag = (term.c_iflag & ~(INLCR | IGNCR)) | ICRNL;
+        last_error = "Cannot set console input mode";
+        if (tcsetattr(console_fd, TCSANOW, &term) < 0) goto failed;
+    }
+    mode=video_choose(requested,video_capabilities());
+    if (mode<=0) {
+        ew_platform_shutdown();
+        return mode ? -1 : 1;
+    }
+    if (!locked) {
+        last_error = "Console is busy or does not support graphics";
+        if (ioctl(console_fd, DCGET_GRAPH, (void *)0) < 0) goto failed;
+        locked = 1;
+    }
+    last_error = "Cannot set console input flags";
+    if (fcntl(console_fd, F_SETFL, O_RDWR | O_NONBLOCK) < 0) goto failed;
     term = saved_term;
     term.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
     term.c_iflag &= ~(ICRNL | INLCR | IGNCR | ISTRIP | IXON | IXOFF | BRKINT);
@@ -207,7 +219,9 @@ void ew_platform_shutdown(void)
         ioctl(console_fd, DCREL_KRAW, (void *)0);
         raw_keys = 0;
     }
-    if (term_saved) drain_input();
+    /* A cancelled selector still has a blocking descriptor. */
+    if (term_saved && fcntl(console_fd, F_SETFL, O_RDWR | O_NONBLOCK) >= 0)
+        drain_input();
     if (old_mode >= 0) {
         bios_video((unsigned)old_mode,0);
         old_mode = -1;
@@ -222,10 +236,6 @@ void ew_platform_shutdown(void)
     }
     /* Synchronize the kernel's logical cursor with the cleared BIOS screen. */
     if (had_video) write(console_fd, "\033[H\033[2J", 7);
-    if (shared_flags >= 0) {
-        fcntl(console_fd, F_SETFL, shared_flags);
-        shared_flags = -1;
-    }
     close(console_fd);
     console_fd = -1;
 }

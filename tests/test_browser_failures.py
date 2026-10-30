@@ -229,6 +229,30 @@ class BrowserFailures(unittest.TestCase):
             self.assertEqual(self.lib.qa_title(),b'Safe home')
             self.assertEqual(self.lib.qa_links(),1)
 
+    def test_inline_memory_errors_cover_url_input_pixels_and_workspace(self):
+        # Release logo has no transparency: URL table, compressed input,
+        # bitmap and LZW workspace are the four image allocations on reload.
+        gif=ROOT/'share/elksweb.gif'
+        with tempfile.TemporaryDirectory(prefix='ew-inline-memory-') as folder:
+            page=pathlib.Path(folder)/'logo.htm'
+            page.write_bytes(b'<title>Logo page</title><p>Text survives</p><img src="'+
+                             os.fsencode(gif)+b'" width=320 height=107><a href="'+
+                             os.fsencode(self.next)+b'">Continue</a>')
+            self.assertEqual(self.lib.qa_browser_load(os.fsencode(page)),1)
+            for failure in (1,2,3,4):
+                self.lib.qa_allocator_reset(failure)
+                self.assertEqual(self.lib.qa_browser_load(os.fsencode(page)),1)
+                self.assertIn(b'Not enough memory',self.lib.qa_browser_status(),failure)
+                self.assertEqual(self.lib.qa_title(),b'Logo page')
+                self.assertEqual(self.lib.qa_link(0),os.fsencode(self.next))
+                self.assertLess(self.lib.ew_image_lookup(os.fsencode(gif),None,None),0)
+                self.lib.qa_allocator_reset(0)
+                self.assertEqual(self.lib.qa_browser_load(os.fsencode(self.next)),1)
+                self.assertEqual(self.lib.qa_browser_status(),b'')
+                self.assertEqual(self.lib.qa_browser_load(os.fsencode(page)),1)
+                self.assertGreaterEqual(self.lib.ew_image_lookup(os.fsencode(gif),None,None),0)
+                self.assertEqual(self.lib.qa_browser_status(),b'')
+
     def test_malformed_and_truncated_image_documents_allow_navigation(self):
         gif=(ROOT/'tests/fixtures/frogfind/frog.gif').read_bytes()
         with tempfile.TemporaryDirectory(prefix='ew-image-fail-') as folder:

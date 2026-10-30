@@ -41,6 +41,7 @@ void ew_images_clear(void) {
   unsigned i;
   for (i = 0; i < image_count; i++) ew_gif_free(&images[i]);
   image_count = 0;
+  document_error[0] = 0;
   memset(natural_width, 0, sizeof(natural_width));
   memset(natural_height, 0, sizeof(natural_height));
   ew_far_free(image_urls);
@@ -52,7 +53,6 @@ int ew_images_load_document(const char *url) {
   unsigned i, amount, head, width=0, height=0;
   int known, gif, result;
   ew_images_clear();
-  document_error[0]=0;
   if (!url || strlen(url)>=EW_URL) return document_fail("Image URL too long");
   if (!ew_source_length) return document_fail("Empty image document");
   if (ew_source_error()[0]) return document_fail(ew_source_error());
@@ -114,7 +114,10 @@ static int load_image(const char *url, struct ew_gif *image,
   size = ew_fetch_to_fd(url, fd, EW_SOURCE, final, error, sizeof(error));
   if (size <= 0 || lseek(fd, 0L, SEEK_SET) < 0) goto done;
   compressed = ew_far_alloc((unsigned long)size);
-  if (!compressed) goto done;
+  if (!compressed) {
+    document_fail("Not enough memory to decode image");
+    goto done;
+  }
   count = 0;
   while ((uint32_t)count < (uint32_t)size) {
     unsigned want = (unsigned)size - count;
@@ -125,8 +128,9 @@ static int load_image(const char *url, struct ew_gif *image,
     for (i = 0; i < (unsigned)got; ++i) compressed[count++] = chunk[i];
   }
   ew_image_dimensions(compressed, (unsigned)size, width, height);
-  result = ew_gif_decode_aspect(compressed, (unsigned)size, image,
-                               ew_pixel_aspect) == EW_GIF_OK ? 0 : -1;
+  result = ew_gif_decode_aspect(compressed, (unsigned)size, image, ew_pixel_aspect);
+  if (result == EW_GIF_NO_MEMORY) document_fail(ew_gif_error(result));
+  result = result == EW_GIF_OK ? 0 : -1;
 done:
   ew_far_free(compressed);
   close(fd);
@@ -148,7 +152,10 @@ void ew_images_load(void) {
     }
     if (image_count == IMAGE_LIMIT) continue;
     if (!image_urls) image_urls = ew_far_alloc((unsigned long)IMAGE_LIMIT * EW_URL);
-    if (!image_urls) break;
+    if (!image_urls) {
+      document_fail("Not enough memory for image URL");
+      break;
+    }
     index = image_count++;
     ew_copy_to_far(image_urls + (unsigned)index * EW_URL, url, strlen(url) + 1);
     if (!load_image(url, &images[index], &natural_width[index],

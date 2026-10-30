@@ -4,6 +4,7 @@ These tests verify the driver's decisions and memory operations, not physical
 adapter or ia16 BIOS ABI compatibility; native QEMU/hardware tests remain needed.
 """
 import pathlib
+import os
 import subprocess
 import tempfile
 import unittest
@@ -52,25 +53,31 @@ static unsigned char expected[65536];
 static int oracle_right=640, oracle_top, oracle_bottom=480;
 static int adapter=3, current_mode=3, mode_failure, terminal=1;
 static int opens, closes, sets, graphics_lock, keyboard_lock, mice;
-static int open_error, borrowed, stdin_flags=O_RDWR, graph_failure, flag_failure;
+static int open_error, console_flags, stdin_flags=O_RDWR, graph_failure, graph_calls, flag_failure;
+static int get_failure, term_failure;
+static unsigned prompt_bytes;
 static unsigned port_count, port_values[8], port_numbers[8];
 static struct termios console_term, initial_term;
 static const char *input="";
 int test_open(const char *path,int flags,...) {
- (void)flags;assert(!strcmp(path,"/dev/tty"));if(open_error){errno=open_error;return -1;}++opens;return 3;
+ assert(!strcmp(path,"/dev/tty1"));assert(flags==O_RDWR);console_flags=flags;
+ if(open_error){errno=open_error;return -1;}++opens;return 3;
 }
-int test_dup(int fd) {assert(fd==0);++borrowed;++opens;return 3;}
+int test_dup(int fd) {(void)fd;assert(0);return -1;}
 int test_fcntl(int fd,int cmd,...) {
  va_list ap;int value;
- if(cmd==F_GETFL){assert(fd==0);return stdin_flags;}
+ assert(cmd!=F_GETFL);
  assert(fd==3 && cmd==F_SETFL);va_start(ap,cmd);value=va_arg(ap,int);va_end(ap);
  if(flag_failure && (value&O_NONBLOCK))return -1;
- stdin_flags=value;return 0;
+ console_flags=value;return 0;
 }
 int test_close(int fd) {assert(fd==3);++closes;return 0;}
 ssize_t test_read(int fd,void *p,size_t n) {
  size_t i=0;char ch,*out=p;
- if(fd!=0 || !*input || !n)return -1;
+ assert(fd==3);
+ if(console_flags&O_NONBLOCK)return -1;
+ assert(console_term.c_lflag&ICANON);
+ if(!*input || !n)return 0;
  /* ELKS ntty.c processes canonical erase within each individual read. */
  while(i<n && (ch=*input++)) {
   if(ch==8 || ch==127){if(i)--i;continue;}
@@ -78,19 +85,19 @@ ssize_t test_read(int fd,void *p,size_t n) {
  }
  return i;
 }
-ssize_t test_write(int fd,const void *p,size_t n) {(void)p;assert(fd==3);return n;}
+ssize_t test_write(int fd,const void *p,size_t n) {(void)p;assert(fd==3);assert(!graphics_lock);if(!sets)prompt_bytes+=n;return n;}
 int test_ioctl(int fd,unsigned long request,...) {
  assert(fd==3);
- if(request==DCGET_GRAPH){if(graph_failure)return -1;++graphics_lock;}
+ if(request==DCGET_GRAPH){if(++graph_calls==graph_failure)return -1;assert(!graphics_lock);++graphics_lock;}
  else if(request==DCREL_GRAPH)--graphics_lock;
  else if(request==DCSET_KRAW)++keyboard_lock;
  else if(request==DCREL_KRAW)--keyboard_lock;
  else assert(0);
  return 0;
 }
-int test_tcgetattr(int fd,struct termios *term) {assert(fd==3);*term=console_term;return 0;}
+int test_tcgetattr(int fd,struct termios *term) {assert(fd==3);if(get_failure)return -1;*term=console_term;return 0;}
 int test_tcsetattr(int fd,int action,const struct termios *term) {
- (void)action;assert(fd==3);console_term=*term;return 0;
+ (void)action;assert(fd==3);if(term_failure){--term_failure;return -1;}console_term=*term;return 0;
 }
 int test_isatty(int fd) {assert(fd==0);return terminal;}
 unsigned ew_test_bios_video(unsigned ax,unsigned *bx) {
@@ -121,12 +128,13 @@ static void setup(void) {
  console_term=initial_term;
 }
 static void restored(void) {
- assert(stdin_flags==O_RDWR);assert(shared_flags==-1);
+ assert(stdin_flags==O_RDWR);
  assert(current_mode==3);assert(opens==closes);assert(!graphics_lock && !keyboard_lock && !mice);
  assert(!memcmp(&initial_term,&console_term,sizeof(initial_term)));
 }
 static void untouched(void) {
- unsigned i;assert(!opens && !sets && !port_count);
+ unsigned i;assert(opens==closes && !sets && !port_count);
+ assert(!graphics_lock && !keyboard_lock && !mice);assert(!memcmp(&initial_term,&console_term,sizeof(initial_term)));
  for(i=0;i<65536;i++)assert(test_cga[i]==0xa5 && test_planar[i]==0xa5);
 }
 static unsigned at(int x,int y,int height) {
@@ -196,19 +204,25 @@ int main(int argc,char **argv) {
   mode_failure=1;assert(ew_platform_init("vga")==-1);assert(opens==1&&sets==2&&!port_count);restored();
  }
  else if(!strcmp(which,"cancel")) {input="q\n";assert(ew_platform_init(0)==1);untouched();}
- else if(!strcmp(which,"nonterminal")) {terminal=0;assert(ew_platform_init(0)==-1);untouched();}
+ else if(!strcmp(which,"nonterminal")) {terminal=0;input="1\n";assert(!ew_platform_init(0));assert(prompt_bytes);ew_platform_shutdown();restored();}
  else if(!strcmp(which,"prompt")) {input="2\n";assert(!ew_platform_init(0));assert(ew_screen_height==350);ew_platform_shutdown();restored();}
  else if(!strcmp(which,"backspace")) {input="2\b3\n";assert(!ew_platform_init(0));assert(ew_screen_height==480);ew_platform_shutdown();restored();}
  else if(!strcmp(which,"delete")) {input="3\1772\n";assert(!ew_platform_init(0));assert(ew_screen_height==350);ew_platform_shutdown();restored();}
  else if(!strcmp(which,"erase_default")) {input="3\b\n";assert(!ew_platform_init(0));assert(ew_screen_height==200);ew_platform_shutdown();restored();}
  else if(!strcmp(which,"extra")) {input="23\n";assert(ew_platform_init(0)==-1);untouched();}
  else if(!strcmp(which,"long")) {input="22222222222222222222222222\n";assert(ew_platform_init(0)==-1);assert(!*input);untouched();}
- else if(!strcmp(which,"noctty")) {open_error=ENODEV;assert(!ew_platform_init("cga"));assert(borrowed==1);assert(stdin_flags&O_NONBLOCK);ew_platform_shutdown();restored();}
- else if(!strcmp(which,"serial")) {open_error=ENODEV;graph_failure=1;assert(ew_platform_init("cga")==-1);assert(!sets);restored();}
- else if(!strcmp(which,"flags")) {open_error=ENODEV;flag_failure=1;assert(ew_platform_init("cga")==-1);restored();}
- else if(!strcmp(which,"readonly")) {open_error=ENODEV;stdin_flags=O_RDONLY;assert(ew_platform_init("cga")==-1);assert(!borrowed);untouched();}
- else if(!strcmp(which,"denied")) {open_error=EACCES;assert(ew_platform_init("cga")==-1);assert(!borrowed);untouched();}
- else if(!strcmp(which,"redirected")) {open_error=ENODEV;terminal=0;assert(ew_platform_init("cga")==-1);assert(!borrowed);untouched();}
+ else if(!strcmp(which,"missing")) {open_error=ENODEV;assert(ew_platform_init("cga")==-1);assert(strstr(ew_platform_error(),"/dev/tty1"));untouched();}
+ else if(!strcmp(which,"busy")) {graph_failure=1;input="1\n";assert(ew_platform_init(0)==-1);assert(!prompt_bytes);untouched();}
+ else if(!strcmp(which,"relock")) {graph_failure=2;input="1\n";assert(ew_platform_init(0)==-1);assert(prompt_bytes);assert(strstr(ew_platform_error(),"busy"));restored();untouched();}
+ else if(!strcmp(which,"flags")) {flag_failure=1;assert(ew_platform_init("cga")==-1);restored();untouched();}
+ else if(!strcmp(which,"getattr")) {get_failure=1;assert(ew_platform_init("cga")==-1);restored();untouched();}
+ else if(!strcmp(which,"setattr")) {term_failure=1;assert(ew_platform_init("cga")==-1);restored();untouched();}
+ else if(!strcmp(which,"selector_attr")) {term_failure=1;assert(ew_platform_init(0)==-1);assert(!prompt_bytes);restored();untouched();}
+ else if(!strcmp(which,"noncanonical_cancel")) {initial_term.c_lflag &= ~ICANON;console_term=initial_term;input="q\n";assert(ew_platform_init(0)==1);restored();untouched();}
+ else if(!strcmp(which,"eof")) {input="";assert(ew_platform_init(0)==1);restored();untouched();}
+ else if(!strcmp(which,"denied")) {open_error=EACCES;assert(ew_platform_init("cga")==-1);untouched();}
+ else if(!strcmp(which,"redirected")) {terminal=0;stdin_flags=O_RDONLY;assert(!ew_platform_init("cga"));assert(stdin_flags==O_RDONLY);ew_platform_shutdown();assert(stdin_flags==O_RDONLY);stdin_flags=O_RDWR;restored();}
+ else if(!strcmp(which,"cooked")) {assert(!ew_platform_init("cga"));assert(!keyboard_lock);ew_platform_shutdown();restored();}
  else if(!strcmp(which,"reinit")) {assert(!ew_platform_init("vga"));ew_platform_shutdown();assert(!ew_platform_init("cga"));assert(ew_screen_height==200);ew_platform_shutdown();restored();}
  else assert(0);
  return 0;
@@ -233,7 +247,8 @@ class VideoModes(unittest.TestCase):
         cls.temp.cleanup()
 
     def run_case(self, case):
-        result = subprocess.run([str(self.binary), case], capture_output=True, text=True, timeout=10)
+        env=dict(os.environ, ELKSWEB_COOKED_KEYS='1' if case=='cooked' else '0')
+        result = subprocess.run([str(self.binary), case], env=env, capture_output=True, text=True, timeout=10)
         self.assertEqual(result.returncode, 0, result.stdout+result.stderr)
 
     def test_cga_interleaved_framebuffer(self): self.run_case('cga')
@@ -242,19 +257,25 @@ class VideoModes(unittest.TestCase):
     def test_unsupported_adapters_and_mode_preserve_console(self): self.run_case('reject')
     def test_bios_mode_failure_restores_console(self): self.run_case('failure')
     def test_menu_cancel_without_graphics(self): self.run_case('cancel')
-    def test_menu_requires_terminal(self): self.run_case('nonterminal')
+    def test_menu_uses_graphics_keyboard_without_terminal_stdin(self): self.run_case('nonterminal')
     def test_menu_selects_ega(self): self.run_case('prompt')
     def test_menu_backspace_reselects(self): self.run_case('backspace')
     def test_menu_delete_reselects(self): self.run_case('delete')
     def test_menu_erased_choice_defaults_to_cga(self): self.run_case('erase_default')
     def test_menu_rejects_multiple_choices(self): self.run_case('extra')
     def test_menu_drains_overlong_selection(self): self.run_case('long')
-    def test_missing_controlling_tty_uses_graphics_stdin_and_restores_flags(self): self.run_case('noctty')
-    def test_fallback_rejects_serial_before_changing_terminal(self): self.run_case('serial')
-    def test_fallback_flag_failure_restores_console(self): self.run_case('flags')
-    def test_fallback_rejects_readonly_stdin(self): self.run_case('readonly')
+    def test_missing_graphics_keyboard_reports_device(self): self.run_case('missing')
+    def test_busy_console_rejected_before_selector_or_changes(self): self.run_case('busy')
+    def test_console_lock_failure_after_selector_restores_settings(self): self.run_case('relock')
+    def test_nonblocking_flag_failure_restores_console(self): self.run_case('flags')
+    def test_getattr_failure_releases_console(self): self.run_case('getattr')
+    def test_raw_termios_failure_restores_console(self): self.run_case('setattr')
+    def test_selector_termios_failure_restores_console(self): self.run_case('selector_attr')
+    def test_noncanonical_selector_cancel_restores_settings(self): self.run_case('noncanonical_cancel')
+    def test_selector_eof_restores_console(self): self.run_case('eof')
     def test_access_denied_does_not_fallback(self): self.run_case('denied')
-    def test_fallback_rejects_redirected_stdin(self): self.run_case('redirected')
+    def test_redirected_stdin_is_not_used_or_modified(self): self.run_case('redirected')
+    def test_hp_cooked_keys_do_not_request_raw_scancodes(self): self.run_case('cooked')
     def test_shutdown_and_reinit_geometry(self): self.run_case('reinit')
 
 if __name__ == '__main__': unittest.main()

@@ -27,7 +27,8 @@ enum ew_key {
 
 /* A null mode asks on the text console; cga/ega/vga bypass the prompt.
  * Returns0 on success,1 on user cancellation,-1 on failure. An unsupported
- * adapter is rejected before changing video mode or console settings. */
+ * adapter is rejected before changing video mode; console settings are
+ * restored on cancellation, failure and shutdown. Input uses /dev/tty1. */
 int ew_platform_init(const char *mode);
 const char *ew_platform_error(void);
 void ew_platform_shutdown(void);

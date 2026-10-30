@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.35dev — local development candidate (unreleased)
+
+- Open `/dev/tty1` directly for the graphics keyboard and startup display
+  selector, following [@ghaerr's console guidance](https://github.com/ghaerr/elks/discussions/2185#discussioncomment-19257446).
+  Remove the `/dev/tty` and borrowed-stdin fallback. Preserve the HP cooked-key
+  option and restore console settings on exit, cancellation and startup failure.
+- Show inline image allocation failures in the status bar, including GIF
+  workspace failures. Reuse the existing image error buffer and clear it when
+  loading a new page. This improves diagnosis of [issue #1](https://github.com/l00nix/ELKSWeb/issues/1);
+  it does not reduce GIF memory requirements or establish 512 KB online support.
+- Identify the executable and welcome page as `0.35dev`. This candidate has no
+  new hardware validation yet. The intermittent console problem and the 86Box
+  cold-boot exit anomaly remain open.
+
 ## 0.3 — experimental beta (2026-10-25)
 
 - Keep the requested URL visible while fetching a new page. Successful redirects

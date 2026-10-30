@@ -572,7 +572,7 @@ static int load(const char *url, const char *post, int add_history) {
       if (scroll > max) scroll = max;
     }
   }
-  if (ew_document_type == EW_CONTENT_IMAGE && ew_image_document_error()[0])
+  if (ew_image_document_error()[0])
     message(ew_image_document_error());
   else if (ew_source_error()[0])
     message(ew_source_error());
