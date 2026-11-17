@@ -3,7 +3,7 @@
 This branch starts from released **0.4**, then merges @astrobleem's
 [Tandy/PCjr contribution](https://github.com/l00nix/ELKSWeb/issues/2) through
 `6dbd3b29639efeae621255f60b344a18be5f9a85`. The contributor's four original commits
-remain in history. This is an integration branch, not a released hardware build.
+remain in history. The first packaged candidate is [0.5dev1](RELEASE-0.5dev1.md); hardware qualification remains open.
 
 ## Included and preserved
 
@@ -33,7 +33,7 @@ QEMU monochrome CGA/EGA/VGA welcome/GIF checks, local selector editing/cancel,
 redirected streams, detached launch, HP-style cooked keys, inversion and console
 restoration passed. QEMU used a 486 and a generic test image: this does not test
 Tandy/PCjr colour output or physical HP/PPC hardware. See the exact build hash and
-scope in [QA-0.5dev1.json](QA-0.5dev1.json).
+scope in [QA-integration-0.5.json](QA-integration-0.5.json).
 
 ## Requirements and open work
 
@@ -55,7 +55,7 @@ Before a public 0.5 beta:
   physical tests. The contributor's Tandy 90-key mappings are provisional.
 - Exercise colour mode, themes, images, forms, scrolling, transparency, allocation
   failures and console restoration. Host raster tests do not exercise ia16 assembly.
-- Prepare a versioned development/runtime packager with colour assets and notices.
+- The 0.5dev1 packager includes colour assets and notices; repeat its checks for subsequent candidates.
 
 The supplied branch does not contain EMS image storage. EGA/VGA remain
 monochrome. PMR mouse support is absent. Hardware certification and performance

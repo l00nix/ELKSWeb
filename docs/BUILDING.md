@@ -1,10 +1,12 @@
-# Building 0.5dev
+# Building 0.5dev1
 
 This development branch integrates the Tandy/PCjr contribution using the medium
 memory model. Both builders target the 8086; the kernel must enable
 `CONFIG_EXEC_MMODEL`. More code segments do not increase near-data or physical RAM.
 Use [0.4](https://github.com/l00nix/ELKSWeb/tree/v0.4) for the frozen small-model
-baseline. Historical versioned packagers are not 0.5 release scripts.
+baseline. Use `toolchain/package-release-0.5dev1.py --help` for this candidate;
+it verifies committed build inputs, binary/ELF audits and a matching validation
+record. Historical versioned packagers retain their original targets.
 
 The audited build strips symbols only from a temporary disassembly copy, avoiding
 symbol boundaries inside far-jump operands. It checks those bytes against the

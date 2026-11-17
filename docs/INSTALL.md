@@ -1,18 +1,18 @@
-# Install ELKSWeb 0.4 from a release
+# Install ELKSWeb 0.5dev1 from a release
 
 No compiler is required. These instructions install the browser on an existing compatible ELKS system; they do not replace its operating system or format a disk. ELKSWeb is a native ELKS executable, not a DOS, Windows, macOS or modern Linux application.
 
-You need a graphics-capable ELKS console, a writable `/tmp`, and CGA, supported EGA or VGA hardware. HTTP browsing also needs working ELKS networking/`ktcp`; the local welcome page works offline. All display modes are monochrome in 0.4.
+You need a graphics-capable ELKS console, a writable `/tmp`, and CGA, supported EGA or VGA hardware. HTTP browsing also needs working ELKS networking/`ktcp`; the local welcome page works offline. CGA/EGA/VGA remain monochrome. Tandy/PCjr colour mode additionally requires the matching kernel video-memory reservation support. The kernel must enable `CONFIG_EXEC_MMODEL`. See [candidate requirements and test limits](RELEASE-0.5dev1.md). Keep your working 0.4 installation for comparison.
 
 ## 1. Download on a modern computer
 
-Open [ELKSWeb releases](https://github.com/l00nix/ELKSWeb/releases), select 0.4 and expand **Assets**. GitHub requires HTTPS, so use a modern computer to download, then transfer the files to ELKS. The [0.4 experimental prerelease](https://github.com/l00nix/ELKSWeb/releases/tag/v0.4) and its downloads are public.
+Open [ELKSWeb releases](https://github.com/l00nix/ELKSWeb/releases), select 0.5dev1 and expand **Assets**. GitHub requires HTTPS, so use a modern computer to download, then transfer the files to ELKS. The [0.5dev1 experimental prerelease](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5dev1) and its downloads are public.
 
 | Download | Use |
 | --- | --- |
-| `ELKSWeb-0.4-runtime.tar.gz` and matching `.sha256` | Recommended first installation: compiled binary, welcome HTML, GIF logo and notices |
+| `ELKSWeb-0.5dev1-runtime.tar.gz` and matching `.sha256` | Recommended first installation: compiled binary, welcome HTML, GIF logo and notices |
 | `elksweb` and matching `.sha256` | Standalone compiled binary, useful for an existing installation |
-| `ELKSWeb-0.4-source.tar.gz` | Corresponding source, for rebuilding or redistribution; not needed to run the browser |
+| `ELKSWeb-0.5dev1-source.tar.gz` | Corresponding source, for rebuilding or redistribution; not needed to run the browser |
 
 GitHub's automatically generated **Source code** archives are not the compiled runtime package. Keep the supplied notices; offer the corresponding source alongside redistributed executable copies.
 
@@ -21,34 +21,37 @@ GitHub's automatically generated **Source code** archives are not the compiled r
 Download both the chosen file and its matching `.sha256` into the same directory. In that directory, on Linux:
 
 ```sh
-sha256sum -c ELKSWeb-0.4-runtime.tar.gz.sha256
-tar -xzf ELKSWeb-0.4-runtime.tar.gz
+sha256sum -c ELKSWeb-0.5dev1-runtime.tar.gz.sha256
+tar -xzf ELKSWeb-0.5dev1-runtime.tar.gz
 ```
 
-On macOS, use `shasum -a 256 -c ELKSWeb-0.4-runtime.tar.gz.sha256` for the checksum, then the same `tar` command. Continue only if verification reports success.
+On macOS, use `shasum -a 256 -c ELKSWeb-0.5dev1-runtime.tar.gz.sha256` for the checksum, then the same `tar` command. Continue only if verification reports success.
 
 On Windows PowerShell:
 
 ```powershell
-Get-FileHash .\ELKSWeb-0.4-runtime.tar.gz -Algorithm SHA256
-Get-Content .\ELKSWeb-0.4-runtime.tar.gz.sha256
-tar -xzf .\ELKSWeb-0.4-runtime.tar.gz
+Get-FileHash .\ELKSWeb-0.5dev1-runtime.tar.gz -Algorithm SHA256
+Get-Content .\ELKSWeb-0.5dev1-runtime.tar.gz.sha256
+tar -xzf .\ELKSWeb-0.5dev1-runtime.tar.gz
 ```
 
 Compare the displayed hashes; letter case does not matter. If your Windows installation has no `tar`, use an archive utility that handles `.tar.gz` files. For the standalone binary, substitute `elksweb` and `elksweb.sha256` in the checksum commands; no extraction is needed.
 
-The runtime archive extracts into `ELKSWeb-0.4-runtime/`. You can also verify its individual files on the host by entering that directory and running `sha256sum -c SHA256SUMS` (Linux) or `shasum -a 256 -c SHA256SUMS` (macOS). ELKS itself does not need these host verification tools.
+The runtime archive extracts into `ELKSWeb-0.5dev1-runtime/`. You can also verify its individual files on the host by entering that directory and running `sha256sum -c SHA256SUMS` (Linux) or `shasum -a 256 -c SHA256SUMS` (macOS). ELKS itself does not need these host verification tools.
 
 ## 3. Transfer to the ELKS filesystem
 
 Use your existing binary-safe serial/file-transfer method, configured network transfer or mounted ELKS disk. Preserve the binary and GIF bytes exactly; do not paste them into a terminal or use a text-mode transfer. Copy the extracted files according to this table:
 
-| File inside `ELKSWeb-0.4-runtime/` | Destination on ELKS |
+| File inside `ELKSWeb-0.5dev1-runtime/` | Destination on ELKS |
 | --- | --- |
 | `bin/elksweb` | `/root/elksweb` |
 | `lib/elksweb/welcome.htm` | `/lib/elksweb/welcome.htm` |
 | `lib/elksweb/elksweb.gif` | `/lib/elksweb/elksweb.gif` |
 | `lib/elksweb/logo-src.txt` | `/lib/elksweb/logo-src.txt` |
+| `lib/elksweb/color.htm` | `/lib/elksweb/color.htm` |
+| `lib/elksweb/elkswebc.gif` | `/lib/elksweb/elkswebc.gif` |
+| `lib/elksweb/chart.gif` | `/lib/elksweb/chart.gif` |
 
 Create `/lib/elksweb` on ELKS and also copy `lib/elksweb/license.txt` there.
 It consolidates browser, font and linked ELKS/libc notices. Retain the complete
@@ -66,7 +69,7 @@ chmod 755 /bin/elksweb
 elksweb --version
 ```
 
-Check that the version reports **0.4**, then run from the machine's graphics console:
+Check that the version reports **0.5dev1**, then run from the machine's graphics console:
 
 ```sh
 elksweb
@@ -99,7 +102,7 @@ take precedence. Use `ELKSWEB_MOUSE=none` for keyboard-only operation. PS/2 uses
 ### HP 200LX serial mouse
 
 Mouse movement and clicking passed user hardware checks on the HP 200LX DS with
-the 0.4-dev1 candidate. The mouse settings are the same as on the PPC 512; keep
+the 0.3-dev1 candidate. The mouse settings are the same as on the PPC 512; keep
 the HP keyboard compatibility setting enabled as well.
 
 The standard HP Connectivity Pack cable already has null-modem wiring. For a
@@ -146,4 +149,4 @@ Use F6 or Ctrl-L to edit the address, Tab and Enter to follow links, Page Up/Pag
 - **Only CGA appears:** the selector only lists detected supported modes. EGA requires a supported colour adapter and at least 128 KB video RAM.
 - **Exit does not return normally:** an unresolved cold-boot 86Box exit anomaly is recorded in [8088 validation](8088-VALIDATION.md). The subsequent normal-shell repeat passed, but the original cause is not established. Include your ELKS build, emulator/machine, display mode and startup steps when reporting it.
 
-Page loading can be slow on early hardware. See [release notes](RELEASE-0.4.md) for fixed document limits, unsupported features and the full validation scope.
+Page loading can be slow on early hardware. See [release notes](RELEASE-0.5dev1.md) for fixed document limits, unsupported features and the full validation scope.

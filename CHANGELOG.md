@@ -1,11 +1,12 @@
 # Changelog
 
-## 0.5dev — integration in progress (unreleased)
+## 0.5dev1 — development prerelease (2026-11-17)
 
 - Integrate [@astrobleem’s Tandy/PCjr contribution](https://github.com/l00nix/ELKSWeb/issues/2), preserving its original commits and attribution: native 16-colour rendering, colour GIFs, bounded image storage/retries, basic HTML colours, narrow layout and keyboard support.
 - Retain 0.4 local `/dev/tty1` selection/input, HP cooked keys and inline image memory diagnostics.
 - Adopt the medium memory model; matching kernel video reservations are required for colour modes. HP/PPC hardware and memory qualification remain open.
 - Correct disassembly at medium-model relocation symbols and validate both executable text sections.
+- Package monochrome and colour welcome assets, corresponding source, checksums and validation scope. EMS/XMS image storage and broader adaptive-memory management are not included.
 
 
 ## 0.4 — experimental beta (2026-11-17)
