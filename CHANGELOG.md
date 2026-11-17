@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5dev2 — performance development prerelease (2026-11-17)
+
+- Speed monochrome glyphs and natural-width GIF drawing with clipped packed-byte rows, preserving masking, inversion and CGA banking.
+- Stage monochrome GIF output one row at a time before copying to far memory; preserve transparency, interlacing, aspect correction and colour decoding.
+- Accelerate monochrome clears and solid fills with 8086 string instructions. PPC first-frame latency fell from 6.21 to 4.97 seconds in three alternating runs per build.
+- Earlier controlled PPC tests of the GIF/text changes reduced complete welcome loading by 22.9% and a FrogFind snapshot with its GIF by 14.5%. These are separate frozen-content measurements, not final-package live Internet timings.
+- Retain [@astrobleem’s colour contribution](https://github.com/l00nix/ELKSWeb/issues/2), [@ghaerr’s console and usability feedback](https://github.com/ghaerr/elks/discussions/2185), and the existing HP cooked keys, PPC mouse, inversion and console-restoration fixes.
+- Add byte-level framebuffer checks and keep the FrogFind mirror with its GIF in the performance workload set. No EMS/XMS storage or new 512 KB online-browsing support is introduced.
+
 ## 0.5dev1 — development prerelease (2026-11-17)
 
 - Integrate [@astrobleem’s Tandy/PCjr contribution](https://github.com/l00nix/ELKSWeb/issues/2), preserving its original commits and attribution: native 16-colour rendering, colour GIFs, bounded image storage/retries, basic HTML colours, narrow layout and keyboard support.

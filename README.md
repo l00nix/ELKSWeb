@@ -5,13 +5,13 @@
   <img src="artwork/elksweb-wordmark-yellow-globe.png" alt="ELKSWeb logo" width="640">
 </p>
 
-# ELKSWeb 0.5dev1
+# ELKSWeb 0.5dev2
 
 An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr/elks), written in C with the native ELKS IA16 toolchain and targeting 8088-compatible machines.
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Development candidate: 0.5dev1.** Integrates [@astrobleem's Tandy/PCjr colour contribution](https://github.com/l00nix/ELKSWeb/issues/2) on top of the HP/PPC fixes in 0.4. This medium-model candidate needs hardware and memory testing. [Download 0.5dev1](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5dev1) and read the [candidate notes](docs/RELEASE-0.5dev1.md). The [0.4 experimental beta](https://github.com/l00nix/ELKSWeb/releases/tag/v0.4) remains the frozen baseline.
+**Development candidate: 0.5dev2.** Integrates [@astrobleem's Tandy/PCjr colour contribution](https://github.com/l00nix/ELKSWeb/issues/2) on top of the HP/PPC fixes in 0.4. Adds faster monochrome GIF decoding, text/image drawing and screen fills. PPC measurements show first-frame startup improving from 6.21 to 4.97 seconds; HP and colour-hardware retesting remains open. See the [performance measurements](docs/PERFORMANCE-0.5.md). [Download 0.5dev2](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5dev2) and read the [candidate notes](docs/RELEASE-0.5dev2.md). The [0.4 experimental beta](https://github.com/l00nix/ELKSWeb/releases/tag/v0.4) remains the frozen baseline.
 
 The 0.3-dev1 candidate passed user hardware checks on the Amstrad PPC 512 with PicoMEM 2 and HP 200LX DS, including browsing, GIFs, keyboard navigation and serial-mouse movement/clicking. Address editing remains partially tested; the intermittent upstream console issue remains open. General IBM PC compatibility remains the goal.
 
@@ -127,7 +127,7 @@ This colour mode is experimental. The supplied implementation was exercised in 8
 
 ## How to install a release
 
-Download the [0.5dev1 test runtime package](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5dev1) on a modern computer, verify its checksum, and transfer it to an existing ELKS installation. Install `bin/elksweb` as `/bin/elksweb` and the files in `lib/elksweb/` under `/lib/elksweb/`. The executable is always named `elksweb`. Keep the included notices and corresponding-source archive available.
+Download the [0.5dev2 test runtime package](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5dev2) on a modern computer, verify its checksum, and transfer it to an existing ELKS installation. Install `bin/elksweb` as `/bin/elksweb` and the files in `lib/elksweb/` under `/lib/elksweb/`. The executable is always named `elksweb`. Keep the included notices and corresponding-source archive available.
 
 ```sh
 chmod 755 /bin/elksweb
@@ -135,7 +135,7 @@ elksweb --version
 elksweb
 ```
 
-The version reports **0.5dev1**. Choose a detected display mode to open the local welcome page. Configure native ELKS networking and run `net start` before using HTTP. Enter a hostname such as `68knews.8088retro.com` in the address field or an explicit URL.
+The version reports **0.5dev2**. Choose a detected display mode to open the local welcome page. Configure native ELKS networking and run `net start` before using HTTP. Enter a hostname such as `68knews.8088retro.com` in the address field or an explicit URL.
 
 See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse settings and upgrades. The runtime is a standalone application package, not an ELKS disk image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
 
