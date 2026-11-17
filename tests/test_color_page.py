@@ -20,7 +20,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 RGBI = [(0,0,0),(0,0,170),(0,170,0),(0,170,170),(170,0,0),(170,0,170),(170,85,0),(170,170,170),
         (85,85,85),(85,85,255),(85,255,85),(85,255,255),(255,85,85),(255,85,255),(255,255,85),(255,255,255)]
 
-SHIM = r'''
+SHIM = (ROOT/'tests/qa_row1.h').read_text() + r'''
 #include <stdlib.h>
 #include <string.h>
 #include "IMAGES_SOURCE"

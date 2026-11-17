@@ -86,6 +86,11 @@ void ew_clear(int white);
 void ew_row4(int x, int y, const unsigned char *line, const unsigned char *mask,
              int width);
 void ew_pixel(int x, int y, int white);
+/* Monochrome packed row. Read width bits starting at source_bit; mask bits
+ * select opaque pixels (NULL means all). Clipping preserves surrounding bits.
+ * The caller supplies enough source bytes for that bit range. */
+void ew_row1(int x, int y, const unsigned char *line, const unsigned char *mask,
+             unsigned source_bit, int width, int inverse);
 void ew_hline(int x, int y, int width, int white);
 void ew_vline(int x, int y, int height, int white);
 void ew_fillrect(int x, int y, int width, int height, int white);

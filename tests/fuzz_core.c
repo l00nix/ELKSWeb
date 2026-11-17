@@ -1,3 +1,4 @@
+#include "qa_row1.h"
 /* Deterministic bounded host fuzzing of actual C layout and URL code.
  * Run with ASan/UBSan. This cannot prove 16-bit execution compatibility. */
 #include "elksweb.h"

@@ -226,6 +226,17 @@ static int decode_pixels(struct reader *r, struct ew_gif *out,
     int minimum = byte_read(r), code, previous = -1, first = 0, original;
     unsigned clear, end, available, bits, depth, x = 0, y = 0, pass = 0;
     unsigned long produced = 0, expected = (unsigned long)width * height;
+    /* One monochrome row in near memory avoids a far read/modify/write and
+     * a stride multiplication for every decoded pixel. Only the frame's
+     * bytes are copied; edge bits and the logical-screen background survive.
+     * Colour retains its independent packed-nibble path. */
+    unsigned char row_bits[EW_GIF_MAX_WIDTH / 8], row_opacity[EW_GIF_MAX_WIDTH / 8];
+    static const unsigned char threshold[16] = {
+        7,135,39,167,199,71,231,103,55,183,23,151,247,119,215,87};
+    unsigned row_offset = 0, row_byte = 0, row_first = left >> 3;
+    unsigned row_end = (left + width + 7) >> 3, n;
+    unsigned char row_mask = 0;
+    const unsigned char *row_threshold = threshold;
     if (minimum < 0) return EW_GIF_TRUNCATED;
     if (minimum < 2 || minimum > 8) return EW_GIF_BAD_DATA;
     if (r->color) color_row(r, out, top);
@@ -266,14 +277,31 @@ static int decode_pixels(struct reader *r, struct ew_gif *out,
         while (depth) {
             unsigned char index = w->stack[--depth];
             if (produced >= expected || index >= colors) return EW_GIF_BAD_DATA;
-            if (!r->color)
-                emit(out, left + x, top + y, gray[index], index != transparent,
-                     r->dither_shift);
-            else if (!r->skip_row)
+            if (!r->color) {
+                if (!x) {
+                    row_offset = (top + y) * out->stride;
+                    for (n = row_first; n < row_end; ++n) {
+                        row_bits[n] = out->pixels[row_offset + n];
+                        if (out->opacity) row_opacity[n] = out->opacity[row_offset + n];
+                    }
+                    row_byte = row_first; row_mask = 0x80U >> (left & 7);
+                    row_threshold = threshold + ((((top + y) >> r->dither_shift) & 3) << 2);
+                }
+                if (gray[index] > row_threshold[(left + x) & 3]) row_bits[row_byte] |= row_mask;
+                else row_bits[row_byte] &= ~row_mask;
+                if (index != transparent && out->opacity) row_opacity[row_byte] |= row_mask;
+                row_mask >>= 1;
+                if (!row_mask) { row_mask = 128; ++row_byte; }
+            } else if (!r->skip_row)
                 emit_color(r, out, (struct color_workspace EW_GIF_FAR *)w,
                            left + x, index, index != transparent);
             ++produced;
             if (++x == width) {
+                if (!r->color)
+                    for (n = row_first; n < row_end; ++n) {
+                        out->pixels[row_offset + n] = row_bits[n];
+                        if (out->opacity) out->opacity[row_offset + n] = row_opacity[n];
+                    }
                 x = 0;
                 if (!interlaced) ++y;
                 else {

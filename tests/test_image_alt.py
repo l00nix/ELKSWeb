@@ -6,13 +6,16 @@ import tempfile
 import unittest
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 SHIM=r'''
+#define ew_row1 ignored_row1
 #define ew_pixel ignored_pixel
 #define ew_fillrect ignored_fillrect
 #define ew_vline ignored_vline
 #include "CORE_SHIM"
+#undef ew_row1
 #undef ew_pixel
 #undef ew_fillrect
 #undef ew_vline
+#include "ROW1_SHIM"
 #include "elks_platform.h"
 #include <string.h>
 static unsigned count;
@@ -55,7 +58,7 @@ class ImageAlt(unittest.TestCase):
     def setUpClass(cls):
         cls.temp=tempfile.TemporaryDirectory(prefix='elksweb-image-alt-')
         path=pathlib.Path(cls.temp.name);shim=path/'shim.c'
-        shim.write_text(SHIM.replace('CORE_SHIM',str(ROOT/'tests/qa_core_shim.c')))
+        shim.write_text(SHIM.replace('ROW1_SHIM',str(ROOT/'tests/qa_row1.h')).replace('CORE_SHIM',str(ROOT/'tests/qa_core_shim.c')))
         lib=path/'alt.dylib'
         sources=[ROOT/'src'/(name+'.c') for name in ('html','url','net','memory','images')]
         sources += [ROOT/'font/font.c',ROOT/'font/body_font.c',ROOT/'image/gif.c',ROOT/'image/dimensions.c',shim]

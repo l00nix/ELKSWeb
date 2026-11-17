@@ -22,6 +22,10 @@ void ew_face_draw(int x,int y,unsigned char c,int fg,int bg,int bold,int italic,
     for(row=0;row<height;row++) {
         bits=glyph[row]; if(size==0 && bold)bits|=bits>>1;
         skew=italic ? (height-1-row)/6 : 0;
+        if (!ew_color) {
+            if (bits) ew_row1(x+skew,y+row,&bits,&bits,0,advance,!fg);
+            continue;
+        }
         for(col=0;col<advance;col++,bits<<=1)
             if(bits&128)ew_pixel(x+col+skew,y+row,fg);
     }

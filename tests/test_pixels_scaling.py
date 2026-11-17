@@ -11,7 +11,7 @@ import tempfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-SHIM = r'''
+SHIM = (ROOT/'tests/qa_row1.h').read_text() + r'''
 #include <stdlib.h>
 #include <string.h>
 #include "IMAGES_SOURCE"

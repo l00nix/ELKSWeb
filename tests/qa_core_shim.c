@@ -1,3 +1,4 @@
+#include "qa_row1.h"
 /* Host test adapters only. Compile the actual native browser core unchanged. */
 #include "elksweb.h"
 int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;

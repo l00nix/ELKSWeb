@@ -400,6 +400,11 @@ void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bot
       ew_row4(screen_x,screen_y,bits,cover ? opacity : NULL,count);
       goto next_row;
     }
+    if (!reduce && image->width==r->n) {
+      ew_row1(screen_x,screen_y,bits,image->opacity ? opacity : NULL,
+              start_sx,(int)(last_col-first_col),inverse);
+      goto next_row;
+    }
     for (col=first_col;col<last_col;++col,++screen_x) {
       if (reduce) {
         color=reduced_pixel(image,sx,sy,

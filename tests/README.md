@@ -55,7 +55,7 @@ Sanitizer fuzzing uses seed0x01868088 and10,000 bounded HTML/URL iterations plus
 
 ## Live sites
 
-`live_qa.py` separately loads actual `http://frogfind.8088retro.com/` and `http://68k.news/` in DOS MicroWeb and native ELKSWeb through QEMU networking. It saves bounded early/final screenshots, raw network captures, URLs/timestamps and reviewed errors. It uses no fixture substitutions and no HTTP proxy. The original frogfind.com is skipped per user instruction; the supplied mirror is named explicitly in each result. A mirror timeout skips only that run; the next invocation retries the mirror. Reference binaries are not bundled; supply `--reference-image /path/to/freedos.boot.disk.720K.img`. Live changing content never enters deterministic pixel comparisons.
+`live_qa.py` separately loads actual `http://frogfind.8088retro.com/`, `http://68knews.8088retro.com/` and `http://httpedia.com/` in DOS MicroWeb and native ELKSWeb through QEMU networking. It saves bounded early/final screenshots, raw network captures, URLs/timestamps and reviewed errors. It uses no fixture substitutions and no HTTP proxy. The original frogfind.com is skipped per user instruction; the supplied mirror is named explicitly in each result. A mirror timeout skips only that run; the next invocation retries the mirror. Reference binaries are not bundled; supply `--reference-image /path/to/freedos.boot.disk.720K.img`. Live changing content never enters deterministic pixel comparisons.
 
 ## Control and text behavior inventory
 
@@ -114,3 +114,25 @@ python3 tests/live_qa.py --candidate-image build/elksweb.img --reference-image /
 ```
 
 While viewing HTTP, an address beginning `/path` resolves on the current HTTP origin. Use `file:/root/welcome.htm` to switch explicitly to a local file. `interaction_qa.py` verifies this explicit transition without an HTTP request, the rendered local welcome page, and Back to the exact prior HTTP URL.
+
+## Performance checks on HP/PPC
+
+Keep these workloads in every loading-performance comparison:
+
+| Workload | URL / asset | Record |
+| --- | --- | --- |
+| Shared local welcome | Identical welcome.htm and elksweb.gif for every build | First frame, text shown, GIF decode, final draw |
+| 68k news mirror | http://68knews.8088retro.com/ | Fetch, parse, final draw, bytes and content hash |
+| FrogFind mirror | http://frogfind.8088retro.com/ | Homepage **and frog.gif**, fetch, parse, GIF decode, final draw |
+| HTTPedia | http://httpedia.com/ | Homepage and image completion; record external errors separately |
+
+Use at least three alternating fresh-process runs with the same RAM, kernel,
+network services, display, mouse and inversion settings. Retain the published
+browser and use separate instrumentation builds. Buffer timestamps until after
+the measured operation; do not poll the target through Telnet/FTP during a run.
+For controlled comparisons, save the received HTML and image bytes with hashes
+and serve the same files over LAN HTTP. Label these as frozen fixtures, separate
+from live-site results; preserve relative image URLs. Do not treat a text-only
+FrogFind load as completion. The first frame is not the fully loaded page.
+Pixel comparisons, colour-mode tests and HP/PPC input/console regressions remain
+required alongside timings. Speed does not establish rendering correctness.

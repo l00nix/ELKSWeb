@@ -8,7 +8,7 @@ class FixedFonts(unittest.TestCase):
  @classmethod
  def setUpClass(cls):
   cls.tmp=tempfile.TemporaryDirectory();p=Path(cls.tmp.name)
-  (p/'mock.c').write_text('''
+  (p/'mock.c').write_text((HERE.parent/'tests/qa_row1.h').read_text()+'''
 int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;
 unsigned char pixels[640*200];
 void ew_pixel(int x,int y,int c){if(x>=0&&x<640&&y>=0&&y<200)pixels[y*640+x]=c;}

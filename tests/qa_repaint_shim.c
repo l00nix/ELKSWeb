@@ -1,3 +1,4 @@
+#include "qa_row1.h"
 /* Actual browser renderer with a recording host framebuffer. Every write,
  * including same-color writes, is counted. Cursor sprite is intentionally off;
  * driver cursor/physical framebuffer behavior is covered separately. */

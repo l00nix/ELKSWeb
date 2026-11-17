@@ -60,3 +60,11 @@ Before a public 0.5 beta:
 The supplied branch does not contain EMS image storage. EGA/VGA remain
 monochrome. PMR mouse support is absent. Hardware certification and performance
 claims are explicitly deferred until measured.
+
+## Unreleased performance follow-up
+
+The `perf/0.5-loading` work adds packed monochrome row drawing and bounded
+monochrome GIF decoding improvements. Colour features and the HP/PPC fixes are
+retained. See [the performance notes](PERFORMANCE-0.5.md) for validation and the
+ongoing workload set, including the FrogFind mirror and its GIF. Physical HP
+qualification remains open; this does not promote 0.5dev1 or replace its assets.

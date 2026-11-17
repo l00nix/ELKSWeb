@@ -357,6 +357,41 @@ void ew_pixel(int x, int y, int white)
     if (white) video[offset] |= mask; else video[offset] &= ~mask;
 }
 
+void ew_row1(int x, int y, const unsigned char *line, const unsigned char *mask,
+             unsigned source_bit, int width, int inverse)
+{
+    unsigned offset, phase, take, shift, index;
+    unsigned char bits, cover, edge;
+    if (ew_color || width <= 0 || x >= clip_right || y < clip_top ||
+        y >= clip_bottom || y < 0 || y >= EW_SCREEN_HEIGHT) return;
+    if (x < 0) {
+        if (x <= -width) return;
+        source_bit += (unsigned)-x; width += x; x = 0;
+    }
+    if (width > clip_right - x) width = clip_right - x;
+    offset = scan_offset(x, y);
+    phase = (unsigned)x & 7;
+    while (width > 0) {
+        take = 8 - phase;
+        if (take > (unsigned)width) take = (unsigned)width;
+        shift = source_bit & 7; index = source_bit >> 3;
+        bits = (unsigned char)(line[index] << shift);
+        cover = mask ? (unsigned char)(mask[index] << shift) : 255;
+        /* Read a second byte only if the requested bits cross its boundary. */
+        if (shift + take > 8) {
+            bits |= line[index + 1] >> (8 - shift);
+            if (mask) cover |= mask[index + 1] >> (8 - shift);
+        }
+        if (inverse) bits ^= 255;
+        edge = (unsigned char)((255U >> phase) & (255U << (8 - phase - take)));
+        cover = (cover >> phase) & edge;
+        bits >>= phase;
+        if (cover == 255) video[offset] = bits;
+        else if (cover) video[offset] = (video[offset] & ~cover) | (bits & cover);
+        ++offset; source_bit += take; width -= take; phase = 0;
+    }
+}
+
 void ew_hline(int x, int y, int width, int white)
 {
     unsigned offset;
