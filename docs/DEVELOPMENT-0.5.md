@@ -68,3 +68,9 @@ monochrome GIF decoding improvements. Colour features and the HP/PPC fixes are
 retained. See [the performance notes](PERFORMANCE-0.5.md) for validation and the
 ongoing workload set, including the FrogFind mirror and its GIF. Physical HP
 qualification remains open; this does not promote 0.5dev1 or replace its assets.
+
+The `perf/0.5-startup` follow-up retains those changes and speeds monochrome
+clears and solid fills with 8086 string instructions. Measured first-frame
+latency on the PPC falls from 6.21 to 4.97 seconds; the four-second pre-main
+phase remains unresolved. See the same performance notes for scope, validation
+and remaining hardware checks. No published release asset is replaced.

@@ -20,7 +20,7 @@ class HorizontalLine(unittest.TestCase):
                 'int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;\n'
                 'static unsigned video_bytes=16384;\n' +
                 '\n'.join(line for line in source.splitlines()
-                          if line.startswith('static int clip_')) + '\n' + routines)
+                          if line.startswith('static int clip_')) + '\n' + routines + '\nvoid test_clear(unsigned n,int c) { video_bytes=n; ew_clear(c); }\n')
             subprocess.run(['cc', '-O2', '-shared', '-fPIC', '-Wall', '-Wextra',
                             '-Werror', '-I'+str(PLATFORM), str(root / 'line.c'),
                             '-o', str(root / 'line.so')], check=True)
@@ -28,6 +28,14 @@ class HorizontalLine(unittest.TestCase):
             video = (C.c_ubyte * 65536).in_dll(library, 'video')
             screen_height = C.c_int.in_dll(library, 'ew_screen_height')
             seed = bytes((i * 73 + i // 17) & 255 for i in range(65536))
+            # Full clears include CGA bank padding, but never memory beyond
+            # the selected adapter's aperture.
+            for size in (16384, 28000, 38400):
+                for white in (0, 1):
+                    C.memmove(video, seed, len(seed))
+                    library.test_clear(size, white)
+                    expected = bytes([255 if white else 0]) * size + seed[size:]
+                    self.assertEqual(bytes(video), expected, (size, white))
             for height in (200, 350, 480):
                 screen_height.value = height
                 for x in list(range(-17, 18)) + list(range(625, 642)) + [-32768, 32767]:

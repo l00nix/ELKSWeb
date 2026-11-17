@@ -311,6 +311,24 @@ static unsigned scan_offset(int x, int y)
     return ((unsigned)y & 1) * 8192U + ((unsigned)y >> 1) * 80U + ((unsigned)x >> 3);
 }
 
+/* All monochrome framebuffers fit inside one segment. Bulk fills use the
+ * same 8086 string operations as the colour backend; partial edge bytes are
+ * still masked by ew_hline. Preserve ES for the caller. */
+static void fill_video(unsigned to, unsigned char value, unsigned count)
+{
+#ifdef __ia16__
+    unsigned segment = (unsigned)((unsigned long)video >> 16);
+    to += (unsigned)(unsigned long)video;
+    __asm__ volatile (
+        "push %%es\n\tmov %%dx, %%es\n\tcld\n\t"
+        "shr $1, %%cx\n\trep stosw\n\tjnc 1f\n\tstosb\n1:\tpop %%es"
+        : "+D"(to), "+c"(count) : "a"((unsigned)value * 0x0101U), "d"(segment)
+        : "cc", "memory");
+#else
+    while (count--) video[to++] = value;
+#endif
+}
+
 /* Scroll the byte-aligned content viewport, preserving chrome and padding.
  * Positive delta moves pixels up. Row order protects overlapping source data,
  * including odd scanline shifts across the CGA interleaved banks. */
@@ -339,10 +357,9 @@ void ew_clip(int right, int top, int bottom)
 
 void ew_clear(int white)
 {
-    unsigned n;
     unsigned char value = white ? 255 : 0;
     if (ew_color) { ew_tandy_clear(white); return; }
-    for (n = 0; n < video_bytes; ++n) video[n] = value;
+    fill_video(0, value, video_bytes);
 }
 
 void ew_pixel(int x, int y, int white)
@@ -411,7 +428,12 @@ void ew_hline(int x, int y, int width, int white)
         ++offset;
         width -= count;
     }
-    while (width >= 8) { video[offset++] = value; width -= 8; }
+    if (width >= 8) {
+        unsigned count = (unsigned)width >> 3;
+        fill_video(offset, value, count);
+        offset += count;
+        width &= 7;
+    }
     if (width) {
         mask = (unsigned char)(255U << (8 - width));
         if (white) video[offset] |= mask; else video[offset] &= ~mask;
