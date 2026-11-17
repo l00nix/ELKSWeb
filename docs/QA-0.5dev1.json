@@ -1,0 +1,82 @@
+{
+  "version": "0.5dev",
+  "source_revision": "118f113e2efcd21cda17e854c27f744ff1f65e06",
+  "contributor_revision": "6dbd3b29639efeae621255f60b344a18be5f9a85",
+  "binary_sha256": "beb5f4918236df0aa20bab678d3e4e8a4d748a97e0e5531759b0c80d7e307bb6",
+  "binary_bytes": 96496,
+  "tests": {
+    "browser": 337,
+    "platform": 25,
+    "colour_gif": 7,
+    "isa_audit_regressions": 11,
+    "key_mouse_C": "passed",
+    "monochrome_gif": "32 images, truncations, 1000 mutations passed",
+    "dimensions": "16 fixtures, prefixes and 5000 random inputs passed"
+  },
+  "audit": {
+    "executable_sha256": "beb5f4918236df0aa20bab678d3e4e8a4d748a97e0e5531759b0c80d7e307bb6",
+    "elf_sha256": "ec66ae623ac6bf04069ecb2a18c4a3db078042b1fa5043265d325ea113a768a9",
+    "instructions": 29618,
+    "code_sections": {
+      ".text": {
+        "bytes": 57840,
+        "decoded_bytes": 57840,
+        "linker_zero_padding_bytes": 13,
+        "uncovered_bytes": 0
+      },
+      ".fartext": {
+        "bytes": 17504,
+        "decoded_bytes": 17504,
+        "linker_zero_padding_bytes": 0,
+        "uncovered_bytes": 0
+      }
+    },
+    "isa_static_pass": true,
+    "forbidden_instructions": [],
+    "ambiguities": [],
+    "memory": {
+      "header_bytes": 64,
+      "header_version": 1,
+      "text_bytes": 57840,
+      "far_text_bytes": 17504,
+      "total_text_bytes": 75344,
+      "data_bytes": 14512,
+      "bss_bytes": 38672,
+      "header_heap_bytes": 0,
+      "header_stack_bytes": 0,
+      "effective_heap_bytes": 4096,
+      "effective_stack_bytes": 4096,
+      "near_static_bytes": 53184,
+      "near_total_before_arguments_environment": 61376,
+      "remaining_before_arguments_environment": 4144,
+      "minimum_argument_environment_reserve": 1024,
+      "memory_gate_pass": true,
+      "note": "Zero header heap/stack fields select ELKS INIT_HEAP/INIT_STACK defaults of 4096 each. argv/envp also consume near space."
+    },
+    "real_8088_execution": "not verified",
+    "limits": "Linear decoding of ELF executable sections; inline data in executable sections requires manual review if rejected. Static ISA compatibility does not prove timing, BIOS compatibility or actual 8088 execution."
+  },
+  "independent_build_match": true,
+  "qemu": {
+    "scope": "486 emulation; stock test image; monochrome CGA/EGA/VGA only",
+    "passed": [
+      "version",
+      "selector Backspace and cancellation",
+      "welcome and GIF",
+      "redirected stdio",
+      "detached terminal",
+      "HP-style cooked keys and direct GIF",
+      "CGA inversion",
+      "console restoration"
+    ],
+    "physical_hardware": false,
+    "colour_hardware_or_emulation": false
+  },
+  "pending": [
+    "matching Tandy/PCjr kernel and loader revisions",
+    "colour integration emulator runs",
+    "physical HP/PPC medium-model regression testing",
+    "memory and speed comparison with 0.4",
+    "new versioned development packager"
+  ]
+}

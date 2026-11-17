@@ -21,6 +21,20 @@ remain in history. This is an integration branch, not a released hardware build.
 - Colour welcome assets installed by the disposable test-image packager. The
   historical versioned release packagers still target their original versions.
 
+## Initial validation (2026-11-17)
+
+The merged code at `118f113` passed 337 browser, 25 platform, 7 colour-GIF and
+11 ISA-audit regression tests, plus keyboard/mouse C checks and monochrome
+GIF/dimension differential tests. Both native build workflows produced identical
+96,496-byte executables. Native instruction and memory audits passed across both
+text sections; near allocation is 61,376 bytes before arguments/environment.
+
+QEMU monochrome CGA/EGA/VGA welcome/GIF checks, local selector editing/cancel,
+redirected streams, detached launch, HP-style cooked keys, inversion and console
+restoration passed. QEMU used a 486 and a generic test image: this does not test
+Tandy/PCjr colour output or physical HP/PPC hardware. See the exact build hash and
+scope in [QA-0.5dev1.json](QA-0.5dev1.json).
+
 ## Requirements and open work
 
 The kernel must support medium-model executables (`CONFIG_EXEC_MMODEL`). Colour
