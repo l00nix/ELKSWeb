@@ -20,7 +20,8 @@ class Gif(ctypes.Structure):
     _fields_ = [("width", ctypes.c_uint), ("height", ctypes.c_uint),
                 ("stride", ctypes.c_uint),
                 ("pixels", ctypes.POINTER(ctypes.c_ubyte)),
-                ("opacity", ctypes.POINTER(ctypes.c_ubyte))]
+                ("opacity", ctypes.POINTER(ctypes.c_ubyte)),
+                ("depth", ctypes.c_ubyte)]
 
 
 def encoded(width, height, count, seed, interlaced=False, transparent=None):

@@ -41,13 +41,17 @@ def memory_report(path):
         struct.unpack_from('<IBBHIIIIHHI', data)
     if hlen not in (32, 48, 64):
         raise ValueError('Unsupported ELKS header')
+    if len(data) < hlen:
+        raise ValueError('Truncated ELKS extended header')
+    far_text = struct.unpack_from('<I', data, 48)[0] if hlen == 64 else 0
     if version != 1:
         raise ValueError('Expected ELKS version 1 heap/stack header')
     effective_heap, effective_stack = heap or 4096, stack or 4096
     total = initialized+bss+effective_heap+effective_stack
     return {
         'header_bytes': hlen, 'header_version': version,
-        'text_bytes': text, 'data_bytes': initialized, 'bss_bytes': bss,
+        'text_bytes': text, 'far_text_bytes': far_text,
+        'total_text_bytes': text+far_text, 'data_bytes': initialized, 'bss_bytes': bss,
         'header_heap_bytes': heap, 'header_stack_bytes': stack,
         'effective_heap_bytes': effective_heap, 'effective_stack_bytes': effective_stack,
         'near_static_bytes': initialized+bss,
@@ -74,10 +78,19 @@ def audit(executable, elf, disassembly, link_map=None):
     bad, ambiguities = [], []
     memory = memory_report(executable)
     executable_bytes = executable.read_bytes()
-    if '.text' in sections:
-        actual_text = executable_bytes[memory['header_bytes']:memory['header_bytes']+memory['text_bytes']]
-        if actual_text != sections['.text'][1]:
-            ambiguities.append({'reason':'ELKS executable .text differs from retained linked ELF'})
+    # elf2elks writes near text then far text before the data and relocations.
+    # Compare both code payloads, not just the first segment of a medium binary.
+    offset = memory['header_bytes']
+    for name, length in (('.text', memory['text_bytes']),
+                         ('.fartext', memory['far_text_bytes'])):
+        code = sections.get(name, (0, b''))[1]
+        actual = executable_bytes[offset:offset+length]
+        if len(code) != length or actual != code:
+            ambiguities.append({'reason':f'ELKS executable {name} differs from retained linked ELF'})
+        offset += length
+    for name in sections:
+        if name not in ('.text', '.fartext'):
+            ambiguities.append({'reason':f'Unmapped executable section {name}'})
     instruction_count = 0
     pattern = re.compile(r'^\s*([0-9a-f]+):\s*((?:[0-9a-f]{2}\s+)+)\s*(\S.*)$')
     for line in disassembly.read_text().splitlines():

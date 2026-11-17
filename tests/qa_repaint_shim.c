@@ -5,7 +5,8 @@
 #include "../src/main.c"
 #undef main
 
-int ew_screen_height=200, ew_pixel_aspect=2;
+int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;
+void ew_row4(int x,int y,const unsigned char *l,const unsigned char *m,int w){(void)x;(void)y;(void)l;(void)m;(void)w;}
 static unsigned writes[480][640];
 static unsigned char pixels[480][640];
 static int clip_right=640, clip_top, clip_bottom=200;

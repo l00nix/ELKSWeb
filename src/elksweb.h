@@ -59,6 +59,7 @@ struct ew_run {
   unsigned short off, n;
   unsigned short link;
   unsigned char style, kind, w;
+  unsigned char color; /* 0: default ink; else 16 + IBM RGBI colour. */
 };
 struct ew_link {
   const char EW_FAR *url;
@@ -79,6 +80,8 @@ struct ew_document {
   unsigned short text_len, run_count;
   unsigned short link_count;
   unsigned char form_count, truncated;
+  /* <body> colours, as in ew_run.color; used by the colour display only. */
+  unsigned char page_bg, page_fg, page_link;
   short height;
 };
 extern struct ew_document ew_doc;
@@ -109,7 +112,9 @@ const char EW_FAR *ew_image_alt(const struct ew_run EW_FAR *run);
 int ew_image_is_map(const struct ew_run EW_FAR *run);
 int ew_image_map_point(const struct ew_run EW_FAR *run, int x, int y,
                        unsigned *map_x, unsigned *map_y);
-/* Caller must set the display clip to the viewport or exposed scroll strip. */
+/* Caller must set the display clip to the viewport or exposed scroll strip.
+ * inverse is the monochrome polarity; in the colour mode it is instead the
+ * ink for placeholders, and image pixels keep their own colours. */
 void ew_image_draw(const struct ew_run EW_FAR *run, int x, int y, int top, int bottom,
                    int inverse);
 void ew_parse(const char EW_FAR *html, const char *base);

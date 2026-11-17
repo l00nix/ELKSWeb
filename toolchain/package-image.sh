@@ -13,6 +13,9 @@ install "$app_root/build/elksweb" "$template/bin/elksweb"
 mkdir -p "$template/root" "$template/lib/elksweb"
 install -m 644 "$app_root/share/welcome.htm" "$template/lib/elksweb/welcome.htm"
 install -m 644 "$app_root/share/elksweb.gif" "$template/lib/elksweb/elksweb.gif"
+for asset in color.htm elkswebc.gif chart.gif; do
+    install -m 644 "$app_root/share/$asset" "$template/lib/elksweb/$asset"
+done
 install -m 644 "$app_root/share/logo-source.txt" "$template/lib/elksweb/logo-src.txt"
 install -m 644 "$app_root/share/license.txt" "$template/lib/elksweb/license.txt"
 # Default image is the normal runtime. Fixtures are an explicit test-image option.

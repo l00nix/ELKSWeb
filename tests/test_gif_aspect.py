@@ -19,7 +19,8 @@ BAYER = (0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5)
 
 class Gif(C.Structure):
     _fields_ = [('width',C.c_uint),('height',C.c_uint),('stride',C.c_uint),
-                ('pixels',C.POINTER(C.c_ubyte)),('opacity',C.POINTER(C.c_ubyte))]
+                ('pixels',C.POINTER(C.c_ubyte)),('opacity',C.POINTER(C.c_ubyte)),
+                ('depth',C.c_ubyte)]
 
 @unittest.skipIf(Image is None, 'Independent GIF pixel oracle requires Pillow')
 class GifAspect(unittest.TestCase):

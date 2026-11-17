@@ -16,7 +16,8 @@ SHIM = r'''
 #include <string.h>
 #include "IMAGES_SOURCE"
 struct ew_document ew_doc;
-int ew_screen_height=200, ew_pixel_aspect=2;
+int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;
+void ew_row4(int x,int y,const unsigned char *l,const unsigned char *m,int w){(void)x;(void)y;(void)l;(void)m;(void)w;}
 uint32_t ew_source_length;
 static unsigned char frame[640*200], reference[640*200];
 static unsigned calls, outside;

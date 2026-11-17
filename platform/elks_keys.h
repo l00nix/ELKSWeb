@@ -5,6 +5,7 @@
 struct ew_key_state {
     unsigned char shifts, ctrls, caps, num, locks_down, extended, pause_left;
     unsigned char escape_state, digits;
+    unsigned char tandy;    /* Tandy 1000 90-key arrow/Home scan codes. */
     unsigned int parameter;
 };
 

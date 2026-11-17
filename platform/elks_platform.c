@@ -1,9 +1,11 @@
-/* ELKSWeb CGA/EGA/VGA monochrome framebuffer and console backend, using the native ia16 ABI.
+/* ELKSWeb CGA/EGA/VGA monochrome and Tandy/PCjr 16-colour framebuffer and
+ * console backend, using the native ia16 ABI.
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 #include "elks_platform.h"
 #include "elks_keys.h"
 #include "elks_mouse.h"
+#include "elks_tandy.h"
 #include "../src/version.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,7 +33,9 @@ static struct termios saved_term;
 static struct ew_key_state keys;
 static const char *last_error = "";
 static far_bytes video = FAR_BYTES(0xb800, 0);
-int ew_screen_height=200, ew_pixel_aspect=2;
+int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;
+/* Kernel-certified colour segment: 9800h Tandy, 1800h PCjr, 0 none. */
+static unsigned color_segment;
 static unsigned video_bytes=16384;
 static int clip_right=640, clip_top, clip_bottom=480;
 static unsigned long escape_started;
@@ -45,7 +49,29 @@ static unsigned char cursor_hand;
 #ifdef EW_PLATFORM_TEST
 #define bios_video ew_test_bios_video
 #define video_register ew_test_video_register
+#define color_probe ew_test_color_probe
+unsigned ew_test_color_probe(void);
 #else
+/* Mode 09h borrows conventional RAM. Only the kernel knows whether that RAM
+ * was reserved at boot, so a machine name or BIOS mode test is not enough. */
+#ifndef MEM_GETTANDY
+#define MEM_GETTANDY 14
+#endif
+#ifndef MEM_GETPCJR
+#define MEM_GETPCJR 15
+#endif
+static unsigned color_probe(void)
+{
+    unsigned segment = 0;
+    int fd = open("/dev/kmem", O_RDONLY);
+    if (fd < 0) return 0;
+    if (ioctl(fd, MEM_GETTANDY, &segment) < 0 || segment != 0x9800) {
+        segment = 0;
+        if (ioctl(fd, MEM_GETPCJR, &segment) < 0 || segment != 0x1800) segment = 0;
+    }
+    close(fd);
+    return segment;
+}
 static unsigned bios_video(unsigned ax, unsigned *result)
 {
     unsigned bx=result ? *result : 0;
@@ -65,13 +91,16 @@ static void video_register(unsigned port, unsigned value)
 static unsigned video_capabilities(void)
 {
     unsigned bx=0, ax=bios_video(0x1a00,&bx), caps;
+    color_segment=0;
     if ((ax&255)==0x1a && ((bx&255)==7 || (bx&255)==8)) return 7;
+    color_segment=color_probe();
     caps=(bios_video(0x0f00,0)&0x7f)==7 ? 0 : 1;
     bx=0xff10;
     bios_video(0x1200,&bx);
     /* EGA color display, at least 128KB. A 64KB or monochrome EGA cannot
      * provide the four-plane mode used here. Unsupported BIOS leaves BL=10. */
     if (!(bx&0xff00) && (bx&255)>=1 && (bx&255)<=3) caps|=3;
+    if (color_segment) caps|=8;
     return caps;
 }
 static void console_puts(const char *text)
@@ -83,11 +112,15 @@ static int video_choose(const char *name, unsigned caps)
     char choice[16];
     int mode, n;
     if (!name) {
-        console_puts("ELKSWeb " EW_VERSION " display (monochrome):\n");
-        if (caps&1) console_puts("  1 CGA 640x200 (default)\n");
+        console_puts(caps&8 ? "ELKSWeb " EW_VERSION " display:\n" :
+             "ELKSWeb " EW_VERSION " display (monochrome):\n");
+        if (caps&1) console_puts(caps&8 ? "  1 CGA 640x200 monochrome\n" : "  1 CGA 640x200 (default)\n");
         if (caps&2) console_puts("  2 EGA 640x350\n");
         if (caps&4) console_puts("  3 VGA 640x480\n");
-        console_puts("Select 1/2/3 or Q to quit, then press Enter: ");
+        if (caps&8) console_puts(color_segment==0x1800 ? "  4 PCjr 320x200 16 colors (default)\n" :
+                         "  4 Tandy 320x200 16 colors (default)\n");
+        console_puts(caps&8 ? "Select a listed mode or Q to quit, then press Enter: " :
+              "Select 1/2/3 or Q to quit, then press Enter: ");
         /* ELKS canonical editing applies within one read, so read the whole
          * selection before entering raw mode. Reject and drain long lines. */
         n = read(console_fd,choice,sizeof(choice));
@@ -97,14 +130,19 @@ static int video_choose(const char *name, unsigned caps)
             choice[0] = 0;
         } else if (n > 2) choice[0] = 0;
         if (choice[0]=='q' || choice[0]=='Q' || choice[0]==27) return 0;
-        name=choice[0]=='\n' || choice[0]=='1' ? "cga" : choice[0]=='2' ? "ega" : choice[0]=='3' ? "vga" : "";
+        name=choice[0]=='\n' ? (caps&8 ? "tandy" : "cga") : choice[0]=='1' ? "cga" :
+             choice[0]=='2' ? "ega" : choice[0]=='3' ? "vga" : choice[0]=='4' ? "tandy" : "";
     }
     mode=!strcmp(name,"cga") ? EW_VIDEO_CGA : !strcmp(name,"ega") ? EW_VIDEO_EGA :
-         !strcmp(name,"vga") ? EW_VIDEO_VGA : -1;
-    last_error="Unknown display: choose cga, ega or vga";
+         !strcmp(name,"vga") ? EW_VIDEO_VGA :
+         !strcmp(name,"tandy") || !strcmp(name,"pcjr") ? EW_VIDEO_TANDY : -1;
+    last_error="Unknown display: choose cga, ega, vga, tandy or pcjr";
     if (mode<0) return -1;
-    last_error="Requested graphics mode is unavailable on this adapter";
-    if (!(caps&(mode==EW_VIDEO_CGA ? 1 : mode==EW_VIDEO_EGA ? 2 : 4))) return -1;
+    last_error=mode==EW_VIDEO_TANDY ?
+        "Color needs the Tandy (tandyvideo=1) or PCjr kernel video reservation" :
+        "Requested graphics mode is unavailable on this adapter";
+    if (!(caps&(mode==EW_VIDEO_CGA ? 1 : mode==EW_VIDEO_EGA ? 2 :
+                mode==EW_VIDEO_VGA ? 4 : 8))) return -1;
     return mode;
 }
 
@@ -176,21 +214,29 @@ int ew_platform_init(const char *requested)
     if (tcsetattr(console_fd, TCSAFLUSH, &term) < 0) goto failed;
     drain_input();
     cooked = getenv("ELKSWEB_COOKED_KEYS");
-    if (!cooked || cooked[0] != '1') {
+    /* The PCjr kernel reads its keyboard through the BIOS: there are no raw
+     * scan codes to enable, only translated characters and escape sequences. */
+    if (color_segment != 0x1800 && (!cooked || cooked[0] != '1')) {
         last_error = "Cannot enable raw console keyboard";
         if (ioctl(console_fd, DCSET_KRAW, (void *)0) < 0) goto failed;
         raw_keys = 1;
     }
     ew_keys_reset(&keys);
+    /* The original Tandy 1000 keyboard has its own arrow/Home scan codes. */
+    cooked = getenv("ELKSWEB_KEYBOARD");
+    keys.tandy = cooked && *cooked ? !strcmp(cooked, "tandy") : color_segment == 0x9800;
     old_mode = bios_video(0x0f00,0) & 0x7f;
     bios_video(mode,0);
     last_error = "BIOS could not select the requested graphics mode";
     if ((bios_video(0x0f00,0) & 0x7f) != (unsigned)mode) goto failed;
-    ew_screen_height=mode==EW_VIDEO_CGA ? 200 : mode==EW_VIDEO_EGA ? 350 : 480;
+    ew_color=mode==EW_VIDEO_TANDY;
+    ew_screen_width=ew_color ? EW_TANDY_WIDTH : 640;
+    ew_screen_height=mode==EW_VIDEO_CGA || ew_color ? 200 : mode==EW_VIDEO_EGA ? 350 : 480;
     ew_pixel_aspect=mode==EW_VIDEO_CGA ? 2 : 1;
+    if (ew_color) ew_tandy_video=FAR_BYTES(color_segment,0);
     video_bytes=mode==EW_VIDEO_CGA ? 16384U : (unsigned)ew_screen_height*80U;
     video=FAR_BYTES(mode==EW_VIDEO_CGA ? 0xb800 : 0xa000,0);
-    if (mode!=EW_VIDEO_CGA) {
+    if (mode!=EW_VIDEO_CGA && !ew_color) {
         /* Write identical CPU bytes to all four planes; read plane 0. */
         video_register(0x3c4,0x0f02);
         video_register(0x3ce,0x0001);
@@ -199,8 +245,8 @@ int ew_platform_init(const char *requested)
         video_register(0x3ce,0x0005);
         video_register(0x3ce,0xff08);
     }
-    ew_clip(640, 0, EW_SCREEN_HEIGHT);
-    ew_clear(1);
+    ew_clip(EW_SCREEN_WIDTH, 0, EW_SCREEN_HEIGHT);
+    ew_clear(ew_color ? EW_WHITE : 1);
     ew_mouse_init();
     last_error = "";
     return 0;
@@ -274,6 +320,7 @@ void ew_scroll(int top, int bottom, int delta)
     unsigned from, to, n;
     if (top < 0 || bottom > EW_SCREEN_HEIGHT || top >= bottom || !delta ||
         delta >= bottom - top || delta <= top - bottom) return;
+    if (ew_color) { ew_tandy_scroll(top, bottom, delta, EW_PAGE_WIDTH >> 1); return; }
     if (delta > 0) { y=top; end=bottom-delta; step=1; }
     else { y=bottom-1; end=top-delta-1; step=-1; }
     for (; y!=end; y+=step) {
@@ -294,6 +341,7 @@ void ew_clear(int white)
 {
     unsigned n;
     unsigned char value = white ? 255 : 0;
+    if (ew_color) { ew_tandy_clear(white); return; }
     for (n = 0; n < video_bytes; ++n) video[n] = value;
 }
 
@@ -303,6 +351,7 @@ void ew_pixel(int x, int y, int white)
     unsigned char mask;
     if ((unsigned)x >= (unsigned)clip_right || y < clip_top ||
         y >= clip_bottom || (unsigned)y >= (unsigned)EW_SCREEN_HEIGHT) return;
+    if (ew_color) { ew_tandy_pixel(x, y, white); return; }
     offset = scan_offset(x, y);
     mask = 0x80U >> (x & 7);
     if (white) video[offset] |= mask; else video[offset] &= ~mask;
@@ -316,6 +365,7 @@ void ew_hline(int x, int y, int width, int white)
         y < 0 || y >= EW_SCREEN_HEIGHT || x >= clip_right) return;
     if (x < 0) { if (x <= -width) return; width += x; x = 0; }
     if (width > clip_right - x) width = clip_right - x;
+    if (ew_color) { ew_tandy_hline(x, y, width, white); return; }
     offset = scan_offset(x, y);
     if (x & 7) {
         int count = 8 - (x & 7);
@@ -331,6 +381,15 @@ void ew_hline(int x, int y, int width, int white)
         mask = (unsigned char)(255U << (8 - width));
         if (white) video[offset] |= mask; else video[offset] &= ~mask;
     }
+}
+
+void ew_row4(int x, int y, const unsigned char *line, const unsigned char *mask,
+             int width)
+{
+    if (!ew_color || x < 0 || x >= clip_right || y < clip_top || y >= clip_bottom ||
+        y < 0 || y >= EW_SCREEN_HEIGHT) return;
+    if (width > clip_right - x) width = clip_right - x;
+    if (width > 0) ew_tandy_row(x, y, line, mask, (unsigned)width);
 }
 
 void ew_vline(int x, int y, int height, int white)
@@ -364,6 +423,7 @@ void ew_cursor_hide(void)
     int row, col;
     unsigned offset;
     if (cursor_x < 0) return;
+    if (ew_color) { ew_tandy_cursor_hide(); cursor_x = -1; return; }
     for (row = 0; row < 24 && cursor_y + row < EW_SCREEN_HEIGHT; ++row) {
         offset = scan_offset(cursor_x, cursor_y + row);
         for (col = 0; col < 3 && (cursor_x >> 3) + col < 80; ++col)
@@ -385,6 +445,7 @@ void ew_cursor_show(int x, int y)
     ew_cursor_hide();
     if (x < 0 || x >= EW_SCREEN_WIDTH || y < 0 || y >= EW_SCREEN_HEIGHT) return;
     cursor_x = x; cursor_y = y;
+    if (ew_color) { ew_tandy_cursor_show(x, y, cursor_hand); return; }
     bits = &cursor_bitmap[cursor_hand][x & 7][0][0];
     for (row = 0; row < 24 && y + row < EW_SCREEN_HEIGHT; ++row) {
         offset = scan_offset(x, y + row);

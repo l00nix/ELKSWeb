@@ -47,6 +47,55 @@ static int top(void) { return chrome ? NAV_Y+EW_CONTROL_HEIGHT+1 : 0; }
 static int bottom(void) { return EW_SCREEN_HEIGHT - (chrome ? EW_SMALL_HEIGHT+2 : 0); }
 static int fg(void) { return inverse ? 1 : 0; }
 static int bg(void) { return inverse ? 0 : 1; }
+/* Positions were laid out for 640 columns; the colour display has 320. */
+#define SW EW_SCREEN_WIDTH
+#define PW EW_PAGE_WIDTH
+static int hx(int v) { return ew_color ? v >> 1 : v; }
+/* Every drawn element has a role. A monochrome display resolves each role to
+ * its foreground or background exactly as before; the colour display uses a
+ * light theme, a dark theme (F2), and the page's own <body> colours. */
+enum { R_PAGE, R_TEXT, R_LINK, R_HEAD, R_RULE, R_EDGE, R_BAR, R_BAR_TEXT,
+       R_FACE, R_FACE_TEXT, R_TITLE, R_TITLE_TEXT,
+       /* Browser chrome never takes the page's colours. */
+       R_FRAME, R_FIELD, R_FIELD_TEXT, R_FIELD_MARK, R_COUNT };
+static unsigned char pal[R_COUNT];
+static void set_palette(void) {
+  static const unsigned char themes[2][R_COUNT] = {
+    {EW_WHITE, EW_BLACK, EW_BLUE, EW_RED, EW_GRAY, EW_GRAY, EW_SILVER, EW_BLACK,
+     EW_SILVER, EW_BLACK, EW_BLUE, EW_WHITE, EW_GRAY, EW_WHITE, EW_BLACK, EW_BLUE},
+    {EW_BLACK, EW_SILVER, 11, EW_YELLOW, EW_GRAY, EW_SILVER, EW_GRAY, EW_WHITE,
+     EW_GRAY, EW_WHITE, EW_BLUE, EW_WHITE, EW_SILVER, EW_BLACK, EW_SILVER, 11}};
+  /* R_PAGE, R_BAR, R_FACE, R_TITLE and R_FIELD are backgrounds. */
+  unsigned i, light;
+  for (i = 0; i < R_COUNT; i++)
+    pal[i] = ew_color ? themes[inverse][i] : (0xdabeU >> i) & 1 ? fg() : bg();
+  if (!ew_color || inverse) return;
+  if (ew_doc.page_bg) {
+    pal[R_PAGE] = ew_doc.page_bg & 15;
+    /* Colours 7 and 10..15 are light: keep the default inks readable. */
+    light = (0xfc80U >> pal[R_PAGE]) & 1;
+    pal[R_TEXT] = light ? EW_BLACK : EW_WHITE;
+    pal[R_LINK] = light ? EW_BLUE : pal[R_PAGE] == 11 ? EW_YELLOW : 11;
+    pal[R_HEAD] = light ? EW_RED : EW_YELLOW;
+    pal[R_RULE] = pal[R_EDGE] = light ? EW_GRAY : EW_SILVER;
+    if (pal[R_PAGE] == pal[R_HEAD]) pal[R_HEAD] = pal[R_TEXT];
+    if (pal[R_PAGE] == pal[R_EDGE]) pal[R_RULE] = pal[R_EDGE] = pal[R_TEXT];
+  }
+  if (ew_doc.page_fg && (ew_doc.page_fg & 15) != pal[R_PAGE])
+    pal[R_TEXT] = ew_doc.page_fg & 15;
+  if (ew_doc.page_link && (ew_doc.page_link & 15) != pal[R_PAGE])
+    pal[R_LINK] = ew_doc.page_link & 15;
+}
+static int run_ink(const struct ew_run EW_FAR *r) {
+  if (!ew_color) return pal[R_TEXT];
+  if (r->link && ew_doc.links[r->link - 1].kind == 0) return pal[R_LINK];
+  if (r->color && (r->color & 15) != pal[R_PAGE]) return r->color & 15;
+  if ((r->style & (EW_LARGE | EW_BOLD)) == (EW_LARGE | EW_BOLD)) return pal[R_HEAD];
+  return pal[R_TEXT];
+}
+static int download_x(void) { return hx(77); }
+static int download_w(void) { return hx(468); }
+static int download_button_x(void) { return ew_color ? (PW - 75) / 2 : 273; }
 static int text_field(unsigned kind) {
   return kind == EW_RUN_FIELD || kind == EW_RUN_PASSWORD ||
          kind == EW_RUN_TEXTAREA;
@@ -75,7 +124,7 @@ static void select_geometry(void) {
     if ((int)r->link != select_open + 1) continue;
     select_x = r->x - hscroll;
     select_width = r->w;
-    if (select_x + select_width > 624) select_x = 624 - select_width;
+    if (select_x + select_width > PW) select_x = PW - select_width;
     if (select_x < 0) select_x = 0;
     select_y = top() + r->y - scroll + EW_CONTROL_HEIGHT;
     if (select_y + select_rows * EW_SELECT_ROW + 2 > bottom())
@@ -123,7 +172,7 @@ static int run_height(const struct ew_run EW_FAR *r) {
 }
 static void measure_page(void) {
   unsigned i;
-  page_width = 624;
+  page_width = PW;
   for (i = 0; i < ew_doc.run_count; i++) {
     int right = ew_doc.runs[i].x + run_width(&ew_doc.runs[i]);
     if (right > page_width) page_width = right;
@@ -131,7 +180,7 @@ static void measure_page(void) {
 }
 static int hit_link(int x, int y) {
   unsigned i;
-  if (x >= 624 || y < top() || y >= bottom()) return -1;
+  if (x >= PW || y < top() || y >= bottom()) return -1;
   for (i = 0; i < ew_doc.run_count; i++) {
     struct ew_run EW_FAR *r = &ew_doc.runs[i];
     int left = r->x - hscroll, y0 = r->y + top() - scroll;
@@ -180,18 +229,21 @@ static void textn(int x, int y, const char EW_FAR *s, unsigned n, int f, int b,
 }
 static void centered_text(int y, const char *s, unsigned style) {
   unsigned n = strlen(s);
-  while (n && text_width(s, n, style) > 608) n--;
-  textn((624 - text_width(s, n, style)) / 2, y, s, n, fg(), bg(), style);
+  while (n && text_width(s, n, style) > PW - 16) n--;
+  textn((PW - text_width(s, n, style)) / 2, y, s, n, pal[R_TEXT], pal[R_PAGE], style);
 }
 static void draw(void) {
   unsigned i;
-  int x, y, f = fg(), b = bg(), t = top(), bot = bottom(), active;
+  int x, y, f, b, c, t = top(), bot = bottom(), active;
   int paint_top = t, paint_bottom = bot, delta = scroll - painted_scroll;
   int images_only;
   struct ew_run EW_FAR *r;
   struct ew_link *l;
   char temp[81];
   ew_cursor_hide();
+  set_palette();
+  f = pal[R_TEXT];
+  b = pal[R_PAGE];
   if (dirty & DRAW_FRAME) {
     ew_clear(b);
     dirty |= DRAW_ALL;
@@ -230,9 +282,9 @@ static void draw(void) {
     dirty |= DRAW_PAGE;
   images_only = !(dirty & (DRAW_PAGE | DRAW_SCROLL | DRAW_FOCUS));
   if (dirty & (DRAW_PAGE | DRAW_SCROLL | DRAW_FOCUS | DRAW_IMAGES)) {
-    ew_clip(624, paint_top, paint_bottom);
+    ew_clip(PW, paint_top, paint_bottom);
     if (!images_only)
-      ew_fillrect(0, paint_top, 624, paint_bottom - paint_top, b);
+      ew_fillrect(0, paint_top, PW, paint_bottom - paint_top, b);
     for (i = 0; !download_edit && i < ew_doc.run_count; i++) {
       r = &ew_doc.runs[i];
       if (images_only && (r->kind != EW_RUN_IMAGE || r->style == 255)) continue;
@@ -241,37 +293,46 @@ static void draw(void) {
       if (r->kind == EW_RUN_IMAGE) {
         /* Remove the placeholder, including behind transparent GIF pixels. */
         if (images_only) ew_fillrect(x, y, r->n, r->w, b);
-        ew_image_draw(r, x, y, paint_top, paint_bottom, inverse);
+        ew_image_draw(r, x, y, paint_top, paint_bottom, ew_color ? f : inverse);
         continue;
       }
       if (y + run_height(r) <= paint_top || y >= paint_bottom)
         continue;
       active = !editing && r->link && (int)r->link == focused + 1;
       if (r->kind == EW_RUN_TEXT) {
-        textn(x, y, ew_doc.text + r->off, r->n, active ? b : f, active ? f : b,
+        c = run_ink(r);
+        textn(x, y, ew_doc.text + r->off, r->n, active ? b : c, active ? c : b,
               r->style);
         continue;
       }
       if (r->kind == EW_RUN_BOX) {
-        ew_rect(x, y, r->n, run_height(r), f);
+        ew_rect(x, y, r->n, run_height(r), pal[R_EDGE]);
         continue;
       }
       if (r->kind == EW_RUN_RULE) {
-        ew_hline(x, y, r->n, f);
+        ew_hline(x, y, r->n, pal[R_RULE]);
         continue;
       }
       if (r->kind == EW_RUN_BULLET) {
-        ew_hline(x + 1, y + 2, 2, f);
-        ew_hline(x, y + 3, 4, f);
-        ew_hline(x + 1, y + 4, 2, f);
+        c = pal[R_HEAD];
+        ew_hline(x + 1, y + 2, 2, c);
+        ew_hline(x, y + 3, 4, c);
+        ew_hline(x + 1, y + 4, 2, c);
         continue;
       }
       if (!r->link)
         continue;
       l = &ew_doc.links[r->link - 1];
-      ew_rect(x, y, r->w, EW_CONTROL_HEIGHT, f);
+      /* Buttons get a raised grey face; every other control is page-coloured. */
+      c = r->kind == EW_RUN_BUTTON ? pal[R_FACE] : b;
+      if (ew_color && r->kind == EW_RUN_BUTTON) {
+        ew_fillrect(x + 1, y + 1, r->w - 2, EW_CONTROL_HEIGHT - 2, c);
+        ew_hline(x + 1, y + 1, r->w - 2, EW_WHITE);
+        ew_vline(x + 1, y + 1, EW_CONTROL_HEIGHT - 2, EW_WHITE);
+      }
+      ew_rect(x, y, r->w, EW_CONTROL_HEIGHT, pal[R_EDGE]);
       if (active)
-        ew_rect(x + 1, y + 1, r->w - 2, EW_CONTROL_HEIGHT-2, f);
+        ew_rect(x + 1, y + 1, r->w - 2, EW_CONTROL_HEIGHT-2, pal[R_LINK]);
       if (r->kind == EW_RUN_CHECK || r->kind == EW_RUN_RADIO) {
         if (r->kind == EW_RUN_RADIO) {
           ew_fillrect(x, y, 12, 12, b);
@@ -304,11 +365,13 @@ static void draw(void) {
         n=strlen(display)-start;
         value+=start;
         while (n && ew_body_width(value,n,0)>available) --n;
-        textn(x+3,y+2,value,n,f,b,0);
+        textn(x+3,y+2,value,n,r->kind==EW_RUN_BUTTON ? pal[R_FACE_TEXT] : f,c,0);
         if (active && text_field(r->kind) && caret-start<=n)
           ew_vline(x+3+ew_body_width(value,caret-start,0),y+2,EW_BODY_HEIGHT,f);
         if (r->kind == EW_RUN_SELECT) {
-          ew_vline(x + r->w - 13, y, EW_CONTROL_HEIGHT, f);
+          if (ew_color)
+            ew_fillrect(x + r->w - 12, y + 1, 11, EW_CONTROL_HEIGHT - 2, pal[R_FACE]);
+          ew_vline(x + r->w - 13, y, EW_CONTROL_HEIGHT, pal[R_EDGE]);
           ew_hline(x + r->w - 10, y + 4, 7, f);
           ew_hline(x + r->w - 9, y + 5, 5, f);
           ew_hline(x + r->w - 8, y + 6, 3, f);
@@ -318,8 +381,18 @@ static void draw(void) {
     painted_scroll = scroll;
     painted_hscroll = hscroll;
     painted_focus = editing ? -1 : focused;
-    ew_clip(640, 0, EW_SCREEN_HEIGHT);
-    if (dirty & (DRAW_PAGE | DRAW_SCROLL)) {
+    ew_clip(SW, 0, EW_SCREEN_HEIGHT);
+    if (ew_color && (dirty & (DRAW_PAGE | DRAW_SCROLL))) {
+      /* An 8-pixel bar: grey trough, dark thumb with a grip mark. */
+      ew_fillrect(PW + 1, t, 7, bot - t, pal[R_BAR]);
+      ew_vline(PW, t, bot - t, pal[R_FRAME]);
+      if (!download_edit && ew_doc.height > bot - t) {
+        int h;
+        thumb(&y, &h);
+        ew_fillrect(PW + 2, y, 5, h, pal[R_FRAME]);
+        ew_hline(PW + 3, y + h / 2, 3, pal[R_BAR]);
+      }
+    } else if (dirty & (DRAW_PAGE | DRAW_SCROLL)) {
       ew_fillrect(625, t + 1, 14, bot - t - 2, b);
       if (dirty & DRAW_FRAME) ew_rect(624, t, 16, bot - t, f);
       if (!download_edit && ew_doc.height > bot - t) {
@@ -337,38 +410,49 @@ static void draw(void) {
     }
   }
   if (chrome) {
+    int edge = pal[R_FRAME], face = pal[R_FACE], field = hx(63);
+    f = pal[R_FIELD_TEXT];
+    b = pal[R_FIELD];
     if (dirty & DRAW_FRAME) {
-      ew_hline(0, top()-1, 640, f);
-      ew_rect(0, NAV_Y, 30, EW_CONTROL_HEIGHT, f);
-      textn(12, NAV_Y+2, "<", 1, f, b, 0);
-      ew_rect(32, NAV_Y, 29, EW_CONTROL_HEIGHT, f);
-      textn(43, NAV_Y+2, ">", 1, f, b, 0);
-      ew_rect(63, NAV_Y, 577, EW_CONTROL_HEIGHT, f);
-      ew_hline(0, bot, 640, f);
+      if (ew_color) {
+        ew_fillrect(0, EW_BODY_HEIGHT, SW, top() - EW_BODY_HEIGHT, pal[R_BAR]);
+        ew_hline(1, NAV_Y + 1, hx(30) - 2, EW_WHITE);
+        ew_hline(hx(32) + 1, NAV_Y + 1, hx(29) - 2, EW_WHITE);
+      }
+      ew_hline(0, top()-1, SW, edge);
+      ew_rect(0, NAV_Y, hx(30), EW_CONTROL_HEIGHT, edge);
+      textn(hx(12), NAV_Y+2, "<", 1, pal[R_FACE_TEXT], face, 0);
+      ew_rect(hx(32), NAV_Y, hx(29), EW_CONTROL_HEIGHT, edge);
+      textn(hx(43), NAV_Y+2, ">", 1, pal[R_FACE_TEXT], face, 0);
+      ew_rect(field, NAV_Y, SW - field, EW_CONTROL_HEIGHT, edge);
+      ew_hline(0, bot, SW, edge);
     }
     if (dirty & DRAW_TITLE) {
-      ew_fillrect(0, 0, 640, EW_BODY_HEIGHT, b);
+      unsigned n;
+      ew_fillrect(0, 0, SW, EW_BODY_HEIGHT, pal[R_TITLE]);
       strncpy(temp, download_edit ? "" : ew_doc.title, sizeof(temp) - 1);
       temp[80] = 0;
-      textn((640 - ew_body_width(temp, strlen(temp), 0)) / 2, 0, temp,
-            strlen(temp), f, b, 0);
+      n = strlen(temp);
+      while (n && ew_body_width(temp, n, 0) > SW) n--;
+      textn((SW - ew_body_width(temp, n, 0)) / 2, 0, temp, n,
+            pal[R_TITLE_TEXT], pal[R_TITLE], 0);
     }
     if (dirty & DRAW_ADDRESS) {
       const char *s = editing || download_edit ? address : loading_url ? loading_url : current;
       unsigned len = strlen(s), start = 0;
-      ew_fillrect(64, NAV_Y+1, 575, EW_CONTROL_HEIGHT-2, b);
+      ew_fillrect(field + 1, NAV_Y+1, SW - field - 2, EW_CONTROL_HEIGHT-2, b);
       if (editing && !selectall) {
         while (start < address_pos &&
-               ew_body_width(s + start, address_pos - start, 0) > 567)
+               ew_body_width(s + start, address_pos - start, 0) > SW - field - 10)
           start++;
       }
       len -= start;
-      while (len && ew_body_width(s + start, len, 0) > 568)
+      while (len && ew_body_width(s + start, len, 0) > SW - field - 9)
         len--;
-      textn(66, NAV_Y+2, s + start, len, editing && selectall ? b : f,
-            editing && selectall ? f : b, 0);
+      textn(field + 3, NAV_Y+2, s + start, len, editing && selectall ? b : f,
+            editing && selectall ? pal[R_FIELD_MARK] : b, 0);
       if (editing && !selectall)
-        ew_vline(66 + ew_body_width(
+        ew_vline(field + 3 + ew_body_width(
                           s + start,
                           address_pos > start ? address_pos - start : 0, 0),
                  NAV_Y+2, EW_BODY_HEIGHT, f);
@@ -379,18 +463,21 @@ static void draw(void) {
         s = ew_doc.links[hovered].url;
       else if (!status[0] && !editing && focused >= 0 && ew_doc.links[focused].kind == 0)
         s = ew_doc.links[focused].url;
-      ew_fillrect(0, bot + 1, 640, EW_SMALL_HEIGHT+1, b);
+      ew_fillrect(0, bot + 1, SW, EW_SMALL_HEIGHT+1, pal[R_BAR]);
       ew_copy_from_far(temp, s, 80);
-      textn(0, EW_SCREEN_HEIGHT - EW_SMALL_HEIGHT-1, temp, strlen(temp), f, b, EW_SMALL);
+      textn(ew_color, EW_SCREEN_HEIGHT - EW_SMALL_HEIGHT-1, temp, strlen(temp),
+            pal[R_BAR_TEXT], pal[R_BAR], EW_SMALL);
     }
   }
   if (dirty & DRAW_PAGE) {
-    ew_clip(624, t, bot);
+    f = pal[R_TEXT];
+    b = pal[R_PAGE];
+    ew_clip(PW, t, bot);
     if (select_open >= 0) {
       int has_scroll = ew_select_count(select_open) > 8;
       select_geometry();
       ew_fillrect(select_x, select_y, select_width, select_rows * EW_SELECT_ROW + 2, b);
-      ew_rect(select_x, select_y, select_width, select_rows * EW_SELECT_ROW + 2, f);
+      ew_rect(select_x, select_y, select_width, select_rows * EW_SELECT_ROW + 2, pal[R_EDGE]);
       for (i = 0; i < (unsigned)select_rows; i++) {
         unsigned n;
         int chosen = select_first + (int)i == select_cursor;
@@ -399,9 +486,9 @@ static void draw(void) {
         n = strlen(temp);
         while (n && ew_body_width(temp, n, 0) > select_width - (has_scroll ? 19 : 6)) n--;
         if (chosen) ew_fillrect(select_x + 1, select_y + 1 + i * EW_SELECT_ROW,
-                               select_width - (has_scroll ? 15 : 2), EW_SELECT_ROW, f);
+                               select_width - (has_scroll ? 15 : 2), EW_SELECT_ROW, pal[R_LINK]);
         textn(select_x + 3, select_y + 2 + i * EW_SELECT_ROW, temp, n,
-              chosen ? b : f, chosen ? f : b, 0);
+              chosen ? b : f, chosen ? pal[R_LINK] : b, 0);
       }
       if (has_scroll) {
         int x = select_x + select_width - 13;
@@ -418,28 +505,31 @@ static void draw(void) {
     if (download_edit) {
       unsigned start = 0, n = strlen(download_name);
       centered_text(38, "Do you want to download this file?", EW_LARGE | EW_BOLD);
-      ew_hline(8, 56, 608, f);
+      ew_hline(8, 56, PW - 16, pal[R_RULE]);
       centered_text(60, address, EW_SMALL | EW_BOLD);
       snprintf(temp, sizeof(temp), "Content type: %s", ew_document_media);
       centered_text(72, temp, EW_SMALL | EW_BOLD);
       snprintf(temp, sizeof(temp), "Size: %lu KB", (unsigned long)ew_source_length / 1024);
       centered_text(84, temp, EW_SMALL | EW_BOLD);
-      ew_hline(8, 98, 608, f);
-      ew_rect(77, 102, 468, EW_CONTROL_HEIGHT, f);
+      ew_hline(8, 98, PW - 16, pal[R_RULE]);
+      x = download_x();
+      ew_rect(x, 102, download_w(), EW_CONTROL_HEIGHT, pal[R_EDGE]);
       while (start < download_pos &&
-             ew_body_width(download_name + start, download_pos - start, 0) > 457)
+             ew_body_width(download_name + start, download_pos - start, 0) > download_w() - 11)
         start++;
       n -= start;
-      while (n && ew_body_width(download_name + start, n, 0) > 460) n--;
-      textn(80, 104, download_name + start, n, f, b, 0);
+      while (n && ew_body_width(download_name + start, n, 0) > download_w() - 8) n--;
+      textn(x + 3, 104, download_name + start, n, f, b, 0);
       if (!download_button)
-        ew_vline(80 + ew_body_width(download_name + start, download_pos - start, 0),
+        ew_vline(x + 3 + ew_body_width(download_name + start, download_pos - start, 0),
                  104, EW_BODY_HEIGHT, f);
-      ew_rect(273, 128, 75, EW_CONTROL_HEIGHT, f);
-      if (download_button) ew_rect(274, 129, 73, EW_CONTROL_HEIGHT-2, f);
-      textn(281, 130, "Download", 8, f, b, 0);
+      x = download_button_x();
+      if (ew_color) ew_fillrect(x + 1, 129, 73, EW_CONTROL_HEIGHT - 2, pal[R_FACE]);
+      ew_rect(x, 128, 75, EW_CONTROL_HEIGHT, pal[R_EDGE]);
+      if (download_button) ew_rect(x + 1, 129, 73, EW_CONTROL_HEIGHT-2, pal[R_LINK]);
+      textn(x + 8, 130, "Download", 8, pal[R_FACE_TEXT], pal[R_FACE], 0);
     }
-    ew_clip(640, 0, EW_SCREEN_HEIGHT);
+    ew_clip(SW, 0, EW_SCREEN_HEIGHT);
   }
   dirty = 0;
   if (mouse_active)
@@ -634,7 +724,7 @@ static void focus_visible(void) {
       else if (y > scroll + bottom() - top() - 18)
         scroll = y - (bottom() - top()) + 18;
       if (x < hscroll) hscroll = x;
-      else if (x >= hscroll + 624) hscroll = x - 608;
+      else if (x >= hscroll + PW) hscroll = x - (PW - 16);
       break;
     }
   field_pos = ew_doc.links[focused].kind == EW_RUN_PASSWORD
@@ -970,7 +1060,7 @@ static void key(int k) {
   }
   if (k == EW_KEY_RIGHT) {
     hscroll += 8;
-    if (hscroll > page_width - 624) hscroll = page_width - 624;
+    if (hscroll > page_width - PW) hscroll = page_width - PW;
     dirty |= DRAW_PAGE | DRAW_STATUS;
     return;
   }
@@ -1010,15 +1100,17 @@ static void mouse_event(const struct ew_mouse_event *event) {
   mouse_active = 1;
   if (download_edit) {
     if (event->pressed & EW_MOUSE_LEFT) {
-      if (mouse_y >= 128 && mouse_y < 128+EW_CONTROL_HEIGHT && mouse_x >= 273 && mouse_x < 348)
+      if (mouse_y >= 128 && mouse_y < 128+EW_CONTROL_HEIGHT &&
+          mouse_x >= download_button_x() && mouse_x < download_button_x() + 75)
         key(EW_KEY_ENTER);
-      else if (mouse_y >= 102 && mouse_y < 102+EW_CONTROL_HEIGHT && mouse_x >= 77 && mouse_x < 545) {
+      else if (mouse_y >= 102 && mouse_y < 102+EW_CONTROL_HEIGHT &&
+               mouse_x >= download_x() && mouse_x < download_x() + download_w()) {
         unsigned start = 0;
         while (start < download_pos &&
-               ew_body_width(download_name + start, download_pos - start, 0) > 457)
+               ew_body_width(download_name + start, download_pos - start, 0) > download_w() - 11)
           start++;
         download_pos = start;
-        while (download_name[download_pos] && 80 +
+        while (download_name[download_pos] && download_x() + 3 +
                ew_body_width(download_name + start, download_pos - start + 1, 0) < mouse_x)
           download_pos++;
         download_button = 0;
@@ -1026,7 +1118,7 @@ static void mouse_event(const struct ew_mouse_event *event) {
       } else if (mouse_y >= NAV_Y && mouse_y < NAV_Y+EW_CONTROL_HEIGHT) {
         download_edit = 0;
         dirty |= DRAW_PAGE | DRAW_TITLE | DRAW_ADDRESS;
-        if (mouse_x >= 63) key(EW_KEY_F6);
+        if (mouse_x >= hx(63)) key(EW_KEY_F6);
         else message("Download cancelled");
       }
     }
@@ -1057,7 +1149,7 @@ static void mouse_event(const struct ew_mouse_event *event) {
   }
   if (!(event->buttons & EW_MOUSE_LEFT))
     scroll_drag = 0;
-  if ((event->pressed & EW_MOUSE_LEFT) && mouse_x >= 624 && mouse_y >= top() &&
+  if ((event->pressed & EW_MOUSE_LEFT) && mouse_x >= PW && mouse_y >= top() &&
       mouse_y < bottom()) {
     int thumb_y, thumb_h;
     thumb(&thumb_y, &thumb_h);
@@ -1092,10 +1184,10 @@ static void mouse_event(const struct ew_mouse_event *event) {
     return;
   }
   if (chrome && mouse_y >= NAV_Y && mouse_y < NAV_Y+EW_CONTROL_HEIGHT) {
-    if (mouse_x < 31) {
+    if (mouse_x < hx(31)) {
       if (hpos > 0)
         history_go(hpos - 1);
-    } else if (mouse_x < 62) {
+    } else if (mouse_x < hx(62)) {
       if (hpos + 1 < hcount)
         history_go(hpos + 1);
     } else
@@ -1166,9 +1258,9 @@ int main(int argc, char **argv) {
     else if (!strcmp(argv[i], "-noimages"))
       load_images = 0;
     else if (!strcmp(argv[i], "-help") || !strcmp(argv[i], "--help")) {
-      puts("ELKSWeb " EW_VERSION "\nUsage: elksweb [-video cga|ega|vga] [-invert] [-noimages] [http://URL or file]\n"
+      puts("ELKSWeb " EW_VERSION "\nUsage: elksweb [-video cga|ega|vga|tandy|pcjr] [-invert] [-noimages] [http://URL or file]\n"
            "F6/Ctrl-L address  Tab links  Enter activate  F5 reload\n"
-           "F2 invert  F3 hide bars  arrows/PgUp/PgDn scroll  Esc exit");
+           "F2 invert/dark  F3 hide bars  arrows/PgUp/PgDn scroll  Esc exit");
       return 0;
     } else if (argv[i][0] == '-') {
       fprintf(stderr, "ELKSWeb: unknown option %s\n", argv[i]);
@@ -1176,15 +1268,18 @@ int main(int argc, char **argv) {
     } else
       url = argv[i];
   }
-  if (!url)
-    url = access("/lib/elksweb/welcome.htm", R_OK) == 0
-        ? "/lib/elksweb/welcome.htm" : "/root/welcome.htm";
   k=ew_platform_init(video_mode);
   if (k) {
     if (k<0) fprintf(stderr, "ELKSWeb: %s\n", ew_platform_error());
     ew_source_free();
     return k<0 ? 1 : 0;
   }
+  /* The colour display has its own start page when it is installed. */
+  if (!url && ew_color && access("/lib/elksweb/color.htm", R_OK) == 0)
+    url = "/lib/elksweb/color.htm";
+  if (!url)
+    url = access("/lib/elksweb/welcome.htm", R_OK) == 0
+        ? "/lib/elksweb/welcome.htm" : "/root/welcome.htm";
   signal(SIGINT, stopped);
   signal(SIGTERM, stopped);
   strcpy(ew_doc.title, "ELKSWeb " EW_VERSION);

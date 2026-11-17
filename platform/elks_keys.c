@@ -65,6 +65,15 @@ int ew_keys_scancode(struct ew_key_state *s, unsigned char byte)
         return 0;
     }
     if (release) return 0;
+    /* Tandy 1000 keyboards send these for the dedicated arrow and Home keys;
+     * an XT keyboard uses them for ` \ keypad - and keypad +. */
+    if (s->tandy && !ext) switch (scan) {
+    case 0x29: return EW_KEY_UP;
+    case 0x4a: return EW_KEY_DOWN;
+    case 0x2b: return EW_KEY_LEFT;
+    case 0x4e: return EW_KEY_RIGHT;
+    case 0x58: return EW_KEY_HOME;
+    }
     if (ext) {
         if (scan == 0x1c) return EW_KEY_ENTER;
         if (scan == 0x35) return '/';

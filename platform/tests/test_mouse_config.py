@@ -34,7 +34,7 @@ static ssize_t mock_read(int fd, void *buf, size_t n) {
   if(packet_pos==packet_len) return 0;
   *(unsigned char *)buf=packet_bytes[packet_pos++]; return 1;
 }
-int ew_screen_height=200, ew_pixel_aspect=2;
+int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;
 static int mock_open(const char *path, int f, ...) {
   strcpy(opened,path); flags=f; return fail_open ? -1 : 42;
 }

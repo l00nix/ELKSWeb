@@ -48,6 +48,10 @@ SOURCE = r'''
 #include <string.h>
 #include <stdlib.h>
 #include "DRIVER"
+#include "elks_tandy.c"
+/* No kernel colour reservation: these cases cover the monochrome adapters. */
+static unsigned reserved_segment;
+unsigned ew_test_color_probe(void) {return reserved_segment;}
 unsigned char test_cga[65536], test_planar[65536];
 static unsigned char expected[65536];
 static int oracle_right=640, oracle_top, oracle_bottom=480;
@@ -200,6 +204,29 @@ int main(int argc,char **argv) {
   adapter=4;current_mode=7;assert(ew_platform_init("cga")==-1);untouched();
   adapter=3;assert(ew_platform_init("bogus")==-1);untouched();
  }
+ else if(!strcmp(which,"no_reservation")) {
+  adapter=0;assert(ew_platform_init("tandy")==-1);
+  assert(strstr(ew_platform_error(),"reservation"));untouched();
+ }
+ else if(!strcmp(which,"color_local")) {
+  adapter=0;reserved_segment=0x9800;terminal=0;input="2\b\n";
+  assert(!ew_platform_init(0));assert(prompt_bytes && ew_color && ew_screen_width==320);
+  assert(current_mode==9 && keyboard_lock && keys.tandy);ew_platform_shutdown();restored();
+ }
+ else if(!strcmp(which,"pcjr_cooked")) {
+  adapter=0;reserved_segment=0x1800;assert(!ew_platform_init("pcjr"));
+  assert(ew_color && !keyboard_lock);ew_platform_shutdown();restored();
+ }
+ else if(!strcmp(which,"color_cancel")) {
+  adapter=0;reserved_segment=0x9800;input="q\n";
+  assert(ew_platform_init(0)==1);assert(prompt_bytes);untouched();
+ }
+ else if(!strcmp(which,"pcjr_then_vga")) {
+  adapter=0;reserved_segment=0x1800;assert(!ew_platform_init("pcjr"));
+  assert(!keyboard_lock);ew_platform_shutdown();adapter=3;reserved_segment=0;
+  assert(!ew_platform_init("vga"));assert(!ew_color && ew_screen_width==640);
+  assert(keyboard_lock);ew_platform_shutdown();restored();
+ }
  else if(!strcmp(which,"failure")) {
   mode_failure=1;assert(ew_platform_init("vga")==-1);assert(opens==1&&sets==2&&!port_count);restored();
  }
@@ -251,6 +278,11 @@ class VideoModes(unittest.TestCase):
         result = subprocess.run([str(self.binary), case], env=env, capture_output=True, text=True, timeout=10)
         self.assertEqual(result.returncode, 0, result.stdout+result.stderr)
 
+    def test_color_requires_kernel_reservation(self): self.run_case('no_reservation')
+    def test_color_selector_retains_local_keyboard_and_backspace(self): self.run_case('color_local')
+    def test_pcjr_uses_translated_keys(self): self.run_case('pcjr_cooked')
+    def test_color_menu_cancel_restores_console(self): self.run_case('color_cancel')
+    def test_pcjr_state_does_not_leak_into_later_vga_launch(self): self.run_case('pcjr_then_vga')
     def test_cga_interleaved_framebuffer(self): self.run_case('cga')
     def test_ega_planar_framebuffer(self): self.run_case('ega')
     def test_vga_planar_framebuffer(self): self.run_case('vga')

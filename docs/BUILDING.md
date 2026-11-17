@@ -1,15 +1,15 @@
-# Building the current 0.4 release
+# Building 0.5dev
 
-The lightweight external builder and audited developer builder remain separate.
-Install the executable as `/bin/elksweb` and runtime assets under `/lib/elksweb`.
-Use `toolchain/package-release-0.4.py --help` for release packaging; the older
-versioned scripts remain available for historical reproducibility. The packager
-checks committed source, the audited binary and its matching ELKS source archive.
+This development branch integrates the Tandy/PCjr contribution using the medium
+memory model. Both builders target the 8086; the kernel must enable
+`CONFIG_EXEC_MMODEL`. More code segments do not increase near-data or physical RAM.
+Use [0.4](https://github.com/l00nix/ELKSWeb/tree/v0.4) for the frozen small-model
+baseline. Historical versioned packagers are not 0.5 release scripts.
 
-0.4 retains the small memory model and 8086 instruction target. Historical
-clean-build and hardware records below keep their original scope. The 0.4
-release uses the prepared ELKS/libc base at
-`e1469b64c5809c44d5c822eaeebd0e97d5996289`; see [release notes](RELEASE-0.4.md).
+The audited build strips symbols only from a temporary disassembly copy, avoiding
+symbol boundaries inside far-jump operands. It checks those bytes against the
+original ELF and checks both text sections against the native executable.
+See [integration status](DEVELOPMENT-0.5.md) for remaining qualification work.
 
 # Building and running
 
@@ -26,7 +26,7 @@ ELKSWEB_ELKS=/absolute/path/to/elks sh toolchain/build-external.sh
 This produces `build/elksweb` and a linker map. It compiles every source afresh
 and needs only a POSIX shell, standard host utilities and the ELKS toolchain.
 Python, `sha256sum`, OpenWatcom and the optional audit tools are not required.
-The compiler flags retain the 8086 instruction target and small memory model.
+The compiler flags retain the 8086 instruction target and use the medium memory model.
 Use the audited build below for release validation and stack/ISA reports.
 
 The merged upstream integration provides `./buildext.sh elksweb` (also included
@@ -109,9 +109,9 @@ export ELKSWEB_SOURCE="$PWD"
 bash toolchain/build-app.sh
 ```
 
-The script targets `-march=i8086 -mtune=i8086 -mcmodel=small -melks-libc`. Outputs go to `build/`, including the executable, retained ELF, linker map, compiler identity, disassembly, stack report and static ISA audit. The ISA audit is not a substitute for runtime testing.
+The script targets `-march=i8086 -mtune=i8086 -mcmodel=medium -melks-libc`: with the Tandy/PCjr colour display the code no longer fits one 64 KB segment, so it is split across the near and far text segments by the standard `elks-medium.ld` rule. Outputs go to `build/`, including the executable, retained ELF, linker map, compiler identity, disassembly, stack report and static ISA audit. The ISA audit is not a substitute for runtime testing.
 
-Install `build/elksweb` as executable `/bin/elksweb`, `share/welcome.htm` as `/lib/elksweb/welcome.htm`, and `share/elksweb.gif` as `/lib/elksweb/elksweb.gif` on a suitable ELKS installation. Retain the logo provenance from `share/logo-source.txt` as `/lib/elksweb/logo-src.txt`, and keep the supplied browser, font and ELKS/libc notices with redistributed packages. Running `elksweb` without a URL opens this local help page; website fixtures are not required. Start ELKS networking using its documented configuration before loading HTTP pages. The browser needs a writable `/tmp` and a graphics-capable controlling console. It opens a text-mode display selector by default. Press 1/2/3 and Enter, or Q and Enter to cancel. Available modes are genuine monochrome CGA 640×200, EGA 640×350 and VGA 640×480; EGA requires a color display and at least 128 KB video RAM. Detection rejects unavailable modes before changing the console. QEMU validation does not certify physical adapters.
+Install `build/elksweb` as executable `/bin/elksweb`, `share/welcome.htm` as `/lib/elksweb/welcome.htm`, and `share/elksweb.gif` as `/lib/elksweb/elksweb.gif` on a suitable ELKS installation. For the Tandy/PCjr colour display also install `share/color.htm`, `share/elkswebc.gif` and `share/chart.gif` in `/lib/elksweb/`. Retain the logo provenance from `share/logo-source.txt` as `/lib/elksweb/logo-src.txt`, and keep the supplied browser, font and ELKS/libc notices with redistributed packages. Running `elksweb` without a URL opens this local help page; website fixtures are not required. Start ELKS networking using its documented configuration before loading HTTP pages. The browser needs a writable `/tmp` and a graphics-capable controlling console. It opens a text-mode display selector by default. Press 1/2/3 and Enter, or Q and Enter to cancel. Available modes are genuine monochrome CGA 640×200, EGA 640×350 and VGA 640×480; EGA requires a color display and at least 128 KB video RAM. Detection rejects unavailable modes before changing the console. QEMU validation does not certify physical adapters.
 
 For an explicit mode, including unattended tests:
 

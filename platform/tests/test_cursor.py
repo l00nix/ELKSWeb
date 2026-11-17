@@ -24,8 +24,9 @@ class Cursor(unittest.TestCase):
         routines = source[source.index('static unsigned scan_offset'):]
         mock = '''
 #include "elks_platform.h"
+#include "elks_tandy.c"
 unsigned char video[65536]={1};
-int ew_screen_height=200, ew_pixel_aspect=2;
+int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;
 static unsigned video_bytes=16384;
 '''
         (root / 'cursor.c').write_text(mock + globals_ + '\n' + routines)

@@ -9,7 +9,7 @@ class FixedFonts(unittest.TestCase):
  def setUpClass(cls):
   cls.tmp=tempfile.TemporaryDirectory();p=Path(cls.tmp.name)
   (p/'mock.c').write_text('''
-int ew_screen_height=200,ew_pixel_aspect=2;
+int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;
 unsigned char pixels[640*200];
 void ew_pixel(int x,int y,int c){if(x>=0&&x<640&&y>=0&&y<200)pixels[y*640+x]=c;}
 void ew_fillrect(int x,int y,int w,int h,int c){int i,j;for(j=0;j<h;j++)for(i=0;i<w;i++)ew_pixel(x+i,y+j,c);}

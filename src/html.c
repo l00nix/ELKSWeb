@@ -15,7 +15,11 @@ static unsigned char parse_charset;
 static short px, py, indent, lineheight;
 static unsigned char style, inform, inpre, parse_full;
 static unsigned char heading_bold;
-static struct { unsigned char tag, size; } size_stack[32];
+static struct { unsigned char tag, size, ink; } size_stack[32];
+/* Colour of the text being laid out: 0 is the page default, otherwise
+ * 16+colour. Only ever set in the colour mode, so monochrome layout and run
+ * merging are unchanged. */
+static unsigned char ink;
 static unsigned size_depth, size_overflow;
 static unsigned short linkid;
 static char fields[32][112];
@@ -187,6 +191,7 @@ static struct ew_run EW_FAR *run(unsigned kind) {
   r->x = px;
   r->y = py;
   r->style = style;
+  r->color = ink;
   r->kind = kind;
   r->link = linkid;
   return r;
@@ -214,7 +219,7 @@ static unsigned run_height(const struct ew_run EW_FAR *r) {
 }
 static void align_line(void) {
   unsigned i;
-  int left = 624, right = 0, shift;
+  int left = EW_PAGE_WIDTH, right = 0, shift;
   if (!center_depth || table.active)
     return;
   for (i = line_first; i < ew_doc.run_count; i++) {
@@ -230,7 +235,7 @@ static void align_line(void) {
   }
   if (right <= left)
     return;
-  shift = (624 - (right - left)) / 2 - left;
+  shift = (EW_PAGE_WIDTH - (right - left)) / 2 - left;
   if (shift < -left) shift = -left;
   for (i = line_first; i < ew_doc.run_count; i++)
     if (ew_doc.runs[i].y == py && ew_doc.runs[i].kind != EW_RUN_RULE)
@@ -414,10 +419,10 @@ static void table_finish(void) {
 /* Explicit cell widths constrain normal text, while intrinsic items may grow
  * the column. Auto columns still use the viewport until final table placement. */
 static int line_right(void) {
-  int right=624;
+  int right=EW_PAGE_WIDTH;
   if (table.open && table.cell_requested) {
     right=(int)table.cell_requested-2*(int)table.padding;
-    if (right>624) right=624;
+    if (right>EW_PAGE_WIDTH) right=EW_PAGE_WIDTH;
     if (right<=indent) right=indent+1;
   }
   return right;
@@ -434,7 +439,7 @@ static void word(const char *s, unsigned n, int space) {
   if (!table_replay && table.open && table.eligible) {
     if (space || px==indent) table.word_width=0;
     table.word_width+=width;
-    if (table.word_width>624) table.word_width=624;
+    if (table.word_width>(unsigned)EW_PAGE_WIDTH) table.word_width=EW_PAGE_WIDTH;
     table_minimum(inpre ? px+width : indent+table.word_width);
   }
   if (!inpre && px > indent && px + (int)width + (space ? spacing : 0) > right)
@@ -442,7 +447,7 @@ static void word(const char *s, unsigned n, int space) {
   /* A cell cannot make a normal word narrower. Retain the existing viewport
    * split for exceptionally long words, and always leave room for one glyph. */
   if (!inpre && table.open && table.cell_requested && (int)width>right-indent)
-    right=(int)width>624-indent ? 624 : indent+(int)width;
+    right=(int)width>EW_PAGE_WIDTH-indent ? EW_PAGE_WIDTH : indent+(int)width;
   separate = space && px > indent;
   if (separate)
     px += spacing;
@@ -465,7 +470,7 @@ static void word(const char *s, unsigned n, int space) {
     }
     r = ew_doc.run_count ? &ew_doc.runs[ew_doc.run_count - 1] : NULL;
     if (r && ew_doc.run_count > merge_start && r->kind == EW_RUN_TEXT &&
-        r->style == style && r->link == linkid &&
+        r->style == style && r->link == linkid && r->color == ink &&
         r->y == py && r->off + r->n == ew_doc.text_len &&
         r->x + (int)run_width(r) == px - (separate ? spacing : 0)) {
       if (separate) {
@@ -1095,9 +1100,42 @@ static void image_alt_text(const char *input, char *output) {
   output[used]=0;
   if (*input) ew_doc.truncated=1;
 }
+/* An HTML colour as 16 + the closest solid IBM RGBI colour, or 0 if it is
+ * not understood. Text and backgrounds are never dithered. */
+static unsigned char html_color(const char *value) {
+  static const char names[] = "black\0silver\0gray\0white\0maroon\0red\0purple\0"
+      "fuchsia\0green\0lime\0olive\0yellow\0navy\0blue\0teal\0aqua\0orange\0";
+  static const unsigned short rgb[] = {0x000,0xccc,0x888,0xfff,0x800,0xf00,0x808,
+      0xf0f,0x080,0x0f0,0x880,0xff0,0x008,0x00f,0x088,0x0ff,0xfa0};
+  const char *name = names;
+  unsigned i, n = 0, digit, channel[3], max, half, bits = 0;
+  unsigned long hex = 0;
+  if (*value == '#') ++value;
+  else for (i = 0; *name; ++i, name += strlen(name) + 1)
+    if (ci(value, name)) { hex = rgb[i]; n = 3; break; }
+  if (!n) {
+    for (; n < 6 && isxdigit((unsigned char)value[n]); ++n) {
+      digit = value[n] | 0x20;
+      hex = (hex << 4) | (digit > '9' ? digit - 'a' + 10 : digit - '0');
+    }
+    if ((n != 3 && n != 6) || value[n]) return 0;
+  }
+  for (i = 0; i < 3; ++i) {
+    channel[2 - i] = n == 3 ? (unsigned)(hex & 15) * 17U : (unsigned)(hex & 255);
+    hex >>= n == 3 ? 4 : 8;
+  }
+  max = channel[0] > channel[1] ? channel[0] : channel[1];
+  if (channel[2] > max) max = channel[2];
+  if (max < 0x2b) return 16;
+  half = (max + 1) / 2;
+  for (i = 0; i < 3; ++i) if (channel[i] >= half) bits |= 4U >> i;
+  if (max < 0x90) return 16 + (bits == 7 ? 8 : bits);
+  return 16 + (max >= 0xd5 ? bits | 8 : bits);
+}
 static void size_open(unsigned tag, unsigned size) {
   if (size_depth == 32) { size_overflow++; ew_doc.truncated = 1; return; }
   size_stack[size_depth].tag = tag;
+  size_stack[size_depth].ink = ink;
   size_stack[size_depth++].size = style & (EW_SMALL | EW_LARGE);
   style = (style & ~(EW_SMALL | EW_LARGE)) | size;
 }
@@ -1107,6 +1145,7 @@ static void size_close(unsigned tag) {
   while (i) {
     if (size_stack[--i].tag == tag) {
       style = (style & ~(EW_SMALL | EW_LARGE)) | size_stack[i].size;
+      ink = size_stack[i].ink;
       size_depth = i;
       return;
     }
@@ -1140,6 +1179,7 @@ static void parse_document(const char *base, int plain_mode) {
   style = plain_mode ? EW_MONO | EW_SMALL : 0;
   heading_bold = 0;
   size_depth = size_overflow = 0;
+  ink = 0;
   linkid = 0;
   inform = 0;
   inpre = plain_mode;
@@ -1234,6 +1274,12 @@ static void parse_document(const char *base, int plain_mode) {
         if (ci(name, "a") && attr(tag, "name", value, sizeof(value)))
           add_anchor(value);
       }
+      if (ew_color && ci(name, "body") && !closing) {
+        if (attr(tag, "bgcolor", value, sizeof(value))) ew_doc.page_bg = html_color(value);
+        if (attr(tag, "text", value, sizeof(value))) ew_doc.page_fg = html_color(value);
+        if (attr(tag, "link", value, sizeof(value))) ew_doc.page_link = html_color(value);
+        continue;
+      }
       if (ci(name, "center")) {
         newline(0);
         if (closing) {
@@ -1263,6 +1309,9 @@ static void parse_document(const char *base, int plain_mode) {
             size = level == 0 ? EW_SMALL : level == 2 ? EW_LARGE : 0;
           }
           size_open(kind, size);
+          if (ew_color && kind == 1 && attr(tag, "color", value, sizeof(value)) &&
+              html_color(value))
+            ink = html_color(value);
         }
         continue;
       }
@@ -1419,7 +1468,7 @@ static void parse_document(const char *base, int plain_mode) {
           if (attr(tag,"cellspacing",value,sizeof(value)))
             table.spacing=table_number(value,64);
           attr(tag,"width",value,sizeof(value));
-          table.requested=table_dimension(value,624);
+          table.requested=table_dimension(value,EW_PAGE_WIDTH);
         }
         continue;
       }
@@ -1469,7 +1518,7 @@ static void parse_document(const char *base, int plain_mode) {
             if (table_number(value,16)>1) table.eligible=0;
             attr(tag,"width",value,sizeof(value));
             table.cell_requested=table_dimension(value,
-                table.requested ? table.requested : 624);
+                table.requested ? table.requested : (unsigned)EW_PAGE_WIDTH);
             if (!table.cell_requested) {
               table.automatic=1;
               if (table.plan!=255 && table.col<table_plans[table.plan].columns)
@@ -1478,7 +1527,7 @@ static void parse_document(const char *base, int plain_mode) {
             if (ci(name,"th")) style|=EW_BOLD;
           }
         } else if (closing) {
-          if (px>608) newline(0);
+          if (px>(EW_PAGE_WIDTH-16)) newline(0);
           else px+=16;
         }
         continue;
@@ -1487,8 +1536,8 @@ static void parse_document(const char *base, int plain_mode) {
         newline(3);
         r = run(EW_RUN_RULE);
         if (r)
-          r->n = 616;
-        table_minimum(616);
+          r->n = (EW_PAGE_WIDTH-8);
+        table_minimum((EW_PAGE_WIDTH-8));
         newline(3);
         continue;
       }
@@ -1612,7 +1661,10 @@ static void parse_document(const char *base, int plain_mode) {
         ismap=linkid && attribute_present(tag,"ismap");
         image_index =
             ew_image_lookup(resolved, &natural_width, &natural_height);
-        width = natural_width > 616 ? 616 : (int)natural_width;
+        width = (int)natural_width > (EW_PAGE_WIDTH-8) ? (EW_PAGE_WIDTH-8) : (int)natural_width;
+        /* The narrow colour page shrinks wide images often: keep their shape. */
+        if (ew_color && (int)natural_width > width)
+          natural_height = (unsigned)((unsigned long)natural_height * width / natural_width);
         height = natural_height > 400 ? 400 : (int)natural_height;
         if (!width) width=alt[0] ? ew_body_width(alt,alt_len-1,0)+14 : 16;
         if (!height) height=24;
@@ -1626,8 +1678,10 @@ static void parse_document(const char *base, int plain_mode) {
           height = atoi(value);
         if (width < 1)
           width = 1;
-        if (width > 616)
-          width = 616;
+        if (ew_color && has_width && has_height && width > (EW_PAGE_WIDTH-8))
+          height = (int)((long)height * (EW_PAGE_WIDTH-8) / width);
+        if (width > (EW_PAGE_WIDTH-8))
+          width = (EW_PAGE_WIDTH-8);
         if (height < 1)
           height = 1;
         if (height > 400)
@@ -1638,15 +1692,15 @@ static void parse_document(const char *base, int plain_mode) {
         }
         if (has_height && !has_width && natural_height) {
           long scaled = (long)height * natural_width / natural_height;
-          width = scaled > 616 ? 616 : (int)scaled;
+          width = scaled > (EW_PAGE_WIDTH-8) ? (EW_PAGE_WIDTH-8) : (int)scaled;
         }
         /* CGA's 640x200 pixels are twice as tall as they are wide. */
         if (ew_pixel_aspect == 2) height = height / 2 + (height & 1);
         if (height < 1) height = 1;
         if (width < 1)
           width = 1;
-        if (width > 616)
-          width = 616;
+        if (width > (EW_PAGE_WIDTH-8))
+          width = (EW_PAGE_WIDTH-8);
         if (height < 1)
           height = 1;
         if (height > 200)
@@ -1798,9 +1852,9 @@ void ew_parse_image_source(const char *url) {
   anchor_count = merge_start = 0;
   strcpy(ew_doc.title, "Image - ELKSWeb");
   if (!width || !height) { width = 64; height = 64; }
-  if (width > 616) {
-    height = (unsigned)((unsigned long)height * 616 / width);
-    width = 616;
+  if (width > (unsigned)(EW_PAGE_WIDTH-8)) {
+    height = (unsigned)((unsigned long)height * (EW_PAGE_WIDTH-8) / width);
+    width = (EW_PAGE_WIDTH-8);
   }
   if (height > limit) {
     width = (unsigned)((unsigned long)width * limit / height);

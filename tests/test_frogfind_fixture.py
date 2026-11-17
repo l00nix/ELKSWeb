@@ -46,7 +46,7 @@ class FrogFixture(unittest.TestCase):
         try: from PIL import Image
         except ImportError: self.skipTest('Optional first-frame pixel oracle requires Pillow')
         class Gif(C.Structure):
-            _fields_=[('width',C.c_uint),('height',C.c_uint),('stride',C.c_uint),('pixels',C.POINTER(C.c_ubyte)),('opacity',C.POINTER(C.c_ubyte))]
+            _fields_=[('width',C.c_uint),('height',C.c_uint),('stride',C.c_uint),('pixels',C.POINTER(C.c_ubyte)),('opacity',C.POINTER(C.c_ubyte)),('depth',C.c_ubyte)]
         raw=(FROG/'frog.gif').read_bytes()
         with tempfile.TemporaryDirectory(prefix='frog-gif-qa-') as tmp:
             library=Path(tmp)/'gif.so'

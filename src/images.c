@@ -10,11 +10,48 @@
 #include <fcntl.h>
 #include <errno.h>
 #define IMAGE_LIMIT 8
+/* One display row of packed colour pixels, plus the odd-start nibble. */
+#define EW_TANDY_LINE 161
 static struct ew_gif images[IMAGE_LIMIT];
 static unsigned image_count;
 static unsigned natural_width[IMAGE_LIMIT], natural_height[IMAGE_LIMIT];
 static char EW_FAR *image_urls;
 static char document_error[96];
+/* Sixteen-colour images cost four times the monochrome storage, so their
+ * total is capped. An image that would exceed what is left, or that memory
+ * cannot hold, is stored at 3/4 scale, repeatedly down to about a quarter, and
+ * enlarged when drawn,
+ * instead of being lost. */
+#define COLOR_CACHE_BYTES 81920UL
+static unsigned long color_bytes;
+static int decode(const unsigned char EW_FAR *data, unsigned size, struct ew_gif *image) {
+  unsigned width, height, limit_width, limit_height, attempt;
+  unsigned long need;
+  int result = EW_GIF_NO_MEMORY;
+  if (!ew_color) return ew_gif_decode_aspect(data, size, image, ew_pixel_aspect);
+  if (size < 10) return ew_gif_decode_color(data, size, image, 1, 1);
+  limit_width = EW_PAGE_WIDTH - 8;
+  limit_height = 200;
+  for (attempt = 0; attempt < 6; ++attempt, limit_width -= limit_width >> 2,
+                                 limit_height -= limit_height >> 2) {
+    width = data[6] | ((unsigned)data[7] << 8);
+    height = data[8] | ((unsigned)data[9] << 8);
+    if (width > limit_width) {
+      height = (unsigned)((unsigned long)height * limit_width / (width ? width : 1));
+      width = limit_width;
+    }
+    if (height > limit_height) {
+      width = (unsigned)((unsigned long)width * limit_height / height);
+      height = limit_height;
+    }
+    need = (unsigned long)((width + 1) >> 1) * height;
+    if (color_bytes + need > COLOR_CACHE_BYTES) continue;
+    result = ew_gif_decode_color(data, size, image, limit_width, limit_height);
+    if (result != EW_GIF_NO_MEMORY) break;
+  }
+  if (result == EW_GIF_OK) color_bytes += (unsigned long)image->stride * image->height;
+  return result;
+}
 const char *ew_image_document_error(void) { return document_error; }
 static int document_fail(const char *message) {
   strncpy(document_error, message, sizeof(document_error)-1);
@@ -42,6 +79,7 @@ void ew_images_clear(void) {
   for (i = 0; i < image_count; i++) ew_gif_free(&images[i]);
   image_count = 0;
   document_error[0] = 0;
+  color_bytes = 0;
   memset(natural_width, 0, sizeof(natural_width));
   memset(natural_height, 0, sizeof(natural_height));
   ew_far_free(image_urls);
@@ -88,7 +126,7 @@ int ew_images_load_document(const char *url) {
     return document_fail(ew_source_error());
   }
   known=ew_image_dimensions(compressed,amount,&natural_width[0],&natural_height[0]);
-  result=ew_gif_decode_aspect(compressed,amount,&images[0],ew_pixel_aspect);
+  result=decode(compressed,amount,&images[0]);
   ew_far_free(compressed);
   if (result==EW_GIF_OK) return 0;
   document_fail(gif ? ew_gif_error(result) :
@@ -128,7 +166,7 @@ static int load_image(const char *url, struct ew_gif *image,
     for (i = 0; i < (unsigned)got; ++i) compressed[count++] = chunk[i];
   }
   ew_image_dimensions(compressed, (unsigned)size, width, height);
-  result = ew_gif_decode_aspect(compressed, (unsigned)size, image, ew_pixel_aspect);
+  result = decode(compressed, (unsigned)size, image);
   if (result == EW_GIF_NO_MEMORY) document_fail(ew_gif_error(result));
   result = result == EW_GIF_OK ? 0 : -1;
 done:
@@ -209,7 +247,7 @@ static void image_placeholder(const struct ew_run EW_FAR *r,int x,int y,
   long right=(long)x+r->n-1, last=(long)y+r->w-1;
   int left=x<0 ? 0 : x, end=right>=EW_SCREEN_WIDTH ? EW_SCREEN_WIDTH-1 : (int)right;
   int first=y<top ? top : y, finish=last>=bottom ? bottom-1 : (int)last;
-  int col,row,cursor,advance,color=inverse ? 1 : 0;
+  int col,row,cursor,advance,color=ew_color ? inverse : inverse ? 1 : 0;
   for (col=left;col<=end;++col) {
     if (y>=top && y<bottom) ew_pixel(col,y,color);
     if (last>=top && last<bottom && last!=y) ew_pixel(col,(int)last,color);
@@ -272,7 +310,7 @@ void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bot
   unsigned row, col, sy, sx, first_row, last_row, first_col, last_col;
   unsigned start_sx, start_error, x_error, y_error, x_step, y_step;
   unsigned x_remainder, y_remainder, previous_row=65535U;
-  unsigned char bits[80], opacity[80];
+  unsigned char bits[EW_TANDY_LINE], opacity[80];
   unsigned long scaled;
   int screen_x, screen_y, reduce, color;
   unsigned end_y;
@@ -287,7 +325,8 @@ void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bot
     return;
   }
   image = &images[r->style];
-  reduce=image->width>r->n || image->height/(unsigned)ew_pixel_aspect>r->w;
+  reduce=image->depth!=4 &&
+         (image->width>r->n || image->height/(unsigned)ew_pixel_aspect>r->w);
   first_col=x<0 ? (unsigned)(-(long)x) : 0;
   last_col=(long)x+r->n>EW_SCREEN_WIDTH ? (unsigned)(EW_SCREEN_WIDTH-(long)x) : r->n;
   first_row=y<top ? (unsigned)(top-(long)y) : 0;
@@ -309,13 +348,58 @@ void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bot
   screen_y=y<top ? top : y;
   for (row=first_row;row<last_row;++row,++screen_y) {
     end_y=sy+y_step+(y_error>=r->w-y_remainder);
-    if (!reduce && sy!=previous_row) {
+    if (!reduce && image->depth!=4 && sy!=previous_row) {
       ew_gif_copy_row(image,sy,bits,opacity);
       previous_row=sy;
     }
     sx=start_sx;
     x_error=start_error;
     screen_x=x<0 ? 0 : x;
+    if (image->depth==4) {
+      /* Assemble the row in near memory at the display's nibble phase, then
+       * hand it to the driver as whole bytes. */
+      const unsigned char EW_FAR *source=image->pixels+sy*image->stride;
+      const unsigned char EW_FAR *cover=image->opacity ?
+          image->opacity+sy*((image->width+7)>>3) : NULL;
+      unsigned at=screen_x&1, count=last_col-first_col;
+      unsigned char pixel;
+      if (count>320) count=320;
+      if (cover) memset(opacity,0,40);
+      if (image->width==r->n && !cover) {
+        /* Natural width: whole bytes, moved once from far memory. An image
+         * at the other nibble phase is the same bytes shifted by four bits. */
+        unsigned bytes=(count+at+1)>>1, have=image->stride-(sx>>1);
+        unsigned char previous=0, current;
+        source+=sx>>1;
+        if (!((sx^at)&1)) for (col=0;col<bytes;++col) bits[col]=source[col];
+        else if (at) for (col=0;col<bytes;++col) {
+          current=col<have ? source[col] : 0;
+          bits[col]=(unsigned char)(previous<<4)|(current>>4);
+          previous=current;
+        } else for (col=0,previous=source[0];col<bytes;++col) {
+          current=col+1<have ? source[col+1] : 0;
+          bits[col]=(unsigned char)(previous<<4)|(current>>4);
+          previous=current;
+        }
+      } else {
+        /* Scaled or transparent: bring the stored row near, then sample. */
+        unsigned char stored[160], covered[40];
+        for (col=0;col<image->stride && col<160;++col) stored[col]=source[col];
+        if (cover) for (col=0;col<(image->width+7)>>3 && col<40;++col) covered[col]=cover[col];
+        for (col=0;col<count;++col,++at) {
+        pixel=stored[sx>>1];
+        pixel=sx&1 ? pixel&15 : pixel>>4;
+        if (at&1) bits[at>>1]=(bits[at>>1]&0xf0)|pixel;
+        else bits[at>>1]=pixel<<4;
+        if (cover && (covered[sx>>3]&(0x80U>>(sx&7)))) opacity[col>>3]|=0x80U>>(col&7);
+        sx+=x_step;
+        if (x_error>=r->n-x_remainder) { x_error-=r->n-x_remainder; ++sx; }
+        else x_error+=x_remainder;
+        }
+      }
+      ew_row4(screen_x,screen_y,bits,cover ? opacity : NULL,count);
+      goto next_row;
+    }
     for (col=first_col;col<last_col;++col,++screen_x) {
       if (reduce) {
         color=reduced_pixel(image,sx,sy,
@@ -331,6 +415,7 @@ void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bot
         ++sx;
       } else x_error+=x_remainder;
     }
+next_row:
     sy+=y_step;
     if (y_error>=r->w-y_remainder) {
       y_error-=r->w-y_remainder;

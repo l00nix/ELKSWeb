@@ -5,13 +5,13 @@
   <img src="artwork/elksweb-wordmark-yellow-globe.png" alt="ELKSWeb logo" width="640">
 </p>
 
-# ELKSWeb 0.4
+# ELKSWeb 0.5dev
 
 An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr/elks), written in C with the native ELKS IA16 toolchain and targeting 8088-compatible machines.
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Version 0.4 — experimental beta.** Use the local graphics console for keyboard input and display selection, and report inline image allocation failures in the status bar. HP cooked keys, serial mice and the monochrome renderer are retained. See the [changelog and feedback credits](CHANGELOG.md), [0.4 release notes](docs/RELEASE-0.4.md) and [downloads](https://github.com/l00nix/ELKSWeb/releases/tag/v0.4).
+**Development branch: 0.5dev.** Integration of [@astrobleem's Tandy/PCjr colour contribution](https://github.com/l00nix/ELKSWeb/issues/2) is in progress on top of the HP/PPC fixes in 0.4. This branch uses the medium memory model and needs renewed hardware and memory testing. Use the [0.4 experimental beta](https://github.com/l00nix/ELKSWeb/releases/tag/v0.4) for the frozen baseline. See the [integration status](docs/DEVELOPMENT-0.5.md).
 
 The 0.3-dev1 candidate passed user hardware checks on the Amstrad PPC 512 with PicoMEM 2 and HP 200LX DS, including browsing, GIFs, keyboard navigation and serial-mouse movement/clicking. Address editing remains partially tested; the intermittent upstream console issue remains open. General IBM PC compatibility remains the goal.
 
@@ -41,14 +41,15 @@ The C++, networking, graphics-dependency and memory concerns raised in [the ELKS
 
 - **C and the native ELKS toolchain:** IA16 GCC and ELKS libc; no C++ runtime or OpenWatcom requirement.
 - **ELKS networking:** native sockets and the ELKS `ktcp` service; no DOS packet driver or mTCP dependency. Direct access is HTTP only.
-- **Direct graphics:** the browser draws directly to CGA, EGA or VGA video memory and uses ELKS console interfaces. Microwindows/Nano-X is not required.
+- **Direct graphics:** the browser draws directly to CGA, EGA, VGA or Tandy/PCjr video memory and uses ELKS console interfaces. Microwindows/Nano-X is not required.
 - **Bounded memory:** segmented storage, explicit document limits and a small disk-backed source cache. These choices reduce conventional-memory pressure but currently incur substantial CPU and disk costs.
 
 ## Tested configuration and requirements
 
 - An ELKS system with graphics-capable console interfaces and a working native network stack.
 - 8088-compatible processor target. Earlier candidates were exercised in 86Box with an Intel 8088 at 4.77 MHz and 640 KB RAM. The owner confirms the exact 0.1 executable runs on the standard HP 200LX and DS HP 200LX, with smoother scrolling reported on the standard HP. Installation identities were verified separately from those owner graphics reports. Exact-0.1 86Box welcome, scrolling and a normal-shell exit passed; an earlier cold-boot exit anomaly remains unresolved. See the release notes.
-- CGA 640×200, color EGA with at least 128 KB video RAM at 640×350, or VGA at 640×480. All browser modes are monochrome. Mode selection and console restoration are exercised in QEMU and Windows 86Box; 0.1-specific results are recorded in the release notes. [CGA capture](docs/screenshots/frogfind-build004-cga-86box.png) · [EGA capture](docs/screenshots/frogfind-build004-ega-86box.png) · [VGA capture](docs/screenshots/frogfind-build004-vga-86box.png).
+- CGA 640×200, color EGA with at least 128 KB video RAM at 640×350, or VGA at 640×480. These three modes are monochrome. Mode selection and console restoration are exercised in QEMU and Windows 86Box; 0.1-specific results are recorded in the release notes. [CGA capture](docs/screenshots/frogfind-build004-cga-86box.png) · [EGA capture](docs/screenshots/frogfind-build004-ega-86box.png) · [VGA capture](docs/screenshots/frogfind-build004-vga-86box.png).
+- Tandy 1000 or expanded PCjr built-in video at 320×200 in 16 colours, on an ELKS kernel that reserves the video memory at boot: the Tandy branch with `tandyvideo=1` in `/bootopts`, or the matched PCjr kernel and bootloader. ELKSWeb asks the kernel (`MEM_GETTANDY`/`MEM_GETPCJR` on `/dev/kmem`) and offers the mode only when the reservation is confirmed. The kernel must also have medium-model executables enabled (`CONFIG_EXEC_MMODEL`, on in the stock configurations).
 - A writable `/tmp` for page caching.
 - Keyboard navigation and serial-mouse input; 0.3-dev1 mouse movement and clicking passed user checks on the PPC 512 and HP 200LX DS. PS/2 coverage remains limited.
 
@@ -69,7 +70,7 @@ Serial-mouse setup uses the same settings as the PPC 512, with the HP's cooked-k
 
 ## Current features
 
-HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, forms, tables, lists, monochrome GIF images and binary downloads. PNG/JPEG dimensions are recognized for layout, but their pixels are not decoded. JPEG decoding is outside the current scope and is likely to remain outside future releases, similar to MicroWeb. Features have differing levels of test coverage; see [tests](tests/README.md).
+HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, forms, tables, lists, GIF images (monochrome, or 16 colours on the Tandy/PCjr display) and binary downloads. On the colour display, `<body bgcolor text link>` and `<font color>` are honoured with the nearest of the 16 fixed colours. PNG/JPEG dimensions are recognized for layout, but their pixels are not decoded. JPEG decoding is outside the current scope and is likely to remain outside future releases, similar to MicroWeb. Features have differing levels of test coverage; see [tests](tests/README.md).
 
 ## Limitations
 
@@ -82,7 +83,7 @@ HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, f
 
 ## Future enhancements
 
-Version 0.4 keeps the monochrome renderer. Follow-up work under consideration includes:
+0.5dev preserves the monochrome modes while adding experimental Tandy/PCjr colour. Follow-up work includes:
 
 - **EGA/VGA colour GIF rendering**, while retaining monochrome CGA and HP 200LX output. This requires palette-aware image storage, video-plane drawing, scrolling and cursor handling, plus work to fit the 64 KB code-segment limit. The blue logo artwork is prepared for this future work; it is not the installed 0.1 logo.
 - **Faster page loading and rendering**, with measured reductions in CPU, disk and memory use.
@@ -102,7 +103,7 @@ These are directions, not promised features or dates. JPEG decoding remains outs
 | Home / End | Start / end of document |
 | Backspace | Back |
 | F5 | Reload |
-| F2 | Invert monochrome output |
+| F2 | Invert monochrome output; dark theme on the colour display |
 | F3 | Show/hide browser bars |
 | Escape | Exit; cancel a network load when input is polled |
 
@@ -111,10 +112,16 @@ These navigation shortcuts apply to normal page browsing. In an address or text 
 ## Command-line options
 
 ```text
-elksweb [-video cga|ega|vga] [-invert] [-noimages] [http://URL or local-file]
+elksweb [-video cga|ega|vga|tandy|pcjr] [-invert] [-noimages] [http://URL or local-file]
 ```
 
 Without `-video`, ELKSWeb displays a text-console selector before entering graphics. Choose 1, 2 or 3 and press Enter; Enter alone selects CGA, and Q followed by Enter quits. Only detected modes are listed. `-video cga`, `-video ega` or `-video vga` bypasses the selector; unsupported modes fail without changing graphics or console settings.
+
+When the kernel confirms a Tandy or PCjr video reservation the selector also lists `4`, the 320×200 16-colour mode, and Enter alone selects it. `-video tandy` and `-video pcjr` are the same mode. On the colour display the default start page is `/lib/elksweb/color.htm` when installed. Colour images are stored at four bits per pixel, reduced to fit the 304-pixel content width while decoding. Decoded pixel buffers are capped at 80 KB per page; transparency masks, compressed input and decoder working memory are additional. Images are retried at lower resolutions when memory is short, but can still become placeholders if all attempts fail.
+
+Keyboard notes for these machines: the PCjr kernel reads keys through the BIOS, so ELKSWeb uses translated keys there automatically. On a Tandy the original 90-key keyboard's arrow and Home scan codes are accepted as well as the XT ones; set `ELKSWEB_KEYBOARD=xt` to disable that, or `ELKSWEB_KEYBOARD=tandy` to force it.
+
+This colour mode is experimental. The supplied implementation was exercised in 86Box Tandy 1000 HX and DOSBox-X PCjr emulation, not on physical hardware or in MartyPC. The additional Tandy 90-key mappings have not been verified against hardware or a reference. PMR mouse support is not implemented; reported mouse checks used an emulated Microsoft serial mouse. PCjr memory pressure can reduce image quality or leave placeholders. Emulator results do not certify the Tandy EX or a particular physical network adapter configuration.
 
 `--version` prints the version without entering graphics. `-noimages` disables image loading. It does not establish a performance target. EMS and XMS options are not implemented.
 
@@ -158,7 +165,7 @@ These projects are credited for their respective work; no endorsement or affilia
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). See the [0.3 release notes](docs/RELEASE-0.3.md) for current validation scope. Historical checks remain in STATUS; broader compatibility and performance feedback are welcome. Testers and feedback are welcome.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). See the [0.4 release notes](docs/RELEASE-0.4.md) for the released baseline and [0.5 integration status](docs/DEVELOPMENT-0.5.md) for this branch. Historical checks remain in STATUS; broader compatibility and performance feedback are welcome. Testers and feedback are welcome.
 
 ## License and attribution
 

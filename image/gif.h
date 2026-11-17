@@ -13,8 +13,12 @@
 
 struct ew_gif {
     unsigned width, height, stride;
-    unsigned char EW_GIF_FAR *pixels; /* MSB first; 1 is white. */
+    /* depth 0/1: one bit per pixel, MSB first; 1 is white.
+     * depth 4: two pixels per byte, left pixel in the high nibble, IBM RGBI
+     * colour 0..15; stride is then (width+1)/2 and opacity is (width+7)/8. */
+    unsigned char EW_GIF_FAR *pixels;
     unsigned char EW_GIF_FAR *opacity; /* NULL means all opaque; 1 is opaque. */
+    unsigned char depth;
 };
 
 enum ew_gif_result {
@@ -39,6 +43,14 @@ int ew_gif_decode(const unsigned char EW_GIF_FAR *data, unsigned length, struct 
  */
 int ew_gif_decode_aspect(const unsigned char EW_GIF_FAR *data, unsigned length,
                          struct ew_gif *out, unsigned pixel_aspect);
+/* Sixteen-colour decode for the Tandy/PCjr display. The image is reduced
+ * while decoding, keeping its proportions, until it fits max_width x
+ * max_height, so storage is bounded by the caller rather than by the file:
+ * at most (max_width+1)/2*max_height bytes plus a one-bit opacity plane.
+ * out->width/height are the stored size. Palette entries become an ordered
+ * dither of the two closest fixed RGBI colours. */
+int ew_gif_decode_color(const unsigned char EW_GIF_FAR *data, unsigned length,
+                        struct ew_gif *out, unsigned max_width, unsigned max_height);
 void ew_gif_free(struct ew_gif *image);
 /* Each destination, when non-NULL, needs image->stride bytes (at most 80).
  * Returns stride, or zero for a row outside the image.

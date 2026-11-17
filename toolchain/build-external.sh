@@ -15,8 +15,8 @@ command -v elf2elks >/dev/null
 mkdir -p build/obj
 # Compile every source on each invocation; never install a stale executable.
 rm -f build/elksweb build/obj/*.o build/obj/*.su
-cflags='-march=i8086 -mtune=i8086 -mcmodel=small -melks-libc
-    -mno-segment-relocation-stuff -Os -Wall -Wextra
+cflags='-march=i8086 -mtune=i8086 -mcmodel=medium -melks-libc
+    -Os -Wall -Wextra
     -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font'
 set --
 for source in src/*.c platform/*.c image/*.c font/*.c; do

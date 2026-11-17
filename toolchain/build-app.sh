@@ -12,8 +12,8 @@ cp toolchain/retain-elf2elks.py build/host-tools/elf2elks
 chmod +x build/host-tools/elf2elks
 export ELKSWEB_REAL_ELF2ELKS="$TOPDIR/elks/tools/bin/elf2elks"
 export PATH="$app_root/build/host-tools:$PATH"
-cflags=(-march=i8086 -mtune=i8086 -mcmodel=small -melks-libc
-    -mno-segment-relocation-stuff -Os -Wall -Wextra -fstack-usage
+cflags=(-march=i8086 -mtune=i8086 -mcmodel=medium -melks-libc
+    -Os -Wall -Wextra -fstack-usage
     -fno-builtin-printf -fno-builtin-fprintf -I./src -I./platform -I./font)
 mkdir -p build/obj
 rm -f build/obj/*.o build/obj/*.su
@@ -35,7 +35,11 @@ file build/elksweb
 sha256sum build/elksweb
 objdump86 build/elksweb > build/elksweb.header.txt
 disasm build/elksweb > build/elksweb.dis
-ia16-elf-objdump -d -z --insn-width=16 -M intel,i8086 build/elksweb.elf > build/elksweb.elf.dis
+# Medium-model relocation symbols can lie inside a far-jump operand. Strip
+# symbols from a disposable disassembly copy so objdump does not split it.
+# The auditor still matches every instruction byte to the original linked ELF.
+ia16-elf-objcopy --strip-all build/elksweb.elf build/elksweb.audit.elf
+ia16-elf-objdump -d -z --insn-width=16 -M intel,i8086 build/elksweb.audit.elf > build/elksweb.elf.dis
 ia16-elf-readelf -W -s build/elksweb.elf > build/elksweb.symbols.txt
 ia16-elf-gcc --version > build/compiler-version.txt
 python3 toolchain/isa-audit.py build/elksweb build/elksweb.elf build/elksweb.elf.dis --map build/elksweb.map --output build/isa-audit.json

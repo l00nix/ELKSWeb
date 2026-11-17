@@ -21,8 +21,8 @@ class ScrollRows(unittest.TestCase):
         routines=source[source.index('static unsigned scan_offset'):
                         source.index('void ew_cursor_hide(void)')]
         (root/'scroll.c').write_text(
-            '#include "elks_platform.h"\nunsigned char video[65536];\n'
-            'int ew_screen_height=200, ew_pixel_aspect=2;\n'
+            '#include "elks_platform.h"\n#include "elks_tandy.c"\nunsigned char video[65536];\n'
+            'int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;\n'
             'static unsigned video_bytes=16384;\n'+
             '\n'.join(line for line in source.splitlines()
                       if line.startswith('static int clip_'))+'\n'+routines)
