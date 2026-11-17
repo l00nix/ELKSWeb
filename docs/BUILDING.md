@@ -1,15 +1,15 @@
-# Building the current 0.2 release
+# Building the current 0.4 release
 
 The lightweight external builder and audited developer builder remain separate.
-Install the binary as `/bin/elksweb`; see [INSTALL.md](INSTALL.md) for assets under
-`/lib/elksweb`. Source and runtime release archives are generated with
-`toolchain/package-release-0.2.py --help`; the original `package-release.py` remains
-pinned to 0.1 for historical reproducibility. The new packager requires the exact
-source revision, audited binary hash and matching ELKS source archive. Packaging
-is a host-side operation and adds no dependencies to the external builder.
+Install the executable as `/bin/elksweb` and runtime assets under `/lib/elksweb`.
+Use `toolchain/package-release-0.4.py --help` for release packaging; the older
+versioned scripts remain available for historical reproducibility. The packager
+checks committed source, the audited binary and its matching ELKS source archive.
 
-The historical clean-build pins and 0.1 qualification records below retain their
-original scope; they are not claims about a fresh 0.2 hardware test.
+0.4 retains the small memory model and 8086 instruction target. Historical
+clean-build and hardware records below keep their original scope. The 0.4
+release uses the prepared ELKS/libc base at
+`e1469b64c5809c44d5c822eaeebd0e97d5996289`; see [release notes](RELEASE-0.4.md).
 
 # Building and running
 

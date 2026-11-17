@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.35dev — local development candidate (unreleased)
+## 0.4 — experimental beta (2026-11-17)
 
 - Open `/dev/tty1` directly for the graphics keyboard and startup display
   selector, following [@ghaerr's console guidance](https://github.com/ghaerr/elks/discussions/2185#discussioncomment-19257446).
@@ -10,9 +10,13 @@
   workspace failures. Reuse the existing image error buffer and clear it when
   loading a new page. This improves diagnosis of [issue #1](https://github.com/l00nix/ELKSWeb/issues/1);
   it does not reduce GIF memory requirements or establish 512 KB online support.
-- Identify the executable and welcome page as `0.35dev`. This candidate has no
-  new hardware validation yet. The intermittent console problem and the 86Box
-  cold-boot exit anomaly remain open.
+- Freeze the 0.35dev candidate as 0.4, retaining HP cooked keys, serial-mouse
+  support, inversion and the monochrome CGA/EGA/VGA renderer. The owner reported
+  the candidate working on the HP 200LX after separate system-image repairs;
+  PPC candidate photographs show the welcome page and GIF. These observations
+  are not a full hardware retest of the newly versioned binary.
+- Refresh executable, welcome page, downloads and installation documentation.
+  See [0.4 release notes](docs/RELEASE-0.4.md) for scope and remaining limits.
 
 ## 0.3 — experimental beta (2026-10-25)
 

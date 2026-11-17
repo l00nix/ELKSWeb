@@ -5,13 +5,13 @@
   <img src="artwork/elksweb-wordmark-yellow-globe.png" alt="ELKSWeb logo" width="640">
 </p>
 
-# ELKSWeb 0.3
+# ELKSWeb 0.4
 
 An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr/elks), written in C with the native ELKS IA16 toolchain and targeting 8088-compatible machines.
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Version 0.3 — experimental beta.** Keep the requested URL visible during loading, correct display selections with Backspace, and improve console startup handling. See the [changelog and feedback credits](CHANGELOG.md), [0.3 release notes](docs/RELEASE-0.3.md) and [downloads](https://github.com/l00nix/ELKSWeb/releases/tag/v0.3).
+**Version 0.4 — experimental beta.** Use the local graphics console for keyboard input and display selection, and report inline image allocation failures in the status bar. HP cooked keys, serial mice and the monochrome renderer are retained. See the [changelog and feedback credits](CHANGELOG.md), [0.4 release notes](docs/RELEASE-0.4.md) and [downloads](https://github.com/l00nix/ELKSWeb/releases/tag/v0.4).
 
 The 0.3-dev1 candidate passed user hardware checks on the Amstrad PPC 512 with PicoMEM 2 and HP 200LX DS, including browsing, GIFs, keyboard navigation and serial-mouse movement/clicking. Address editing remains partially tested; the intermittent upstream console issue remains open. General IBM PC compatibility remains the goal.
 
@@ -82,7 +82,7 @@ HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, f
 
 ## Future enhancements
 
-Version 0.3 keeps the monochrome renderer. Follow-up work under consideration includes:
+Version 0.4 keeps the monochrome renderer. Follow-up work under consideration includes:
 
 - **EGA/VGA colour GIF rendering**, while retaining monochrome CGA and HP 200LX output. This requires palette-aware image storage, video-plane drawing, scrolling and cursor handling, plus work to fit the 64 KB code-segment limit. The blue logo artwork is prepared for this future work; it is not the installed 0.1 logo.
 - **Faster page loading and rendering**, with measured reductions in CPU, disk and memory use.
@@ -120,7 +120,7 @@ Without `-video`, ELKSWeb displays a text-console selector before entering graph
 
 ## How to install a release
 
-Download the [0.3 beta runtime package](https://github.com/l00nix/ELKSWeb/releases/tag/v0.3) on a modern computer, verify its checksum, and transfer it to an existing ELKS installation. Install `bin/elksweb` as `/bin/elksweb` and the files in `lib/elksweb/` under `/lib/elksweb/`. The executable is always named `elksweb`. Keep the included notices and corresponding-source archive available.
+Download the [0.4 beta runtime package](https://github.com/l00nix/ELKSWeb/releases/tag/v0.4) on a modern computer, verify its checksum, and transfer it to an existing ELKS installation. Install `bin/elksweb` as `/bin/elksweb` and the files in `lib/elksweb/` under `/lib/elksweb/`. The executable is always named `elksweb`. Keep the included notices and corresponding-source archive available.
 
 ```sh
 chmod 755 /bin/elksweb
@@ -128,7 +128,7 @@ elksweb --version
 elksweb
 ```
 
-The version reports **0.3**. Choose a detected display mode to open the local welcome page. Configure native ELKS networking and run `net start` before using HTTP. Enter a hostname such as `68knews.8088retro.com` in the address field or an explicit URL.
+The version reports **0.4**. Choose a detected display mode to open the local welcome page. Configure native ELKS networking and run `net start` before using HTTP. Enter a hostname such as `68knews.8088retro.com` in the address field or an explicit URL.
 
 See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse settings and upgrades. The runtime is a standalone application package, not an ELKS disk image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
 
@@ -144,7 +144,7 @@ exec elksweb
 
 Keep any display options and mouse or keyboard environment settings you normally use. If you have a custom launcher, use `exec /root/startweb` instead. After exiting from a normal login session, log in again.
 
-This workaround allowed ELKSWeb 0.3 to render the welcome page and its GIF, then return cleanly to login, in an offline reduced-memory Amstrad PPC 512 hardware test. Online browsing at 512 KB remains unverified; networking and background services need additional memory. `-noimages` can also disable image loading, but does not guarantee that the browser will fit. See [issue #1](https://github.com/l00nix/ELKSWeb/issues/1) for measurements and planned improvements.
+This workaround allowed ELKSWeb 0.3 to render the welcome page and its GIF, then return cleanly to login, in an offline reduced-memory Amstrad PPC 512 hardware test. Subsequent 512 KB tests with `ktcp` alone could not start either 0.3 or 0.35dev. Use 640 KB or more as the practical starting point for testing; free memory still depends on the kernel and running services. `-noimages` can also disable image loading, but does not guarantee that the browser will fit. See [issue #1](https://github.com/l00nix/ELKSWeb/issues/1) for measurements and planned improvements.
 
 ## Test sites and related projects
 
