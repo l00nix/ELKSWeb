@@ -7,13 +7,20 @@ from test_video_modes import HEADER, SOURCE, ROOT
 
 BODY = r'''
 static unsigned char planes[4][65536];
-static unsigned active;
+static unsigned active, write_mode, write_mask;
 static void sync_plane(void) { memcpy(planes[active],test_planar,65536); }
 void ew_test_video_register(unsigned port,unsigned value) {
+ if(port==0x3ce && (value&255)==5)write_mode=value>>8;
+ if(port==0x3c4 && (value&255)==2)write_mask=value>>8;
  if(port==0x3ce && (value&255)==4) {
   sync_plane();active=value>>8;assert(active<4);
   memcpy(test_planar,planes[active],65536);
  }
+}
+void ew_test_latch_copy(unsigned to,unsigned from,unsigned count) {
+ unsigned p;assert(write_mode==1 && write_mask==15);sync_plane();
+ for(p=0;p<4;p++)memmove(planes[p]+to,planes[p]+from,count);
+ memcpy(test_planar,planes[active],65536);
 }
 static unsigned pixel(int x,int y) {
  unsigned p,c=0;sync_plane();
@@ -39,9 +46,9 @@ int main(void) {
  }
  ew_clip(640,0,480);
  for(y=100;y<150;y++)ew_hline(0,y,640,y&15);
- ew_scroll(100,150,7);
+ ew_scroll(100,150,7);assert(write_mode==0);
  for(y=100;y<143;y++)for(x=0;x<640;x++)assert(pixel(x,y)==(x<624?(y+7)&15:y&15));
- ew_scroll(100,143,-5);
+ ew_scroll(100,143,-5);assert(write_mode==0);
  for(y=105;y<143;y++)assert(pixel(300,y)==((y+2)&15));
  sync_plane();memcpy(saved,planes,sizeof(saved));
  for(i=0;i<2;i++)for(x=632;x<640;x++) {
