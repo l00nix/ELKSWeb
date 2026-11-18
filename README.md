@@ -48,7 +48,7 @@ The C++, networking, graphics-dependency and memory concerns raised in [the ELKS
 
 - An ELKS system with graphics-capable console interfaces and a working native network stack.
 - 8088-compatible processor target. Earlier candidates were exercised in 86Box with an Intel 8088 at 4.77 MHz and 640 KB RAM. The owner confirms the exact 0.1 executable runs on the standard HP 200LX and DS HP 200LX, with smoother scrolling reported on the standard HP. Installation identities were verified separately from those owner graphics reports. Exact-0.1 86Box welcome, scrolling and a normal-shell exit passed; an earlier cold-boot exit anomaly remains unresolved. See the release notes.
-- CGA 640×200, color EGA with at least 128 KB video RAM at 640×350, or VGA at 640×480. These three modes are monochrome. Mode selection and console restoration are exercised in QEMU and Windows 86Box; 0.1-specific results are recorded in the release notes. [CGA capture](docs/screenshots/frogfind-build004-cga-86box.png) · [EGA capture](docs/screenshots/frogfind-build004-ega-86box.png) · [VGA capture](docs/screenshots/frogfind-build004-vga-86box.png).
+- CGA 640×200, color EGA with at least 128 KB video RAM at 640×350, or VGA at 640×480. CGA and EGA remain monochrome; VGA uses 16 colours by default, with `-video vga-mono` retaining monochrome output. Mode selection and console restoration are exercised in QEMU and Windows 86Box; 0.1-specific results are recorded in the release notes. [CGA capture](docs/screenshots/frogfind-build004-cga-86box.png) · [EGA capture](docs/screenshots/frogfind-build004-ega-86box.png) · [VGA capture](docs/screenshots/frogfind-build004-vga-86box.png).
 - Tandy 1000 or expanded PCjr built-in video at 320×200 in 16 colours, on an ELKS kernel that reserves the video memory at boot: the Tandy branch with `tandyvideo=1` in `/bootopts`, or the matched PCjr kernel and bootloader. ELKSWeb asks the kernel (`MEM_GETTANDY`/`MEM_GETPCJR` on `/dev/kmem`) and offers the mode only when the reservation is confirmed. The kernel must also have medium-model executables enabled (`CONFIG_EXEC_MMODEL`, on in the stock configurations).
 - A writable `/tmp` for page caching.
 - Keyboard navigation and serial-mouse input; 0.3-dev1 mouse movement and clicking passed user checks on the PPC 512 and HP 200LX DS. PS/2 coverage remains limited.
@@ -70,7 +70,7 @@ Serial-mouse setup uses the same settings as the PPC 512, with the HP's cooked-k
 
 ## Current features
 
-HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, forms, tables, lists, GIF images (monochrome, or 16 colours on the Tandy/PCjr display) and binary downloads. On the colour display, `<body bgcolor text link>` and `<font color>` are honoured with the nearest of the 16 fixed colours. PNG/JPEG dimensions are recognized for layout, but their pixels are not decoded. JPEG decoding is outside the current scope and is likely to remain outside future releases, similar to MicroWeb. Features have differing levels of test coverage; see [tests](tests/README.md).
+HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, forms, tables, lists, GIF images (monochrome, or 16 colours on VGA and Tandy/PCjr displays) and binary downloads. On the colour display, `<body bgcolor text link>` and `<font color>` are honoured with the nearest of the 16 fixed colours. PNG/JPEG dimensions are recognized for layout, but their pixels are not decoded. JPEG decoding is outside the current scope and is likely to remain outside future releases, similar to MicroWeb. Features have differing levels of test coverage; see [tests](tests/README.md).
 
 ## Colour support in 0.5
 
@@ -82,7 +82,7 @@ The photos below show his **0.5dev2** test of the colour welcome page and palett
 
 <img src="docs/screenshots/colour/astrobleem-colour-demo.png" alt="Astrobleem’s photograph of ELKSWeb 0.5dev2 showing all sixteen colours and keyboard help" width="400">
 
-Colour mode needs the matching [Tandy kernel](https://github.com/astrobleem/elks/blob/tandy-video-v0.9.2/Documentation/tandy-video.txt) with `tandyvideo=1`, or the matched [PCjr kernel and bootloader](https://github.com/astrobleem/elks/blob/pcjr-video-v0.9.2/Documentation/pcjr-video.txt). The browser package does not install these system components. CGA, EGA and VGA output remains monochrome, including the PPC and HP 200LX configurations.
+Tandy/PCjr colour mode needs the matching [Tandy kernel](https://github.com/astrobleem/elks/blob/tandy-video-v0.9.2/Documentation/tandy-video.txt) with `tandyvideo=1`, or the matched [PCjr kernel and bootloader](https://github.com/astrobleem/elks/blob/pcjr-video-v0.9.2/Documentation/pcjr-video.txt). The browser package does not install these system components. CGA and EGA output remains monochrome, including the PPC and HP 200LX configurations. VGA colour uses standard mode 12h video memory and needs no Tandy/PCjr reservation. This branch has native QEMU colour, scrolling/redraw, navigation and exit checks plus an 8086 instruction audit; physical VGA and 8088 runtime testing remain pending.
 
 0.5 also retains the dev2 speed improvements: controlled PPC measurements reduced first-frame startup from **6.21 to 4.97 seconds**, and earlier GIF/text changes reduced complete welcome loading from **60.44 to 46.59 seconds**. These use instrumented candidates and fixed content, rather than final-release live Internet timings; see [methods and results](docs/PERFORMANCE-0.5.md).
 
@@ -97,9 +97,9 @@ Colour mode needs the matching [Tandy kernel](https://github.com/astrobleem/elks
 
 ## Future enhancements
 
-0.5 preserves the monochrome modes while adding experimental Tandy/PCjr colour. Follow-up work includes:
+0.5 introduced experimental Tandy/PCjr colour. This local branch adds VGA colour while retaining the monochrome modes. Follow-up work includes:
 
-- **EGA/VGA colour GIF rendering**, while retaining monochrome CGA and HP 200LX output. This requires palette-aware image storage, video-plane drawing, scrolling and cursor handling, plus work to fit the 64 KB code-segment limit. The blue logo artwork is prepared for this future work; it is not the installed 0.1 logo.
+- **EGA colour GIF rendering**, while retaining monochrome CGA and HP 200LX output. This requires palette-aware image storage, video-plane drawing, scrolling and cursor handling, plus work to fit the 64 KB code-segment limit. The blue logo artwork is prepared for this future work; it is not the installed 0.1 logo.
 - **Faster page loading and rendering**, with measured reductions in CPU, disk and memory use.
 - **Broader compatibility testing**, including additional ELKS systems, physical 8088 machines and display adapters, and investigation of the remaining 86Box cold-boot exit anomaly.
 - **HTML and input improvements**, including form controls, accented text and clearer handling of document limits.
@@ -126,12 +126,12 @@ These navigation shortcuts apply to normal page browsing. In an address or text 
 ## Command-line options
 
 ```text
-elksweb [-video cga|ega|vga|tandy|pcjr] [-invert] [-noimages] [http://URL or local-file]
+elksweb [-video cga|ega|vga|vga-mono|tandy|pcjr] [-invert] [-noimages] [http://URL or local-file]
 ```
 
-Without `-video`, ELKSWeb displays a text-console selector before entering graphics. Choose 1, 2 or 3 and press Enter; Enter alone selects CGA, and Q followed by Enter quits. Only detected modes are listed. `-video cga`, `-video ega` or `-video vga` bypasses the selector; unsupported modes fail without changing graphics or console settings.
+Without `-video`, ELKSWeb displays a text-console selector before entering graphics. Choose 1, 2, 3 or 5 (VGA monochrome) and press Enter; Enter alone selects CGA, and Q followed by Enter quits. Only detected modes are listed. `-video cga`, `-video ega` or `-video vga` bypasses the selector; unsupported modes fail without changing graphics or console settings.
 
-When the kernel confirms a Tandy or PCjr video reservation the selector also lists `4`, the 320×200 16-colour mode, and Enter alone selects it. `-video tandy` and `-video pcjr` are the same mode. On the colour display the default start page is `/lib/elksweb/color.htm` when installed. Colour images are stored at four bits per pixel, reduced to fit the 304-pixel content width while decoding. Decoded pixel buffers are capped at 80 KB per page; transparency masks, compressed input and decoder working memory are additional. Images are retried at lower resolutions when memory is short, but can still become placeholders if all attempts fail.
+When the kernel confirms a Tandy or PCjr video reservation the selector also lists `4`, the 320×200 16-colour mode, and Enter alone selects it. `-video tandy` and `-video pcjr` are the same mode. On the colour display the default start page is `/lib/elksweb/color.htm` when installed. Colour images are stored at four bits per pixel, reduced while decoding to fit 616 pixels on VGA or 304 pixels on Tandy/PCjr, with a 200-row storage limit. Decoded pixel buffers are capped at 80 KB per page; transparency masks, compressed input and decoder working memory are additional. Images are retried at lower resolutions when memory is short, but can still become placeholders if all attempts fail.
 
 Keyboard notes for these machines: the PCjr kernel reads keys through the BIOS, so ELKSWeb uses translated keys there automatically. On a Tandy the original 90-key keyboard's arrow and Home scan codes are accepted as well as the XT ones; set `ELKSWEB_KEYBOARD=xt` to disable that, or `ELKSWEB_KEYBOARD=tandy` to force it.
 

@@ -47,10 +47,10 @@ static int top(void) { return chrome ? NAV_Y+EW_CONTROL_HEIGHT+1 : 0; }
 static int bottom(void) { return EW_SCREEN_HEIGHT - (chrome ? EW_SMALL_HEIGHT+2 : 0); }
 static int fg(void) { return inverse ? 1 : 0; }
 static int bg(void) { return inverse ? 0 : 1; }
-/* Positions were laid out for 640 columns; the colour display has 320. */
+/* Scale chrome positions only for the 320-column Tandy/PCjr display. */
 #define SW EW_SCREEN_WIDTH
 #define PW EW_PAGE_WIDTH
-static int hx(int v) { return ew_color ? v >> 1 : v; }
+static int hx(int v) { return SW == 320 ? v >> 1 : v; }
 /* Every drawn element has a role. A monochrome display resolves each role to
  * its foreground or background exactly as before; the colour display uses a
  * light theme, a dark theme (F2), and the page's own <body> colours. */
@@ -383,14 +383,14 @@ static void draw(void) {
     painted_focus = editing ? -1 : focused;
     ew_clip(SW, 0, EW_SCREEN_HEIGHT);
     if (ew_color && (dirty & (DRAW_PAGE | DRAW_SCROLL))) {
-      /* An 8-pixel bar: grey trough, dark thumb with a grip mark. */
-      ew_fillrect(PW + 1, t, 7, bot - t, pal[R_BAR]);
+      /* Grey trough and dark thumb, sized to the selected display. */
+      ew_fillrect(PW + 1, t, EW_BAR_WIDTH - 1, bot - t, pal[R_BAR]);
       ew_vline(PW, t, bot - t, pal[R_FRAME]);
       if (!download_edit && ew_doc.height > bot - t) {
         int h;
         thumb(&y, &h);
-        ew_fillrect(PW + 2, y, 5, h, pal[R_FRAME]);
-        ew_hline(PW + 3, y + h / 2, 3, pal[R_BAR]);
+        ew_fillrect(PW + 2, y, EW_BAR_WIDTH - 3, h, pal[R_FRAME]);
+        ew_hline(PW + 3, y + h / 2, EW_BAR_WIDTH - 5, pal[R_BAR]);
       }
     } else if (dirty & (DRAW_PAGE | DRAW_SCROLL)) {
       ew_fillrect(625, t + 1, 14, bot - t - 2, b);
@@ -1258,7 +1258,7 @@ int main(int argc, char **argv) {
     else if (!strcmp(argv[i], "-noimages"))
       load_images = 0;
     else if (!strcmp(argv[i], "-help") || !strcmp(argv[i], "--help")) {
-      puts("ELKSWeb " EW_VERSION "\nUsage: elksweb [-video cga|ega|vga|tandy|pcjr] [-invert] [-noimages] [http://URL or file]\n"
+      puts("ELKSWeb " EW_VERSION "\nUsage: elksweb [-video cga|ega|vga|vga-mono|tandy|pcjr] [-invert] [-noimages] [http://URL or file]\n"
            "F6/Ctrl-L address  Tab links  Enter activate  F5 reload\n"
            "F2 invert/dark  F3 hide bars  arrows/PgUp/PgDn scroll  Esc exit");
       return 0;

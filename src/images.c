@@ -11,7 +11,7 @@
 #include <errno.h>
 #define IMAGE_LIMIT 8
 /* One display row of packed colour pixels, plus the odd-start nibble. */
-#define EW_TANDY_LINE 161
+#define EW_TANDY_LINE 321
 static struct ew_gif images[IMAGE_LIMIT];
 static unsigned image_count;
 static unsigned natural_width[IMAGE_LIMIT], natural_height[IMAGE_LIMIT];
@@ -363,8 +363,8 @@ void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bot
           image->opacity+sy*((image->width+7)>>3) : NULL;
       unsigned at=screen_x&1, count=last_col-first_col;
       unsigned char pixel;
-      if (count>320) count=320;
-      if (cover) memset(opacity,0,40);
+      if (count>640) count=640;
+      if (cover) memset(opacity,0,80);
       if (image->width==r->n && !cover) {
         /* Natural width: whole bytes, moved once from far memory. An image
          * at the other nibble phase is the same bytes shifted by four bits. */
@@ -383,9 +383,9 @@ void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bot
         }
       } else {
         /* Scaled or transparent: bring the stored row near, then sample. */
-        unsigned char stored[160], covered[40];
-        for (col=0;col<image->stride && col<160;++col) stored[col]=source[col];
-        if (cover) for (col=0;col<(image->width+7)>>3 && col<40;++col) covered[col]=cover[col];
+        unsigned char stored[320], covered[80];
+        for (col=0;col<image->stride && col<320;++col) stored[col]=source[col];
+        if (cover) for (col=0;col<(image->width+7)>>3 && col<80;++col) covered[col]=cover[col];
         for (col=0;col<count;++col,++at) {
         pixel=stored[sx>>1];
         pixel=sx&1 ? pixel&15 : pixel>>4;

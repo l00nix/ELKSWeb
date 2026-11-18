@@ -121,7 +121,10 @@ unsigned ew_test_bios_video(unsigned ax,unsigned *bx) {
  return ax;
 }
 void ew_test_video_register(unsigned port,unsigned value) {
- assert(port_count<8);port_numbers[port_count]=port;port_values[port_count++]=value;
+ assert(port_count<8 || current_mode==18);if(port_count<8){port_numbers[port_count]=port;port_values[port_count]=value;}++port_count;
+}
+void ew_test_copy_video_row(unsigned to,unsigned from,unsigned count) {
+ memmove(test_planar+to,test_planar+from,count);
 }
 void ew_mouse_init(void) {++mice;}
 void ew_mouse_shutdown(void) {if(mice)--mice;}
@@ -196,7 +199,7 @@ int main(int argc,char **argv) {
  const char *which;assert(argc==2);which=argv[1];setup();
  if(!strcmp(which,"cga"))drawing("cga",200);
  else if(!strcmp(which,"ega")){adapter=2;drawing("ega",350);}
- else if(!strcmp(which,"vga"))drawing("vga",480);
+ else if(!strcmp(which,"vga"))drawing("vga-mono",480);
  else if(!strcmp(which,"reject")) {
   adapter=0;assert(ew_platform_init("vga")==-1);assert(strstr(ew_platform_error(),"unavailable"));untouched();
   adapter=1;assert(ew_platform_init("ega")==-1);untouched();
@@ -224,7 +227,7 @@ int main(int argc,char **argv) {
  else if(!strcmp(which,"pcjr_then_vga")) {
   adapter=0;reserved_segment=0x1800;assert(!ew_platform_init("pcjr"));
   assert(!keyboard_lock);ew_platform_shutdown();adapter=3;reserved_segment=0;
-  assert(!ew_platform_init("vga"));assert(!ew_color && ew_screen_width==640);
+  assert(!ew_platform_init("vga"));assert(ew_color && ew_screen_width==640);
   assert(keyboard_lock);ew_platform_shutdown();restored();
  }
  else if(!strcmp(which,"failure")) {
