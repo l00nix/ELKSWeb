@@ -23,7 +23,7 @@ class ScrollRows(unittest.TestCase):
         (root/'scroll.c').write_text(
             '#include "elks_platform.h"\n#include "elks_tandy.c"\nunsigned char video[65536];\n'
             'int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;\n'
-            'static unsigned video_bytes=16384;\n'+
+            'static int planar_color;\nstatic void video_register(unsigned p,unsigned v) {(void)p;(void)v;}\nstatic unsigned video_bytes=16384;\n'+
             '\n'.join(line for line in source.splitlines()
                       if line.startswith('static int clip_'))+'\n'+routines)
         subprocess.run(['cc','-shared','-fPIC','-O2','-Wall','-Wextra','-Werror',

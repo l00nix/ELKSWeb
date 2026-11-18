@@ -33,7 +33,7 @@ class TandyRaster(unittest.TestCase):
             '#include "elks_platform.h"\n#include "elks_tandy.c"\n'
             'unsigned char video[65536];\n'
             'int ew_screen_height=200,ew_pixel_aspect=1,ew_screen_width=320,ew_color=1;\n'
-            'static unsigned video_bytes=16384;\n' + statics + '\n' + routines +
+            'static int planar_color;\nstatic void video_register(unsigned p,unsigned v) {(void)p;(void)v;}\nstatic unsigned video_bytes=16384;\n' + statics + '\n' + routines +
             'void test_base(unsigned char *p){ew_tandy_video=p;}\n')
         subprocess.run(['cc', '-shared', '-fPIC', '-O2', '-Wall', '-Wextra', '-Werror',
                         '-I'+str(PLATFORM), str(root/'tandy.c'), '-o', str(root/'tandy.so')],
