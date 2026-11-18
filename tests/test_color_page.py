@@ -27,7 +27,7 @@ SHIM = (ROOT/'tests/qa_row1.h').read_text() + r'''
 struct ew_document ew_doc;
 int ew_screen_height=200,ew_pixel_aspect=1,ew_screen_width=320,ew_color=1;
 uint32_t ew_source_length;
-static unsigned char frame[320*200];
+static unsigned char frame[640*480];
 static int clip_right=312;
 unsigned bad_rows;
 void *ew_far_alloc(unsigned long n) { return malloc(n); }
@@ -47,11 +47,11 @@ void ew_pixel(int x,int y,int color) {(void)x;(void)y;(void)color; ++bad_rows;}
 /* The driver contract: x,y on screen, row starts at nibble x&1. */
 void ew_row4(int x,int y,const unsigned char *line,const unsigned char *mask,int width) {
   int i;
-  if (x<0 || y<0 || y>=200 || width<0 || x+width>320) { ++bad_rows; return; }
+  if (x<0 || y<0 || y>=ew_screen_height || width<0 || x+width>ew_screen_width) { ++bad_rows; return; }
   for (i=0;i<width && x+i<clip_right;++i) {
     int n=i+(x&1);
     if (mask && !(mask[i>>3]&(0x80>>(i&7)))) continue;
-    frame[y*320+x+i]=n&1 ? line[n>>1]&15 : line[n>>1]>>4;
+    frame[y*ew_screen_width+x+i]=n&1 ? line[n>>1]&15 : line[n>>1]>>4;
   }
 }
 int color_load(unsigned slot,const unsigned char *data,unsigned size) {
@@ -100,7 +100,7 @@ class ColorImages(unittest.TestCase):
                         str(root/'shim.c'), str(ROOT/'image/gif.c'), str(ROOT/'image/dimensions.c'),
                         '-o', str(root/'images.so')], check=True, capture_output=True)
         cls.lib = C.CDLL(str(root/'images.so'))
-        cls.lib.color_draw.restype = C.POINTER(C.c_ubyte*(320*200))
+        cls.lib.color_draw.restype = C.POINTER(C.c_ubyte*(640*480))
         cls.lib.color_total.restype = C.c_ulong
 
     @classmethod
@@ -129,6 +129,31 @@ class ColorImages(unittest.TestCase):
                     self.fail('(%d,%d) is %d, expected %d for %r' %
                               (px, py, frame[py*320+px], want, (width, height, x, y, top, bottom, right)))
         self.assertEqual(C.c_uint.in_dll(self.lib, 'bad_rows').value, 0)
+
+    def test_vga_full_width_scaling_transparency_and_lower_scanlines(self):
+        width = C.c_int.in_dll(self.lib, 'ew_screen_width')
+        height = C.c_int.in_dll(self.lib, 'ew_screen_height')
+        width.value, height.value = 640, 480
+        try:
+            for transparent in (False, True):
+                self.lib.ew_images_clear()
+                options = {'transparency': 0} if transparent else {}
+                self.assertEqual(self.load(indexed(608, 31, lambda x,y: (x+y)%16), **options), 0)
+                stored = self.stored()
+                self.assertEqual(len(stored[0]), 608)
+                for dx in (0, 1, -5):
+                    frame = self.lib.color_draw(624, 62, dx, 390, 400, 460, 624).contents
+                    for y in range(390,460):
+                        for x in range(640):
+                            want = 0xee
+                            if 400 <= y < 452 and max(0,dx) <= x < min(624,dx+624):
+                                value = stored[(y-390)*31//62][(x-dx)*608//624]
+                                if value >= 0: want = value
+                            self.assertEqual(frame[y*640+x], want, (dx,x,y))
+            self.assertEqual(C.c_uint.in_dll(self.lib, 'bad_rows').value, 0)
+        finally:
+            self.lib.ew_images_clear()
+            width.value, height.value = 320, 200
 
     def test_natural_size_draws_every_pixel_at_odd_and_even_positions(self):
         self.lib.ew_images_clear()

@@ -17,7 +17,7 @@ class MonoRow(unittest.TestCase):
             (root/'row.c').write_text('#include "elks_platform.h"\n#include "elks_tandy.c"\n'
                 'unsigned char video[65536];\n'
                 'int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;\n'
-                'static unsigned video_bytes=16384;\n'+
+                'static int planar_color;\nstatic void video_register(unsigned p,unsigned v) {(void)p;(void)v;}\nstatic unsigned video_bytes=16384;\n'+
                 '\n'.join(s for s in source.splitlines() if s.startswith('static int clip_'))+'\n'+routines)
             subprocess.run(['cc','-O2','-shared','-fPIC','-Wall','-Wextra','-Werror','-I'+str(PLATFORM),str(root/'row.c'),'-o',str(root/'row.so')],check=True)
             lib=C.CDLL(str(root/'row.so'));video=(C.c_ubyte*65536).in_dll(lib,'video')

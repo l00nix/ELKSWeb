@@ -1,4 +1,4 @@
-/* ELKSWeb CGA/EGA/VGA monochrome and Tandy/PCjr 16-colour framebuffer and
+/* ELKSWeb CGA/EGA monochrome and VGA/Tandy/PCjr 16-colour framebuffer and
  * console backend, using the native ia16 ABI.
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
@@ -36,11 +36,12 @@ static far_bytes video = FAR_BYTES(0xb800, 0);
 int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;
 /* Kernel-certified colour segment: 9800h Tandy, 1800h PCjr, 0 none. */
 static unsigned color_segment;
+static int planar_color;
 static unsigned video_bytes=16384;
 static int clip_right=640, clip_top, clip_bottom=480;
 static unsigned long escape_started;
 static int cursor_x = -1, cursor_y;
-static unsigned char cursor_saved[24][3];
+static unsigned char cursor_saved[4][24][3];
 static unsigned char cursor_hand;
 
 /* BIOS owns its register conventions; preserve C's segment/frame registers.
@@ -112,15 +113,14 @@ static int video_choose(const char *name, unsigned caps)
     char choice[16];
     int mode, n;
     if (!name) {
-        console_puts(caps&8 ? "ELKSWeb " EW_VERSION " display:\n" :
-             "ELKSWeb " EW_VERSION " display (monochrome):\n");
+        console_puts("ELKSWeb " EW_VERSION " display:\n");
         if (caps&1) console_puts(caps&8 ? "  1 CGA 640x200 monochrome\n" : "  1 CGA 640x200 (default)\n");
         if (caps&2) console_puts("  2 EGA 640x350\n");
-        if (caps&4) console_puts("  3 VGA 640x480\n");
+        if (caps&4) console_puts("  3 VGA 640x480 16 colors\n  5 VGA 640x480 monochrome\n");
         if (caps&8) console_puts(color_segment==0x1800 ? "  4 PCjr 320x200 16 colors (default)\n" :
                          "  4 Tandy 320x200 16 colors (default)\n");
         console_puts(caps&8 ? "Select a listed mode or Q to quit, then press Enter: " :
-              "Select 1/2/3 or Q to quit, then press Enter: ");
+              "Select 1/2/3/5 or Q to quit, then press Enter: ");
         /* ELKS canonical editing applies within one read, so read the whole
          * selection before entering raw mode. Reject and drain long lines. */
         n = read(console_fd,choice,sizeof(choice));
@@ -131,18 +131,19 @@ static int video_choose(const char *name, unsigned caps)
         } else if (n > 2) choice[0] = 0;
         if (choice[0]=='q' || choice[0]=='Q' || choice[0]==27) return 0;
         name=choice[0]=='\n' ? (caps&8 ? "tandy" : "cga") : choice[0]=='1' ? "cga" :
-             choice[0]=='2' ? "ega" : choice[0]=='3' ? "vga" : choice[0]=='4' ? "tandy" : "";
+             choice[0]=='2' ? "ega" : choice[0]=='3' ? "vga" : choice[0]=='4' ? "tandy" : choice[0]=='5' ? "vga-mono" : "";
     }
     mode=!strcmp(name,"cga") ? EW_VIDEO_CGA : !strcmp(name,"ega") ? EW_VIDEO_EGA :
-         !strcmp(name,"vga") ? EW_VIDEO_VGA :
+         (!strcmp(name,"vga") || !strcmp(name,"vga-mono")) ? EW_VIDEO_VGA :
          !strcmp(name,"tandy") || !strcmp(name,"pcjr") ? EW_VIDEO_TANDY : -1;
-    last_error="Unknown display: choose cga, ega, vga, tandy or pcjr";
+    last_error="Unknown display: choose cga, ega, vga, vga-mono, tandy or pcjr";
     if (mode<0) return -1;
     last_error=mode==EW_VIDEO_TANDY ?
         "Color needs the Tandy (tandyvideo=1) or PCjr kernel video reservation" :
         "Requested graphics mode is unavailable on this adapter";
     if (!(caps&(mode==EW_VIDEO_CGA ? 1 : mode==EW_VIDEO_EGA ? 2 :
                 mode==EW_VIDEO_VGA ? 4 : 8))) return -1;
+    planar_color=mode==EW_VIDEO_VGA && strcmp(name,"vga-mono");
     return mode;
 }
 
@@ -229,14 +230,14 @@ int ew_platform_init(const char *requested)
     bios_video(mode,0);
     last_error = "BIOS could not select the requested graphics mode";
     if ((bios_video(0x0f00,0) & 0x7f) != (unsigned)mode) goto failed;
-    ew_color=mode==EW_VIDEO_TANDY;
-    ew_screen_width=ew_color ? EW_TANDY_WIDTH : 640;
-    ew_screen_height=mode==EW_VIDEO_CGA || ew_color ? 200 : mode==EW_VIDEO_EGA ? 350 : 480;
+    ew_color=mode==EW_VIDEO_TANDY || planar_color;
+    ew_screen_width=mode==EW_VIDEO_TANDY ? EW_TANDY_WIDTH : 640;
+    ew_screen_height=mode==EW_VIDEO_CGA || mode==EW_VIDEO_TANDY ? 200 : mode==EW_VIDEO_EGA ? 350 : 480;
     ew_pixel_aspect=mode==EW_VIDEO_CGA ? 2 : 1;
-    if (ew_color) ew_tandy_video=FAR_BYTES(color_segment,0);
+    if (mode==EW_VIDEO_TANDY) ew_tandy_video=FAR_BYTES(color_segment,0);
     video_bytes=mode==EW_VIDEO_CGA ? 16384U : (unsigned)ew_screen_height*80U;
     video=FAR_BYTES(mode==EW_VIDEO_CGA ? 0xb800 : 0xa000,0);
-    if (mode!=EW_VIDEO_CGA && !ew_color) {
+    if (mode!=EW_VIDEO_CGA && mode!=EW_VIDEO_TANDY) {
         /* Write identical CPU bytes to all four planes; read plane 0. */
         video_register(0x3c4,0x0f02);
         video_register(0x3ce,0x0001);
@@ -329,22 +330,34 @@ static void fill_video(unsigned to, unsigned char value, unsigned count)
 #endif
 }
 
+/* Mode 12h uses RGBI bits in four independent 38400-byte planes.
+ * Read and write the same plane for every read/modify/write operation.
+ * All callers select explicitly; no register-state cache can become stale. */
+static void select_plane(unsigned plane)
+{
+    video_register(0x3c4, ((1U << plane) << 8) | 2);
+    video_register(0x3ce, (plane << 8) | 4);
+}
+
 /* Scroll the byte-aligned content viewport, preserving chrome and padding.
  * Positive delta moves pixels up. Row order protects overlapping source data,
  * including odd scanline shifts across the CGA interleaved banks. */
 void ew_scroll(int top, int bottom, int delta)
 {
     int y, end, step;
-    unsigned from, to, n;
+    unsigned from, to, n, plane;
     if (top < 0 || bottom > EW_SCREEN_HEIGHT || top >= bottom || !delta ||
         delta >= bottom - top || delta <= top - bottom) return;
-    if (ew_color) { ew_tandy_scroll(top, bottom, delta, EW_PAGE_WIDTH >> 1); return; }
-    if (delta > 0) { y=top; end=bottom-delta; step=1; }
-    else { y=bottom-1; end=top-delta-1; step=-1; }
-    for (; y!=end; y+=step) {
-        from=scan_offset(0,y+delta);
-        to=scan_offset(0,y);
-        for (n=0; n<78; ++n) video[to+n]=video[from+n];
+    if (ew_color && !planar_color) { ew_tandy_scroll(top, bottom, delta, EW_PAGE_WIDTH >> 1); return; }
+    for (plane=0; plane<(planar_color ? 4U : 1U); ++plane) {
+        if (planar_color) select_plane(plane);
+        if (delta > 0) { y=top; end=bottom-delta; step=1; }
+        else { y=bottom-1; end=top-delta-1; step=-1; }
+        for (; y!=end; y+=step) {
+            from=scan_offset(0,y+delta);
+            to=scan_offset(0,y);
+            for (n=0; n<(unsigned)(EW_PAGE_WIDTH >> 3); ++n) video[to+n]=video[from+n];
+        }
     }
 }
 
@@ -358,20 +371,32 @@ void ew_clip(int right, int top, int bottom)
 void ew_clear(int white)
 {
     unsigned char value = white ? 255 : 0;
-    if (ew_color) { ew_tandy_clear(white); return; }
+    unsigned plane;
+    if (ew_color && !planar_color) { ew_tandy_clear(white); return; }
+    if (planar_color) {
+        for (plane=0; plane<4; ++plane) {
+            select_plane(plane);
+            fill_video(0, white & (1U << plane) ? 255 : 0, video_bytes);
+        }
+        return;
+    }
     fill_video(0, value, video_bytes);
 }
 
 void ew_pixel(int x, int y, int white)
 {
-    unsigned offset;
+    unsigned offset, plane;
     unsigned char mask;
     if ((unsigned)x >= (unsigned)clip_right || y < clip_top ||
         y >= clip_bottom || (unsigned)y >= (unsigned)EW_SCREEN_HEIGHT) return;
-    if (ew_color) { ew_tandy_pixel(x, y, white); return; }
+    if (ew_color && !planar_color) { ew_tandy_pixel(x, y, white); return; }
     offset = scan_offset(x, y);
     mask = 0x80U >> (x & 7);
-    if (white) video[offset] |= mask; else video[offset] &= ~mask;
+    for (plane=0; plane<(planar_color ? 4U : 1U); ++plane) {
+        if (planar_color) select_plane(plane);
+        if (planar_color ? !!(white & (1U << plane)) : white) video[offset] |= mask;
+        else video[offset] &= ~mask;
+    }
 }
 
 void ew_row1(int x, int y, const unsigned char *line, const unsigned char *mask,
@@ -409,7 +434,7 @@ void ew_row1(int x, int y, const unsigned char *line, const unsigned char *mask,
     }
 }
 
-void ew_hline(int x, int y, int width, int white)
+static void mono_hline(int x, int y, int width, int white)
 {
     unsigned offset;
     unsigned char mask, value = white ? 255 : 0;
@@ -417,7 +442,6 @@ void ew_hline(int x, int y, int width, int white)
         y < 0 || y >= EW_SCREEN_HEIGHT || x >= clip_right) return;
     if (x < 0) { if (x <= -width) return; width += x; x = 0; }
     if (width > clip_right - x) width = clip_right - x;
-    if (ew_color) { ew_tandy_hline(x, y, width, white); return; }
     offset = scan_offset(x, y);
     if (x & 7) {
         int count = 8 - (x & 7);
@@ -440,13 +464,54 @@ void ew_hline(int x, int y, int width, int white)
     }
 }
 
+void ew_hline(int x, int y, int width, int color)
+{
+    unsigned plane;
+    if (ew_color && !planar_color) {
+        if (width<=0 || y<clip_top || y>=clip_bottom || y<0 ||
+            y>=EW_SCREEN_HEIGHT || x>=clip_right) return;
+        if (x<0) { if (x<=-width) return; width+=x; x=0; }
+        if (width>clip_right-x) width=clip_right-x;
+        ew_tandy_hline(x,y,width,color);
+        return;
+    }
+    for (plane=0; plane<(planar_color ? 4U : 1U); ++plane) {
+        if (planar_color) select_plane(plane);
+        mono_hline(x,y,width,planar_color ? !!(color & (1U << plane)) : color);
+    }
+}
+
 void ew_row4(int x, int y, const unsigned char *line, const unsigned char *mask,
              int width)
 {
     if (!ew_color || x < 0 || x >= clip_right || y < clip_top || y >= clip_bottom ||
         y < 0 || y >= EW_SCREEN_HEIGHT) return;
     if (width > clip_right - x) width = clip_right - x;
-    if (width > 0) ew_tandy_row(x, y, line, mask, (unsigned)width);
+    if (width > 0 && !planar_color) ew_tandy_row(x, y, line, mask, (unsigned)width);
+    else if (width > 0) {
+        unsigned plane, i, n, offset, take, phase;
+        unsigned char bits, cover, pixel;
+        for (plane=0; plane<4; ++plane) {
+            select_plane(plane);
+            for (i=0; i<(unsigned)width; i+=take) {
+                phase=(x+i)&7;
+                take=8-phase;
+                if (take>(unsigned)width-i) take=width-i;
+                bits=cover=0;
+                for (n=0; n<take; ++n) {
+                    unsigned at=i+n+(x&1);
+                    unsigned char bit=0x80U>>(phase+n);
+                    if (mask && !(mask[(i+n)>>3] & (0x80U>>((i+n)&7)))) continue;
+                    pixel=at&1 ? line[at>>1]&15 : line[at>>1]>>4;
+                    cover|=bit;
+                    if (pixel & (1U<<plane)) bits|=bit;
+                }
+                offset=scan_offset(x+i,y);
+                if (cover==255) video[offset]=bits;
+                else if (cover) video[offset]=(video[offset]&~cover)|bits;
+            }
+        }
+    }
 }
 
 void ew_vline(int x, int y, int height, int white)
@@ -478,13 +543,16 @@ void ew_rect(int x, int y, int width, int height, int white)
 void ew_cursor_hide(void)
 {
     int row, col;
-    unsigned offset;
+    unsigned offset, plane;
     if (cursor_x < 0) return;
-    if (ew_color) { ew_tandy_cursor_hide(); cursor_x = -1; return; }
-    for (row = 0; row < 24 && cursor_y + row < EW_SCREEN_HEIGHT; ++row) {
-        offset = scan_offset(cursor_x, cursor_y + row);
-        for (col = 0; col < 3 && (cursor_x >> 3) + col < 80; ++col)
-            video[offset + col] = cursor_saved[row][col];
+    if (ew_color && !planar_color) { ew_tandy_cursor_hide(); cursor_x = -1; return; }
+    for (plane=0; plane<(planar_color ? 4U : 1U); ++plane) {
+        if (planar_color) select_plane(plane);
+        for (row = 0; row < 24 && cursor_y + row < EW_SCREEN_HEIGHT; ++row) {
+            offset = scan_offset(cursor_x, cursor_y + row);
+            for (col = 0; col < 3 && (cursor_x >> 3) + col < 80; ++col)
+                video[offset + col] = cursor_saved[plane][row][col];
+        }
     }
     cursor_x = -1;
 }
@@ -496,20 +564,23 @@ void ew_cursor_show(int x, int y)
      * The raised index finger begins at the logical pointer position. */
 #include "cursor_bitmap.h"
     int row, col;
-    unsigned offset;
+    unsigned offset, plane;
     const unsigned char *bits, *line;
     if (x == cursor_x && y == cursor_y) return;
     ew_cursor_hide();
     if (x < 0 || x >= EW_SCREEN_WIDTH || y < 0 || y >= EW_SCREEN_HEIGHT) return;
     cursor_x = x; cursor_y = y;
-    if (ew_color) { ew_tandy_cursor_show(x, y, cursor_hand); return; }
+    if (ew_color && !planar_color) { ew_tandy_cursor_show(x, y, cursor_hand); return; }
     bits = &cursor_bitmap[cursor_hand][x & 7][0][0];
-    for (row = 0; row < 24 && y + row < EW_SCREEN_HEIGHT; ++row) {
-        offset = scan_offset(x, y + row);
-        line = bits + (row >> 1) * 6;
-        for (col = 0; col < 3 && (x >> 3) + col < 80; ++col) {
-            cursor_saved[row][col] = video[offset + col];
-            video[offset + col] = (cursor_saved[row][col] & ~line[col]) | line[col + 3];
+    for (plane=0; plane<(planar_color ? 4U : 1U); ++plane) {
+        if (planar_color) select_plane(plane);
+        for (row = 0; row < 24 && y + row < EW_SCREEN_HEIGHT; ++row) {
+            offset = scan_offset(x, y + row);
+            line = bits + (row >> 1) * 6;
+            for (col = 0; col < 3 && (x >> 3) + col < 80; ++col) {
+                cursor_saved[plane][row][col] = video[offset + col];
+                video[offset + col] = (cursor_saved[plane][row][col] & ~line[col]) | line[col + 3];
+            }
         }
     }
 }

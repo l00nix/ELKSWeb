@@ -3,12 +3,12 @@
 #define ELKSWEB_PLATFORM_H
 
 extern int ew_screen_width, ew_screen_height, ew_pixel_aspect;
-/* Nonzero in the Tandy/PCjr 320x200 mode: colours are then 0..15 (IBM RGBI
+/* Nonzero in VGA 640x480 or Tandy/PCjr 320x200 mode: colours are then 0..15 (IBM RGBI
  * order) everywhere a monochrome mode takes white=1/black=0. */
 extern int ew_color;
 #define EW_SCREEN_WIDTH ew_screen_width
 /* The page occupies everything left of the scroll bar. */
-#define EW_BAR_WIDTH (ew_color ? 8 : 16)
+#define EW_BAR_WIDTH (ew_screen_width == 320 ? 8 : 16)
 #define EW_PAGE_WIDTH (ew_screen_width - EW_BAR_WIDTH)
 #define EW_SCREEN_HEIGHT ew_screen_height
 #define EW_VIDEO_CGA 6
@@ -44,7 +44,7 @@ enum ew_key {
     EW_KEY_F6, EW_KEY_F7, EW_KEY_F8, EW_KEY_F9, EW_KEY_F10
 };
 
-/* A null mode asks on the text console; cga/ega/vga/tandy/pcjr bypass the prompt.
+/* A null mode asks on the text console; cga/ega/vga/vga-mono/tandy/pcjr bypass the prompt.
  * Returns0 on success,1 on user cancellation,-1 on failure. An unsupported
  * adapter is rejected before changing video mode; console settings are
  * restored on cancellation, failure and shutdown. Input uses /dev/tty1. */

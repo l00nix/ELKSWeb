@@ -27,6 +27,8 @@ class Cursor(unittest.TestCase):
 #include "elks_tandy.c"
 unsigned char video[65536]={1};
 int ew_screen_height=200,ew_pixel_aspect=2,ew_screen_width=640,ew_color;
+static int planar_color;
+static void video_register(unsigned p,unsigned v) {(void)p;(void)v;}
 static unsigned video_bytes=16384;
 '''
         (root / 'cursor.c').write_text(mock + globals_ + '\n' + routines)
