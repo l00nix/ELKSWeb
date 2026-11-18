@@ -52,7 +52,7 @@ static unsigned char cursor_hand;
 #define video_register ew_test_video_register
 #define color_probe ew_test_color_probe
 unsigned ew_test_color_probe(void);
-void ew_test_latch_copy(unsigned to, unsigned from, unsigned count);
+void ew_test_copy_video_row(unsigned to, unsigned from, unsigned count);
 #else
 /* Mode 09h borrows conventional RAM. Only the kernel knows whether that RAM
  * was reserved at boot, so a machine name or BIOS mode test is not enough. */
@@ -340,14 +340,15 @@ static void select_plane(unsigned plane)
     video_register(0x3ce, (plane << 8) | 4);
 }
 
-/* Each byte read loads all four VGA latches. Write mode 1 then stores
- * those latches together. Use byte string moves: a word read would replace
- * the first byte's latches before its destination write. DS/ES are preserved;
+/* Byte-string row copies serve monochrome CPU-data writes and VGA latch
+ * writes. Each VGA read loads all four latches; write mode 1 stores them
+ * together. Byte moves preserve each source byte's latches until its
+ * destination write; word reads would overwrite them. DS/ES are preserved;
  * each row fits one segment and source/destination rows do not overlap. */
-static void latch_copy(unsigned to, unsigned from, unsigned count)
+static void copy_video_row(unsigned to, unsigned from, unsigned count)
 {
 #ifdef EW_PLATFORM_TEST
-    ew_test_latch_copy(to, from, count);
+    ew_test_copy_video_row(to, from, count);
 #elif defined(__ia16__)
     unsigned segment = (unsigned)((unsigned long)video >> 16);
     to += (unsigned)(unsigned long)video;
@@ -367,7 +368,7 @@ static void latch_copy(unsigned to, unsigned from, unsigned count)
 void ew_scroll(int top, int bottom, int delta)
 {
     int y, end, step;
-    unsigned from, to, n;
+    unsigned from, to;
     if (top < 0 || bottom > EW_SCREEN_HEIGHT || top >= bottom || !delta ||
         delta >= bottom - top || delta <= top - bottom) return;
     if (ew_color && !planar_color) { ew_tandy_scroll(top, bottom, delta, EW_PAGE_WIDTH >> 1); return; }
@@ -380,8 +381,7 @@ void ew_scroll(int top, int bottom, int delta)
     for (; y!=end; y+=step) {
         from=scan_offset(0,y+delta);
         to=scan_offset(0,y);
-        if (planar_color) latch_copy(to, from, EW_PAGE_WIDTH >> 3);
-        else for (n=0; n<(unsigned)(EW_PAGE_WIDTH >> 3); ++n) video[to+n]=video[from+n];
+        copy_video_row(to, from, EW_PAGE_WIDTH >> 3);
     }
     if (planar_color) video_register(0x3ce, 0x0005); /* Restore CPU-data writes. */
 }

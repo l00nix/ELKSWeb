@@ -17,7 +17,7 @@ void ew_test_video_register(unsigned port,unsigned value) {
   memcpy(test_planar,planes[active],65536);
  }
 }
-void ew_test_latch_copy(unsigned to,unsigned from,unsigned count) {
+void ew_test_copy_video_row(unsigned to,unsigned from,unsigned count) {
  unsigned p;assert(write_mode==1 && write_mask==15);sync_plane();
  for(p=0;p<4;p++)memmove(planes[p]+to,planes[p]+from,count);
  memcpy(test_planar,planes[active],65536);

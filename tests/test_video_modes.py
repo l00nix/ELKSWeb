@@ -123,7 +123,7 @@ unsigned ew_test_bios_video(unsigned ax,unsigned *bx) {
 void ew_test_video_register(unsigned port,unsigned value) {
  assert(port_count<8 || current_mode==18);if(port_count<8){port_numbers[port_count]=port;port_values[port_count]=value;}++port_count;
 }
-void ew_test_latch_copy(unsigned to,unsigned from,unsigned count) {
+void ew_test_copy_video_row(unsigned to,unsigned from,unsigned count) {
  memmove(test_planar+to,test_planar+from,count);
 }
 void ew_mouse_init(void) {++mice;}
