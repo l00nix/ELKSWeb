@@ -13,7 +13,7 @@ Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/g
 
 **What’s new in 0.5:** [Tandy/PCjr 16-colour support, colour GIFs and HTML colours](#colour-support-in-05), contributed by [@astrobleem](https://github.com/astrobleem), plus faster monochrome startup, text and GIF rendering. The HP 200LX and PPC console, keyboard and serial-mouse fixes are retained. [Download 0.5](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5), read the [release notes](docs/RELEASE-0.5.md), or install from the [EPT mirror](http://ept.8088retro.com/) with `ept install elksweb` (general catalogue).
 
-The 0.3-dev1 candidate passed user hardware checks on the Amstrad PPC 512 with PicoMEM 2 and HP 200LX DS, including browsing, GIFs, keyboard navigation and serial-mouse movement/clicking. Address editing remains partially tested; the intermittent upstream console issue remains open. General IBM PC compatibility remains the goal.
+General IBM PC compatibility remains the goal.
 
 ## Live browsing on retro hardware
 
