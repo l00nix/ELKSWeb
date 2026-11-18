@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5 — release (2026-11-18)
+
+- Promote the 0.5dev2 code, including all dev1 colour features and dev2 startup/GIF performance improvements, to the general release.
+- Credit [@astrobleem](https://github.com/astrobleem) for Tandy/PCjr 16-colour rendering, colour GIFs, HTML colours, themes, keyboard handling and colour demo assets. Add his test photographs with permission.
+- Preserve the HP/PPC console, cooked-key, serial-mouse, inversion and image-memory diagnostics, including [@ghaerr’s feedback](https://github.com/ghaerr/elks/discussions/2185).
+- Update both welcome pages, release packages and EPT general-catalogue installation. No kernel changes, EMS/XMS storage or new 512 KB online-browsing claim.
+
 ## 0.5dev2 — performance development prerelease (2026-11-17)
 
 - Speed monochrome glyphs and natural-width GIF drawing with clipped packed-byte rows, preserving masking, inversion and CGA banking.

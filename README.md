@@ -5,13 +5,13 @@
   <img src="artwork/elksweb-wordmark-yellow-globe.png" alt="ELKSWeb logo" width="640">
 </p>
 
-# ELKSWeb 0.5dev2
+# ELKSWeb 0.5
 
 An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr/elks), written in C with the native ELKS IA16 toolchain and targeting 8088-compatible machines.
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Development candidate: 0.5dev2.** Integrates [@astrobleem's Tandy/PCjr colour contribution](https://github.com/l00nix/ELKSWeb/issues/2) on top of the HP/PPC fixes in 0.4. Adds faster monochrome GIF decoding, text/image drawing and screen fills. PPC measurements show first-frame startup improving from 6.21 to 4.97 seconds; HP and colour-hardware retesting remains open. See the [performance measurements](docs/PERFORMANCE-0.5.md). [Download 0.5dev2](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5dev2) and read the [candidate notes](docs/RELEASE-0.5dev2.md). The [0.4 experimental beta](https://github.com/l00nix/ELKSWeb/releases/tag/v0.4) remains the frozen baseline.
+**What’s new in 0.5:** [Tandy/PCjr 16-colour support, colour GIFs and HTML colours](#colour-support-in-05), contributed by [@astrobleem](https://github.com/astrobleem), plus faster monochrome startup, text and GIF rendering. The HP 200LX and PPC console, keyboard and serial-mouse fixes are retained. [Download 0.5](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5), read the [release notes](docs/RELEASE-0.5.md), or install from the [EPT mirror](http://ept.8088retro.com/) with `ept install elksweb` (general catalogue).
 
 The 0.3-dev1 candidate passed user hardware checks on the Amstrad PPC 512 with PicoMEM 2 and HP 200LX DS, including browsing, GIFs, keyboard navigation and serial-mouse movement/clicking. Address editing remains partially tested; the intermittent upstream console issue remains open. General IBM PC compatibility remains the goal.
 
@@ -72,6 +72,20 @@ Serial-mouse setup uses the same settings as the PPC 512, with the HP's cooked-k
 
 HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, forms, tables, lists, GIF images (monochrome, or 16 colours on the Tandy/PCjr display) and binary downloads. On the colour display, `<body bgcolor text link>` and `<font color>` are honoured with the nearest of the 16 fixed colours. PNG/JPEG dimensions are recognized for layout, but their pixels are not decoded. JPEG decoding is outside the current scope and is likely to remain outside future releases, similar to MicroWeb. Features have differing levels of test coverage; see [tests](tests/README.md).
 
+## Colour support in 0.5
+
+Thanks to **[@astrobleem (Chad Doebelin)](https://github.com/astrobleem)** for contributing native **Tandy/PCjr 320×200, 16-colour support**, colour GIF decoding, HTML text/background/link colours, light and dark themes, narrower layout and keyboard handling. He also contributed `color.htm`, the colour logo and the colour chart. His original commits are preserved in the project history; see [issue #2](https://github.com/l00nix/ELKSWeb/issues/2).
+
+The photos below show his **0.5dev2** test of the colour welcome page and palette on a Tandy CM-5 monitor. Photographs by astrobleem, reproduced with [his permission](https://github.com/l00nix/ELKSWeb/issues/2#issuecomment-6982680891).
+
+<img src="docs/screenshots/colour/astrobleem-colour-welcome.png" alt="Astrobleem’s photograph of ELKSWeb 0.5dev2 showing the colour welcome page on a Tandy CM-5 monitor" width="800">
+
+<img src="docs/screenshots/colour/astrobleem-colour-demo.png" alt="Astrobleem’s photograph of ELKSWeb 0.5dev2 showing all sixteen colours and keyboard help" width="400">
+
+Colour mode needs the matching [Tandy kernel](https://github.com/astrobleem/elks/blob/tandy-video-v0.9.2/Documentation/tandy-video.txt) with `tandyvideo=1`, or the matched [PCjr kernel and bootloader](https://github.com/astrobleem/elks/blob/pcjr-video-v0.9.2/Documentation/pcjr-video.txt). The browser package does not install these system components. CGA, EGA and VGA output remains monochrome, including the PPC and HP 200LX configurations.
+
+0.5 also retains the dev2 speed improvements: controlled PPC measurements reduced first-frame startup from **6.21 to 4.97 seconds**, and earlier GIF/text changes reduced complete welcome loading from **60.44 to 46.59 seconds**. These use instrumented candidates and fixed content, rather than final-release live Internet timings; see [methods and results](docs/PERFORMANCE-0.5.md).
+
 ## Limitations
 
 - HTTP only; no native TLS, CSS or JavaScript. `HTTP_PROXY` is supported, but HTTPS conversion requires an external service and is not provided here.
@@ -83,7 +97,7 @@ HTTP and local HTML/text files, relative links, redirects, anchors, scrolling, f
 
 ## Future enhancements
 
-0.5dev preserves the monochrome modes while adding experimental Tandy/PCjr colour. Follow-up work includes:
+0.5 preserves the monochrome modes while adding experimental Tandy/PCjr colour. Follow-up work includes:
 
 - **EGA/VGA colour GIF rendering**, while retaining monochrome CGA and HP 200LX output. This requires palette-aware image storage, video-plane drawing, scrolling and cursor handling, plus work to fit the 64 KB code-segment limit. The blue logo artwork is prepared for this future work; it is not the installed 0.1 logo.
 - **Faster page loading and rendering**, with measured reductions in CPU, disk and memory use.
@@ -121,13 +135,13 @@ When the kernel confirms a Tandy or PCjr video reservation the selector also lis
 
 Keyboard notes for these machines: the PCjr kernel reads keys through the BIOS, so ELKSWeb uses translated keys there automatically. On a Tandy the original 90-key keyboard's arrow and Home scan codes are accepted as well as the XT ones; set `ELKSWEB_KEYBOARD=xt` to disable that, or `ELKSWEB_KEYBOARD=tandy` to force it.
 
-This colour mode is experimental. The supplied implementation was exercised in 86Box Tandy 1000 HX and DOSBox-X PCjr emulation, not on physical hardware or in MartyPC. The additional Tandy 90-key mappings have not been verified against hardware or a reference. PMR mouse support is not implemented; reported mouse checks used an emulated Microsoft serial mouse. PCjr memory pressure can reduce image quality or leave placeholders. Emulator results do not certify the Tandy EX or a particular physical network adapter configuration.
+This colour mode is experimental. The supplied implementation was exercised in 86Box Tandy 1000 HX and DOSBox-X PCjr emulation. Astrobleem subsequently reported a working 0.5dev2 test and supplied the photos above; this is not a complete qualification of every Tandy/PCjr configuration. The additional Tandy 90-key mappings have not been verified against hardware or a reference. PMR mouse support is not implemented; reported mouse checks used an emulated Microsoft serial mouse. PCjr memory pressure can reduce image quality or leave placeholders. Emulator results do not certify the Tandy EX or a particular physical network adapter configuration.
 
 `--version` prints the version without entering graphics. `-noimages` disables image loading. It does not establish a performance target. EMS and XMS options are not implemented.
 
 ## How to install a release
 
-Download the [0.5dev2 test runtime package](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5dev2) on a modern computer, verify its checksum, and transfer it to an existing ELKS installation. Install `bin/elksweb` as `/bin/elksweb` and the files in `lib/elksweb/` under `/lib/elksweb/`. The executable is always named `elksweb`. Keep the included notices and corresponding-source archive available.
+Download the [0.5 runtime package](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5) on a modern computer, verify its checksum, and transfer it to an existing ELKS installation. Install `bin/elksweb` as `/bin/elksweb` and the files in `lib/elksweb/` under `/lib/elksweb/`. The executable is always named `elksweb`. Keep the included notices and corresponding-source archive available.
 
 ```sh
 chmod 755 /bin/elksweb
@@ -135,7 +149,7 @@ elksweb --version
 elksweb
 ```
 
-The version reports **0.5dev2**. Choose a detected display mode to open the local welcome page. Configure native ELKS networking and run `net start` before using HTTP. Enter a hostname such as `68knews.8088retro.com` in the address field or an explicit URL.
+The version reports **0.5**. Choose a detected display mode to open the local welcome page. Configure native ELKS networking and run `net start` before using HTTP. Enter a hostname such as `68knews.8088retro.com` in the address field or an explicit URL.
 
 See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse settings and upgrades. The runtime is a standalone application package, not an ELKS disk image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
 
@@ -165,8 +179,8 @@ These projects are credited for their respective work; no endorsement or affilia
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). See the [0.4 release notes](docs/RELEASE-0.4.md) for the released baseline and [0.5 integration status](docs/DEVELOPMENT-0.5.md) for this branch. Historical checks remain in STATUS; broader compatibility and performance feedback are welcome. Testers and feedback are welcome.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). See the [0.5 release notes](docs/RELEASE-0.5.md) and [development integration record](docs/DEVELOPMENT-0.5.md). Historical checks remain in STATUS; broader compatibility and performance feedback are welcome. Testers and feedback are welcome.
 
 ## License and attribution
 
-Original browser code is GPL-2.0-or-later; see [COPYING](COPYING). Independently sourced font data retains its [X.Org public-domain notice](font/COPYING) and [provenance](font/provenance.json). No MicroWeb source, font, image assets or executable is embedded in ELKSWeb. The separately attributed FrogFind test fixture retains its GPL-3.0 license and provenance under [tests/fixtures/frogfind](tests/fixtures/frogfind/README.txt). Website content visible in screenshots belongs to its respective providers.
+Original browser code is GPL-2.0-or-later; see [COPYING](COPYING). Independently sourced font data retains its [X.Org public-domain notice](font/COPYING) and [provenance](font/provenance.json). No MicroWeb source, font, image assets or executable is embedded in ELKSWeb. The separately attributed FrogFind test fixture retains its GPL-3.0 license and provenance under [tests/fixtures/frogfind](tests/fixtures/frogfind/README.txt). Website content visible in screenshots belongs to its respective providers. Astrobleem’s photographs are reproduced with permission; see [photo provenance](docs/screenshots/colour/README.md).
