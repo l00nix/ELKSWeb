@@ -52,6 +52,7 @@ static unsigned char cursor_hand;
 #define video_register ew_test_video_register
 #define color_probe ew_test_color_probe
 unsigned ew_test_color_probe(void);
+void ew_test_latch_copy(unsigned to, unsigned from, unsigned count);
 #else
 /* Mode 09h borrows conventional RAM. Only the kernel knows whether that RAM
  * was reserved at boot, so a machine name or BIOS mode test is not enough. */
@@ -339,26 +340,50 @@ static void select_plane(unsigned plane)
     video_register(0x3ce, (plane << 8) | 4);
 }
 
+/* Each byte read loads all four VGA latches. Write mode 1 then stores
+ * those latches together. Use byte string moves: a word read would replace
+ * the first byte's latches before its destination write. DS/ES are preserved;
+ * each row fits one segment and source/destination rows do not overlap. */
+static void latch_copy(unsigned to, unsigned from, unsigned count)
+{
+#ifdef EW_PLATFORM_TEST
+    ew_test_latch_copy(to, from, count);
+#elif defined(__ia16__)
+    unsigned segment = (unsigned)((unsigned long)video >> 16);
+    to += (unsigned)(unsigned long)video;
+    from += (unsigned)(unsigned long)video;
+    __asm__ volatile (
+        "push %%ds\n\tpush %%es\n\tmov %%ax, %%ds\n\tmov %%ax, %%es\n\t"
+        "cld\n\trep movsb\n\tpop %%es\n\tpop %%ds"
+        : "+S"(from), "+D"(to), "+c"(count) : "a"(segment) : "cc", "memory");
+#else
+    while (count--) video[to++] = video[from++];
+#endif
+}
+
 /* Scroll the byte-aligned content viewport, preserving chrome and padding.
  * Positive delta moves pixels up. Row order protects overlapping source data,
  * including odd scanline shifts across the CGA interleaved banks. */
 void ew_scroll(int top, int bottom, int delta)
 {
     int y, end, step;
-    unsigned from, to, n, plane;
+    unsigned from, to, n;
     if (top < 0 || bottom > EW_SCREEN_HEIGHT || top >= bottom || !delta ||
         delta >= bottom - top || delta <= top - bottom) return;
     if (ew_color && !planar_color) { ew_tandy_scroll(top, bottom, delta, EW_PAGE_WIDTH >> 1); return; }
-    for (plane=0; plane<(planar_color ? 4U : 1U); ++plane) {
-        if (planar_color) select_plane(plane);
-        if (delta > 0) { y=top; end=bottom-delta; step=1; }
-        else { y=bottom-1; end=top-delta-1; step=-1; }
-        for (; y!=end; y+=step) {
-            from=scan_offset(0,y+delta);
-            to=scan_offset(0,y);
-            for (n=0; n<(unsigned)(EW_PAGE_WIDTH >> 3); ++n) video[to+n]=video[from+n];
-        }
+    if (planar_color) {
+        video_register(0x3c4, 0x0f02); /* Enable writes to all planes. */
+        video_register(0x3ce, 0x0105); /* Write mode 1, read mode 0. */
     }
+    if (delta > 0) { y=top; end=bottom-delta; step=1; }
+    else { y=bottom-1; end=top-delta-1; step=-1; }
+    for (; y!=end; y+=step) {
+        from=scan_offset(0,y+delta);
+        to=scan_offset(0,y);
+        if (planar_color) latch_copy(to, from, EW_PAGE_WIDTH >> 3);
+        else for (n=0; n<(unsigned)(EW_PAGE_WIDTH >> 3); ++n) video[to+n]=video[from+n];
+    }
+    if (planar_color) video_register(0x3ce, 0x0005); /* Restore CPU-data writes. */
 }
 
 void ew_clip(int right, int top, int bottom)
