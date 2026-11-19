@@ -61,7 +61,7 @@ class ImageAlt(unittest.TestCase):
         shim.write_text(SHIM.replace('ROW1_SHIM',str(ROOT/'tests/qa_row1.h')).replace('CORE_SHIM',str(ROOT/'tests/qa_core_shim.c')))
         lib=path/'alt.dylib'
         sources=[ROOT/'src'/(name+'.c') for name in ('html','url','net','memory','images')]
-        sources += [ROOT/'font/font.c',ROOT/'font/body_font.c',ROOT/'image/gif.c',ROOT/'image/dimensions.c',shim]
+        sources += [ROOT/'font/font.c',ROOT/'font/body_font.c',ROOT/'image/gif.c',ROOT/'image/store.c',ROOT/'platform/elks_store.c',ROOT/'image/dimensions.c',shim]
         subprocess.run(['cc','-shared','-fPIC','-g','-DEW_HOST_TEST','-DEW_QA_REAL_IMAGES',
                         '-I'+str(ROOT/'src'),'-I'+str(ROOT/'platform'),*map(str,sources),'-o',str(lib)],
                        check=True,capture_output=True)

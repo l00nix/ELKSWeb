@@ -24,7 +24,7 @@ BAYER = [0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5]
 class Gif(C.Structure):
     _fields_ = [('width', C.c_uint), ('height', C.c_uint), ('stride', C.c_uint),
                 ('pixels', C.POINTER(C.c_ubyte)), ('opacity', C.POINTER(C.c_ubyte)),
-                ('depth', C.c_ubyte)]
+                ('depth', C.c_ubyte),('masked', C.c_ubyte),('store', C.c_void_p),('opacity_at', C.c_ulong)]
 
 
 def gif(image, **options):
@@ -114,11 +114,11 @@ class ColorGif(unittest.TestCase):
         cls.tmp = tempfile.TemporaryDirectory(prefix='ew-gif-color-')
         root = pathlib.Path(cls.tmp.name)
         subprocess.run(['cc', '-shared', '-fPIC', '-O1', '-Wall', '-Wextra', '-Werror',
-                        str(ROOT/'image/gif.c'), '-o', str(root/'gif.so')], check=True, capture_output=True)
+                        str(ROOT/'image/gif.c'),str(ROOT/'image/store.c'),str(ROOT/'platform/elks_store.c'), '-o', str(root/'gif.so')], check=True, capture_output=True)
         cls.lib = C.CDLL(str(root/'gif.so'))
         (root/'driver.c').write_text(DRIVER.replace('GIF_SOURCE', str(ROOT/'image/gif.c')))
         subprocess.run(['cc', '-g', '-O1', '-fsanitize=address,undefined', '-fno-sanitize-recover=all',
-                        '-Wall', '-Wextra', str(root/'driver.c'), '-o', str(root/'driver')],
+                        '-Wall', '-Wextra', str(root/'driver.c'), str(ROOT/'image/store.c'), str(ROOT/'platform/elks_store.c'), '-o', str(root/'driver')],
                        check=True, capture_output=True)
         cls.root = root
 

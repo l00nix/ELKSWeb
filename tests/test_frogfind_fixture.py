@@ -46,11 +46,11 @@ class FrogFixture(unittest.TestCase):
         try: from PIL import Image
         except ImportError: self.skipTest('Optional first-frame pixel oracle requires Pillow')
         class Gif(C.Structure):
-            _fields_=[('width',C.c_uint),('height',C.c_uint),('stride',C.c_uint),('pixels',C.POINTER(C.c_ubyte)),('opacity',C.POINTER(C.c_ubyte)),('depth',C.c_ubyte)]
+            _fields_=[('width',C.c_uint),('height',C.c_uint),('stride',C.c_uint),('pixels',C.POINTER(C.c_ubyte)),('opacity',C.POINTER(C.c_ubyte)),('depth',C.c_ubyte),('masked',C.c_ubyte),('store',C.c_void_p),('opacity_at',C.c_ulong)]
         raw=(FROG/'frog.gif').read_bytes()
         with tempfile.TemporaryDirectory(prefix='frog-gif-qa-') as tmp:
             library=Path(tmp)/'gif.so'
-            subprocess.run(['cc','-shared','-fPIC','-Wall','-Wextra','-Werror',str(FIXTURES.parents[1]/'image/gif.c'),'-o',str(library)],check=True,capture_output=True)
+            subprocess.run(['cc','-shared','-fPIC','-Wall','-Wextra','-Werror',str(FIXTURES.parents[1]/'image/gif.c'),str(FIXTURES.parents[1]/'image/store.c'),str(FIXTURES.parents[1]/'platform/elks_store.c'),'-o',str(library)],check=True,capture_output=True)
             lib=C.CDLL(str(library));lib.ew_gif_decode.argtypes=[C.c_void_p,C.c_uint,C.POINTER(Gif)];lib.ew_gif_free.argtypes=[C.POINTER(Gif)]
             image=Gif();self.assertEqual(lib.ew_gif_decode(raw,len(raw),C.byref(image)),0)
             try:

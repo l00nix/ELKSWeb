@@ -64,7 +64,14 @@ unsigned color_height(unsigned slot) { return images[slot].height; }
 unsigned long color_total(void) { return color_bytes; }
 int color_stored(unsigned slot,unsigned x,unsigned y) {
   struct ew_gif *g=&images[slot];
-  unsigned char b=g->pixels[y*g->stride+x/2];
+  unsigned char b, mask;
+  if (g->store) {
+    if (ew_store_read(g->store, (unsigned long)y*g->stride+x/2, &b, 1)) return -2;
+    if (g->masked) {
+      if (ew_store_read(g->store, g->opacity_at+(unsigned long)y*((g->width+7)/8)+x/8, &mask, 1)) return -2;
+      if (!(mask&(0x80>>(x&7)))) return -1;
+    }
+  } else b=g->pixels[y*g->stride+x/2];
   if (g->opacity && !(g->opacity[y*((g->width+7)/8)+x/8]&(0x80>>(x&7)))) return -1;
   return x&1 ? b&15 : b>>4;
 }
@@ -97,7 +104,7 @@ class ColorImages(unittest.TestCase):
         (root/'shim.c').write_text(SHIM.replace('IMAGES_SOURCE', str(ROOT/'src/images.c')))
         subprocess.run(['cc', '-std=c99', '-Wall', '-Wextra', '-Werror', '-shared', '-fPIC', '-O1',
                         '-DEW_HOST_TEST', '-I'+str(ROOT/'src'), '-I'+str(ROOT/'platform'),
-                        str(root/'shim.c'), str(ROOT/'image/gif.c'), str(ROOT/'image/dimensions.c'),
+                        str(root/'shim.c'), str(ROOT/'image/gif.c'),str(ROOT/'image/store.c'),str(ROOT/'platform/elks_store.c'), str(ROOT/'image/dimensions.c'),
                         '-o', str(root/'images.so')], check=True, capture_output=True)
         cls.lib = C.CDLL(str(root/'images.so'))
         cls.lib.color_draw.restype = C.POINTER(C.c_ubyte*(320*200))

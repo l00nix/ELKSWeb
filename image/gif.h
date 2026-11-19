@@ -11,6 +11,7 @@
 #define EW_GIF_MAX_WIDTH 640
 #define EW_GIF_MAX_HEIGHT 480
 
+struct ew_store;
 struct ew_gif {
     unsigned width, height, stride;
     /* depth 0/1: one bit per pixel, MSB first; 1 is white.
@@ -19,6 +20,9 @@ struct ew_gif {
     unsigned char EW_GIF_FAR *pixels;
     unsigned char EW_GIF_FAR *opacity; /* NULL means all opaque; 1 is opaque. */
     unsigned char depth;
+    unsigned char masked;
+    struct ew_store *store; /* owned opaque colour storage, or NULL */
+    unsigned long opacity_at;
 };
 
 enum ew_gif_result {
@@ -51,6 +55,11 @@ int ew_gif_decode_aspect(const unsigned char EW_GIF_FAR *data, unsigned length,
  * dither of the two closest fixed RGBI colours. */
 int ew_gif_decode_color(const unsigned char EW_GIF_FAR *data, unsigned length,
                         struct ew_gif *out, unsigned max_width, unsigned max_height);
+/* Stream colour rows into the common storage API. It uses native EMS if
+ * available, otherwise bounded conventional far banks. Compressed input
+ * and LZW workspace still require conventional memory. */
+int ew_gif_decode_color_store(const unsigned char EW_GIF_FAR *data, unsigned length,
+                              struct ew_gif *out, unsigned max_width, unsigned max_height);
 void ew_gif_free(struct ew_gif *image);
 /* Each destination, when non-NULL, needs image->stride bytes (at most 80).
  * Returns stride, or zero for a row outside the image.

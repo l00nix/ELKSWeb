@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 #include "gif.h"
+#include "store.h"
+/* Decoder is synchronous, as before. Only one decoded row is staged. */
+static unsigned char store_pixels[320], store_mask[80];
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -41,6 +44,9 @@ struct reader {
     unsigned canvas_width, canvas_height, opacity_stride;
     unsigned row_offset, opacity_offset, dest_row;
     unsigned char color, identity, skip_row;
+    /* Row store: the row being assembled, and whether it is still unsent. */
+    int store;
+    unsigned char row_open, fill, store_failed;
 };
 
 static int byte_read(struct reader *r)
@@ -175,9 +181,22 @@ static void quantize(struct color_workspace EW_GIF_FAR *w, unsigned index)
 
 /* Rows arrive whole but, when interlaced, out of order. A reduced image keeps
  * the first source row and column that maps to each stored row and column. */
+/* Send the finished row to the store. Each stored row is produced exactly
+ * once, by the first source row that maps to it, so nothing is read back. */
+static void store_row(struct reader *r, const struct ew_gif *out)
+{
+    if (!r->row_open) return;
+    r->row_open = 0;
+    if (ew_store_write(out->store, (unsigned long)r->row_offset, store_pixels, out->stride) ||
+        (out->masked && ew_store_write(out->store, out->opacity_at + r->opacity_offset,
+                                        store_mask, r->opacity_stride)))
+        r->store_failed = 1;
+}
+
 static void color_row(struct reader *r, const struct ew_gif *out, unsigned y)
 {
     unsigned long scaled;
+    if (r->store) store_row(r, out);
     r->skip_row = 1;
     if (y >= r->canvas_height) return;
     if (out->height == r->canvas_height) r->dest_row = y;
@@ -190,6 +209,12 @@ static void color_row(struct reader *r, const struct ew_gif *out, unsigned y)
     r->skip_row = 0;
     r->row_offset = r->dest_row * out->stride;
     r->opacity_offset = r->dest_row * r->opacity_stride;
+    if (r->store) {
+        /* Columns the frame does not cover keep the background. */
+        memset(store_pixels, r->fill, out->stride);
+        memset(store_mask, 0, r->opacity_stride);
+        r->row_open = 1;
+    }
 }
 
 static void emit_color(struct reader *r, struct ew_gif *out,
@@ -204,6 +229,13 @@ static void emit_color(struct reader *r, struct ew_gif *out,
     color = w->pair[index];
     color = bayer4[((r->dest_row & 3) << 2) | (x & 3)] < w->mix[index] ?
             color & 15 : color >> 4;
+    if (r->store) {
+        unsigned char *row = store_pixels + (x >> 1);
+        if (x & 1) *row = (*row & 0xf0) | color;
+        else *row = (*row & 0x0f) | (unsigned char)(color << 4);
+        if (opaque) store_mask[x >> 3] |= 0x80U >> (x & 7);
+        return;
+    }
     offset = r->row_offset + (x >> 1);
     if (x & 1) out->pixels[offset] = (out->pixels[offset] & 0xf0) | color;
     else out->pixels[offset] = (out->pixels[offset] & 0x0f) | (unsigned char)(color << 4);
@@ -333,24 +365,35 @@ int ew_gif_decode(const unsigned char EW_GIF_FAR *data, unsigned length, struct 
 
 static int decode(const unsigned char EW_GIF_FAR *data, unsigned length,
                   struct ew_gif *out, unsigned pixel_aspect,
-                  unsigned max_width, unsigned max_height);
+                  unsigned max_width, unsigned max_height,
+                  int store);
 
 int ew_gif_decode_aspect(const unsigned char EW_GIF_FAR *data, unsigned length,
                          struct ew_gif *out, unsigned pixel_aspect)
 {
-    return decode(data, length, out, pixel_aspect, 0, 0);
+    return decode(data, length, out, pixel_aspect, 0, 0, 0);
 }
 
 int ew_gif_decode_color(const unsigned char EW_GIF_FAR *data, unsigned length,
                         struct ew_gif *out, unsigned max_width, unsigned max_height)
 {
     if (!max_width || !max_height || max_width > EW_GIF_MAX_WIDTH) return EW_GIF_BAD_DATA;
-    return decode(data, length, out, 1, max_width, max_height);
+    return decode(data, length, out, 1, max_width, max_height, 0);
+}
+
+int ew_gif_decode_color_store(const unsigned char EW_GIF_FAR *data, unsigned length,
+                              struct ew_gif *out, unsigned max_width,
+                              unsigned max_height)
+{
+    if (!max_width || !max_height || max_width > EW_GIF_MAX_WIDTH)
+        return EW_GIF_BAD_DATA;
+    return decode(data, length, out, 1, max_width, max_height, 1);
 }
 
 static int decode(const unsigned char EW_GIF_FAR *data, unsigned length,
                   struct ew_gif *out, unsigned pixel_aspect,
-                  unsigned max_width, unsigned max_height)
+                  unsigned max_width, unsigned max_height,
+                  int store)
 {
     struct reader r;
     struct lzw_workspace EW_GIF_FAR *workspace = 0;
@@ -378,6 +421,8 @@ static int decode(const unsigned char EW_GIF_FAR *data, unsigned length,
     r.data = data; r.length = length; r.pos = 13;
     r.block_left = r.bit_count = 0; r.bit_buffer = 0;
     r.color = max_width != 0;
+    r.store = 0;
+    r.row_open = r.store_failed = 0;
     if (r.color) {
         r.canvas_width = canvas_width; r.canvas_height = canvas_height;
         if (out->width > max_width) {
@@ -394,6 +439,12 @@ static int decode(const unsigned char EW_GIF_FAR *data, unsigned length,
         out->stride = (out->width + 1) >> 1;
         r.opacity_stride = (out->width + 7) >> 3;
         r.identity = out->width == canvas_width;
+        /* Row offsets and the conventional pixel allocation are 16-bit.
+         * Do this multiplication wide even on the host, before allocating
+         * either kind of image, so a large caller limit cannot wrap them. */
+        if ((unsigned long)out->stride * out->height > 65535UL) {
+            result = EW_GIF_TOO_LARGE; goto failed;
+        }
         color_workspace = far_alloc(sizeof(*color_workspace));
         if (!color_workspace) { result = EW_GIF_NO_MEMORY; goto failed; }
         workspace = &color_workspace->lzw;
@@ -439,6 +490,38 @@ static int decode(const unsigned char EW_GIF_FAR *data, unsigned length,
         }
         if (!colors || transparent >= (int)colors) { result = EW_GIF_BAD_DATA; goto failed; }
         bytes = out->stride * out->height;
+        /* Colour: the uncovered canvas is the nearest solid background. */
+        x = r.color && (data[10] & 0x80) && data[11] < colors ?
+            nearest(color_workspace->rgb[data[11]][0], color_workspace->rgb[data[11]][1],
+                    color_workspace->rgb[data[11]][2]) * 17U : r.color ? 255 : 0;
+        if (store) {
+            out->opacity_at = bytes;
+            out->masked = transparent >= 0;
+            out->store = ew_store_alloc((unsigned long)bytes + (out->masked ?
+                (unsigned long)r.opacity_stride * out->height : 0));
+            if (!out->store) { result = EW_GIF_NO_MEMORY; goto failed; }
+            r.store = store;
+            r.fill = (unsigned char)x;
+            /* Rows a partial frame never reaches must still be defined. */
+            if (left || top || width != canvas_width || height != canvas_height) {
+                memset(store_pixels, r.fill, out->stride);
+                memset(store_mask, 0, r.opacity_stride);
+                for (y = 0; y < out->height; ++y)
+                    if (ew_store_write(out->store, (unsigned long)y * out->stride,
+                                     store_pixels, out->stride) ||
+                        (out->masked && ew_store_write(out->store, out->opacity_at +
+                            (unsigned long)y * r.opacity_stride, store_mask, r.opacity_stride))) {
+                        result = EW_GIF_NO_MEMORY; goto failed;
+                    }
+            }
+            result = decode_pixels(&r, out, left, top, width, height, flags & 0x40,
+                                   gray, colors, transparent, workspace);
+            store_row(&r, out);
+            if (result == EW_GIF_OK && r.store_failed) result = EW_GIF_NO_MEMORY;
+            if (result != EW_GIF_OK) goto failed;
+            far_free(workspace);
+            return EW_GIF_OK;
+        }
         out->pixels = far_alloc(bytes);
         if (transparent >= 0)
             out->opacity = far_alloc(r.color ? r.opacity_stride * out->height : bytes);
@@ -446,10 +529,6 @@ static int decode(const unsigned char EW_GIF_FAR *data, unsigned length,
         if (!out->pixels || !workspace || (transparent >= 0 && !out->opacity)) {
             result = EW_GIF_NO_MEMORY; goto failed;
         }
-        /* Colour: the uncovered canvas is the nearest solid background. */
-        x = r.color && (data[10] & 0x80) && data[11] < colors ?
-            nearest(color_workspace->rgb[data[11]][0], color_workspace->rgb[data[11]][1],
-                    color_workspace->rgb[data[11]][2]) * 17U : r.color ? 255 : 0;
         for (i = 0; i < bytes; ++i) out->pixels[i] = (unsigned char)x;
         if (out->opacity)
             for (i = r.color ? r.opacity_stride * out->height : bytes; i--;)
@@ -476,6 +555,7 @@ failed:
 void ew_gif_free(struct ew_gif *image)
 {
     if (!image) return;
+    ew_store_free(image->store);
     if (image->pixels) far_free(image->pixels);
     if (image->opacity) far_free(image->opacity);
     memset(image, 0, sizeof(*image));
