@@ -18,7 +18,7 @@ class BrowserFailures(unittest.TestCase):
         sources=[ROOT/'src'/(s+'.c') for s in ('html','url','net','images')]
         sources += [ROOT/'font/font.c',ROOT/'font/body_font.c',ROOT/'image/dimensions.c',
                     ROOT/'tests/qa_browser_failure_shim.c',ROOT/'tests/qa_fault_memory.c',
-                    ROOT/'tests/qa_fault_gif.c']
+                    ROOT/'tests/qa_fault_gif.c',ROOT/'image/store.c',ROOT/'platform/elks_store.c']
         cls.library=folder/'browser.so'
         subprocess.run(['cc','-shared','-fPIC','-g','-DEW_HOST_TEST','-DEW_QA_REAL_IMAGES',
                         '-I'+str(ROOT/'src'),'-I'+str(ROOT/'platform'),

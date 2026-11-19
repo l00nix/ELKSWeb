@@ -136,7 +136,7 @@ class PixelScaling(unittest.TestCase):
         library=source.with_suffix('.dylib')
         subprocess.run(['cc','-std=c99','-Wall','-Wextra','-Werror','-shared','-fPIC','-O1',
                         '-DEW_HOST_TEST','-I'+str(ROOT/'src'),'-I'+str(ROOT/'platform'),
-                        str(source),str(ROOT/'image/gif.c'),str(ROOT/'image/dimensions.c'),
+                        str(source),str(ROOT/'image/gif.c'),str(ROOT/'image/store.c'),str(ROOT/'platform/elks_store.c'),str(ROOT/'image/dimensions.c'),
                         '-o',str(library)],check=True,capture_output=True)
         cls.lib=C.CDLL(str(library))
         cls.lib.pixels_prepare.argtypes=[C.c_uint,C.c_uint,C.c_int]

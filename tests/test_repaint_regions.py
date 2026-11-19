@@ -23,7 +23,7 @@ class RepaintRegions(unittest.TestCase):
         cls.tmp=tempfile.TemporaryDirectory(prefix='ew-repaint-')
         so=pathlib.Path(cls.tmp.name)/'repaint.so'
         sources=[ROOT/'src'/(s+'.c') for s in ('html','url','net','images','memory')]
-        sources += [ROOT/'font/font.c',ROOT/'font/body_font.c',ROOT/'image/gif.c',
+        sources += [ROOT/'font/font.c',ROOT/'font/body_font.c',ROOT/'image/gif.c',ROOT/'image/store.c',ROOT/'platform/elks_store.c',
                     ROOT/'image/dimensions.c',ROOT/'tests/qa_repaint_shim.c']
         result=subprocess.run(['cc','-shared','-fPIC','-g','-Wall','-Wextra',
             '-DEW_HOST_TEST','-I'+str(ROOT/'src'),'-I'+str(ROOT/'platform'),

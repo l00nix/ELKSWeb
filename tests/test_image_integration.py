@@ -7,7 +7,7 @@ class Images(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.temp=tempfile.TemporaryDirectory(prefix='elksweb-image-qa-');library=pathlib.Path(cls.temp.name)/'core.dylib'
-        sources=[SRC/(s+'.c') for s in ('html','url','net','images')]+[HERE.parent/'font/font.c',HERE.parent/'font/body_font.c',HERE.parent/'image/gif.c',HERE.parent/'image/dimensions.c',HERE/'qa_image_shim.c',HERE/'qa_fault_memory.c']
+        sources=[SRC/(s+'.c') for s in ('html','url','net','images')]+[HERE.parent/'font/font.c',HERE.parent/'font/body_font.c',HERE.parent/'image/gif.c',HERE.parent/'image/store.c',HERE.parent/'platform/elks_store.c',HERE.parent/'image/dimensions.c',HERE/'qa_image_shim.c',HERE/'qa_fault_memory.c']
         subprocess.run(['cc','-shared','-fPIC','-g','-DEW_HOST_TEST','-DEW_QA_REAL_IMAGES','-I'+str(SRC),'-I'+str(HERE.parent/'font'),'-I'+str(HERE.parent/'platform'),*[str(s) for s in sources],'-o',str(library)],check=True,capture_output=True)
         cls.lib=C.CDLL(str(library));cls.lib.ew_fetch_document.argtypes=[C.c_char_p,C.c_void_p,C.c_void_p,C.c_uint,C.c_char_p];cls.lib.ew_fetch_document.restype=C.c_int32
         cls.lib.ew_parse_source.argtypes=[C.c_char_p];cls.lib.ew_parse.argtypes=[C.c_char_p,C.c_char_p];cls.lib.ew_source_byte.argtypes=[C.c_uint32];cls.lib.ew_source_byte.restype=C.c_ubyte
