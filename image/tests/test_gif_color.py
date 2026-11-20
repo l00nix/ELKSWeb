@@ -46,7 +46,8 @@ DRIVER = r'''
 #include <stdlib.h>
 #include <string.h>
 static long budget = -1, live;
-static void *test_malloc(size_t n) { if (budget == 0) return 0; if (budget > 0) --budget; ++live; return malloc(n); }
+static size_t max_block;
+static void *test_malloc(size_t n) { if (budget == 0 || (max_block && n > max_block)) return 0; if (budget > 0) --budget; ++live; return malloc(n); }
 static void test_free(void *p) { if (p) --live; free(p); }
 #define malloc test_malloc
 #define free test_free
@@ -84,6 +85,10 @@ int main(int argc, char **argv) {
     length = fread(data, 1, sizeof(data), file); fclose(file);
     attempt(data, length, 304, 200, EW_GIF_OK);
     attempt(data, length, 1, 1, EW_GIF_OK);
+    /* Plenty of total RAM, but no contiguous block above 8 KiB. */
+    max_block = 8192;
+    attempt(data, length, 152, 100, EW_GIF_OK);
+    max_block = 0;
     attempt(data, length, 640, 480, EW_GIF_OK);
     for (i = 0; i < length; ++i) attempt(data, i, 152, 100, -1);          /* every truncation */
     for (n = 0; n < 4000; ++n) {                                          /* seeded mutations */
@@ -92,7 +97,7 @@ int main(int argc, char **argv) {
         while (flips--) work[next() % length] ^= (unsigned char)(1 << (next() & 7));
         attempt(work, length, 16 + next() % 300, 8 + next() % 200, -1);
     }
-    for (budget = 0; budget < 4; ++budget) {                              /* nth allocation fails */
+    for (budget = 0; budget < 8; ++budget) {                              /* nth allocation fails */
         long before = budget;
         struct ew_gif image;
         int result = ew_gif_decode_color(data, length, &image, 304, 200);
@@ -100,7 +105,7 @@ int main(int argc, char **argv) {
         if (result != EW_GIF_NO_MEMORY || image.pixels || live) abort();
         budget = before;
     }
-    if (budget == 0 || budget == 4) abort();    /* at least one failure was exercised, then success */
+    if (budget == 0 || budget == 8) abort();    /* at least one failure was exercised, then success */
     budget = -1;
     puts("ok");
     return 0;
