@@ -5,6 +5,7 @@
 #include <string.h>
 #include <nano-X.h>
 #include "elks_platform.h"
+#include "../font/font.h"
 
 int ew_screen_width, ew_screen_height, ew_pixel_aspect = 1, ew_color;
 static GR_WINDOW_ID window;
@@ -243,13 +244,72 @@ void ew_row4(int x, int y, const unsigned char *line, const unsigned char *mask,
     if (last >= 0) ew_hline(x+start, y, width-start, last);
 }
 
+/* Keep using ordinary clipped Nano-X drawing. On PC-98 the ELKS server's
+ * overlapping screen copies are not safe for downward scrolling, and its
+ * small clip implementation cannot report hidden blit sources. Batch text
+ * instead of copying potentially stale pixels from the visible screen. */
+#define TEXT_WORDS 4
+#define TEXT_WIDTH (TEXT_WORDS * 16)
+static GR_BITMAP text_bits[EW_LARGE_HEIGHT * TEXT_WORDS];
+static int text_batch, text_x, text_y, text_width, text_rows, text_ink;
+
+static void flush_text(void)
+{
+    int stride, row, word;
+    if (!text_width) return;
+    stride = (text_width + 15) >> 4;
+    if (stride != TEXT_WORDS)
+        for (row = 1; row < text_rows; ++row)
+            for (word = 0; word < stride; ++word)
+                text_bits[row * stride + word] = text_bits[row * TEXT_WORDS + word];
+    foreground(text_ink);
+    GrBitmap(window, gc, text_x, text_y, text_width, text_rows, text_bits);
+    text_width = 0;
+}
+
+void ew_nanox_text_begin(void) { text_batch = 1; }
+void ew_nanox_text_end(void)
+{
+    flush_text();
+    text_batch = 0;
+}
+
+static void append_glyph(int x, int y, int width, int rows, int ink,
+                         const GR_BITMAP *bitmap)
+{
+    int offset, shift, row;
+    GR_BITMAP *out;
+    if (text_width && (y != text_y || rows != text_rows || ink != text_ink ||
+                       x < text_x || x + width - text_x > TEXT_WIDTH))
+        flush_text();
+    if (!text_width) {
+        text_x = x;
+        text_y = y;
+        text_rows = rows;
+        text_ink = ink;
+        memset(text_bits, 0, rows * TEXT_WORDS * sizeof(*text_bits));
+    }
+    offset = x - text_x;
+    if (offset + width > text_width) text_width = offset + width;
+    out = text_bits + (offset >> 4);
+    shift = offset & 15;
+    for (row = 0; row < rows; ++row, out += TEXT_WORDS) {
+        unsigned bits = bitmap[row];
+        *out |= bits >> shift;
+        if (shift + width > 16) out[1] |= bits << (16 - shift);
+    }
+}
+
 void ew_nanox_glyph(int x, int y, const unsigned char *glyph, int advance,
                     int height, int fg, int bg, int bold, int italic)
 {
-    GR_BITMAP bitmap[14];
+    GR_BITMAP bitmap[EW_LARGE_HEIGHT];
     int row, skip, rows = height;
     int width = advance + (italic ? (height-1)/6 : 0);
-    if (bg >= 0) ew_fillrect(x, y, advance, height, bg);
+    if (bg >= 0) {
+        flush_text();
+        ew_fillrect(x, y, advance, height, bg);
+    }
     if (y < clip_top) {
         skip = clip_top-y;
         if (skip >= height) return;
@@ -266,7 +326,16 @@ void ew_nanox_glyph(int x, int y, const unsigned char *glyph, int advance,
     }
     if (x < 0) { width += x; x = 0; }
     if (width > clip_right-x) width = clip_right-x;
-    foreground(fg);
-    GrBitmap(window, gc, x, y+skip, width, rows-skip, bitmap);
+    if (text_batch && bg < 0) {
+        /* The final right clip can cut a bitmap word. Do not let the unused
+         * bits become visible when ORed into the larger bitmap. */
+        if (width < advance + (italic ? (height-1)/6 : 0))
+            for (row = 0; row < rows-skip; ++row)
+                bitmap[row] &= 0xffffU << (16-width);
+        append_glyph(x, y+skip, width, rows-skip, fg, bitmap);
+    } else {
+        foreground(fg);
+        GrBitmap(window, gc, x, y+skip, width, rows-skip, bitmap);
+    }
 }
 #endif

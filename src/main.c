@@ -206,6 +206,9 @@ static void textn(int x, int y, const char EW_FAR *s, unsigned n, int f, int b,
   int small = !!(st & EW_SMALL), height = small ? EW_SMALL_HEIGHT : large ? EW_LARGE_HEIGHT : EW_BODY_HEIGHT;
   if (b >= 0)
     ew_fillrect(x, y, text_width(s, n, st), height, b);
+#ifdef ELKSWEB_NANOX
+  ew_nanox_text_begin();
+#endif
   for (i = 0; i < n; i++) {
     if (st & EW_MONO)
       ew_mono_draw(x, y, (unsigned char)s[i], f, -1, bold,
@@ -224,6 +227,9 @@ static void textn(int x, int y, const char EW_FAR *s, unsigned n, int f, int b,
          : large ? ew_font_char_width((unsigned char)s[i], bold)
                  : ew_body_char_width((unsigned char)s[i], bold);
   }
+#ifdef ELKSWEB_NANOX
+  ew_nanox_text_end();
+#endif
   if (st & EW_UNDERLINE)
     ew_hline(start, y + height - 1, x - start, f);
 }
