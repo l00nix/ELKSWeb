@@ -54,6 +54,9 @@ void ew_platform_shutdown(void);
 int ew_getkey(void);                 /* Nonblocking; zero means no key. */
 #ifdef ELKSWEB_NANOX
 int ew_platform_exposed(void);
+/* Batch only consecutive transparent glyphs with no intervening drawing. */
+void ew_nanox_text_begin(void);
+void ew_nanox_text_end(void);
 void ew_nanox_glyph(int x, int y, const unsigned char *glyph, int advance,
                     int height, int fg, int bg, int bold, int italic);
 #endif
