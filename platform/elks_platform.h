@@ -3,7 +3,7 @@
 #define ELKSWEB_PLATFORM_H
 
 extern int ew_screen_width, ew_screen_height, ew_pixel_aspect;
-/* Nonzero in the Tandy/PCjr 320x200 mode: colours are then 0..15 (IBM RGBI
+/* Nonzero in colour modes: colours are then 0..15 (IBM RGBI
  * order) everywhere a monochrome mode takes white=1/black=0. */
 extern int ew_color;
 #define EW_SCREEN_WIDTH ew_screen_width
@@ -52,6 +52,11 @@ int ew_platform_init(const char *mode);
 const char *ew_platform_error(void);
 void ew_platform_shutdown(void);
 int ew_getkey(void);                 /* Nonblocking; zero means no key. */
+#ifdef ELKSWEB_NANOX
+int ew_platform_exposed(void);
+void ew_nanox_glyph(int x, int y, const unsigned char *glyph, int advance,
+                    int height, int fg, int bg, int bold, int italic);
+#endif
 
 #define EW_MOUSE_LEFT 1
 #define EW_MOUSE_RIGHT 2

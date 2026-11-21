@@ -11,13 +11,19 @@ int ew_face_width(const char EW_FONT_FAR *s,unsigned n,int bold,int size) {
 }
 void ew_face_draw(int x,int y,unsigned char c,int fg,int bg,int bold,int italic,int size) {
     unsigned index=size ? (size==2 ? 3 : 1)+!!bold : 0;
-    int row,col,height=ew_face_height(size),advance=ew_face_advance(bold,size),skew;
+    int height=ew_face_height(size),advance=ew_face_advance(bold,size);
     const unsigned char *glyph;
+#ifndef ELKSWEB_NANOX
+    int row,col,skew;
     unsigned char bits;
+#endif
     if(x < -10 || x>=EW_SCREEN_WIDTH || y<=-height || y>=EW_SCREEN_HEIGHT)return;
     if(c==160)c=' ';
     if(c<32 || c>126)c='?';
     glyph=faces[index]+(c-32)*height;
+#ifdef ELKSWEB_NANOX
+    ew_nanox_glyph(x,y,glyph,advance,height,fg,bg,size==0 && bold,italic);
+#else
     if(bg>=0)ew_fillrect(x,y,advance,height,bg);
     for(row=0;row<height;row++) {
         bits=glyph[row]; if(size==0 && bold)bits|=bits>>1;
@@ -29,6 +35,7 @@ void ew_face_draw(int x,int y,unsigned char c,int fg,int bg,int bold,int italic,
         for(col=0;col<advance;col++,bits<<=1)
             if(bits&128)ew_pixel(x+col+skew,y+row,fg);
     }
+#endif
 }
 int ew_font_char_width(unsigned char c,int bold) { (void)c;return ew_face_advance(bold,2); }
 int ew_font_height(int bold) { (void)bold;return EW_LARGE_HEIGHT; }

@@ -272,11 +272,14 @@ static void draw(void) {
   }
   if ((dirty & (DRAW_PAGE | DRAW_SCROLL)) == DRAW_SCROLL) {
     if (!delta) dirty &= ~DRAW_SCROLL;
+#ifndef ELKSWEB_NANOX
     else if (select_open < 0 && !download_edit && delta < bot-t && delta > t-bot) {
       ew_scroll(t, bot, delta);
       if (delta > 0) paint_top = bot-delta;
       else paint_bottom = t-delta;
-    } else dirty |= DRAW_PAGE;
+    }
+#endif
+    else dirty |= DRAW_PAGE;
   }
   if ((dirty & DRAW_IMAGES) && (delta || hscroll != painted_hscroll))
     dirty |= DRAW_PAGE;
@@ -1258,7 +1261,12 @@ int main(int argc, char **argv) {
     else if (!strcmp(argv[i], "-noimages"))
       load_images = 0;
     else if (!strcmp(argv[i], "-help") || !strcmp(argv[i], "--help")) {
-      puts("ELKSWeb " EW_VERSION "\nUsage: elksweb [-video cga|ega|vga|tandy|pcjr] [-invert] [-noimages] [http://URL or file]\n"
+      puts("ELKSWeb " EW_VERSION "\n"
+#ifdef ELKSWEB_NANOX
+           "Usage: elksnx [-video nanox|pc98] [-invert] [-noimages] [http://URL or file]\n"
+#else
+           "Usage: elksweb [-video cga|ega|vga|tandy|pcjr] [-invert] [-noimages] [http://URL or file]\n"
+#endif
            "F6/Ctrl-L address  Tab links  Enter activate  F5 reload\n"
            "F2 invert/dark  F3 hide bars  arrows/PgUp/PgDn scroll  Esc exit");
       return 0;
@@ -1287,6 +1295,9 @@ int main(int argc, char **argv) {
   draw();
   load(url, NULL, 1);
   while (!stopping) {
+#ifdef ELKSWEB_NANOX
+    if (ew_platform_exposed()) dirty |= DRAW_FRAME;
+#endif
     if (dirty)
       draw();
     k = ew_getkey();
