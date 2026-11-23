@@ -1258,7 +1258,7 @@ int main(int argc, char **argv) {
   struct ew_mouse_event event;
   for (i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "--version")) {
-      puts("ELKSWeb " EW_VERSION);
+      puts(EW_APP_NAME " " EW_VERSION);
       return 0;
     } else if (!strcmp(argv[i], "-invert"))
       inverse = 1;
@@ -1267,7 +1267,7 @@ int main(int argc, char **argv) {
     else if (!strcmp(argv[i], "-noimages"))
       load_images = 0;
     else if (!strcmp(argv[i], "-help") || !strcmp(argv[i], "--help")) {
-      puts("ELKSWeb " EW_VERSION "\n"
+      puts(EW_APP_NAME " " EW_VERSION "\n"
 #ifdef ELKSWEB_NANOX
            "Usage: elksnx [-video nanox|pc98] [-invert] [-noimages] [http://URL or file]\n"
 #else
@@ -1277,17 +1277,21 @@ int main(int argc, char **argv) {
            "F2 invert/dark  F3 hide bars  arrows/PgUp/PgDn scroll  Esc exit");
       return 0;
     } else if (argv[i][0] == '-') {
-      fprintf(stderr, "ELKSWeb: unknown option %s\n", argv[i]);
+      fprintf(stderr, EW_APP_NAME ": unknown option %s\n", argv[i]);
       return 2;
     } else
       url = argv[i];
   }
   k=ew_platform_init(video_mode);
   if (k) {
-    if (k<0) fprintf(stderr, "ELKSWeb: %s\n", ew_platform_error());
+    if (k<0) fprintf(stderr, EW_APP_NAME ": %s\n", ew_platform_error());
     ew_source_free();
     return k<0 ? 1 : 0;
   }
+#ifdef ELKSWEB_NANOX
+  if (!url && access("/lib/webnx/welcome.htm", R_OK) == 0)
+    url = "/lib/webnx/welcome.htm";
+#endif
   /* The colour display has its own start page when it is installed. */
   if (!url && ew_color && access("/lib/elksweb/color.htm", R_OK) == 0)
     url = "/lib/elksweb/color.htm";
@@ -1296,7 +1300,7 @@ int main(int argc, char **argv) {
         ? "/lib/elksweb/welcome.htm" : "/root/welcome.htm";
   signal(SIGINT, stopped);
   signal(SIGTERM, stopped);
-  strcpy(ew_doc.title, "ELKSWeb " EW_VERSION);
+  strcpy(ew_doc.title, EW_APP_NAME " " EW_VERSION);
   strcpy(status, "Starting...");
   draw();
   load(url, NULL, 1);
@@ -1322,6 +1326,6 @@ int main(int argc, char **argv) {
   for (i = 0; i < hcount; i++) ew_far_free(history[i]);
   ew_platform_shutdown();
   ew_source_free();
-  printf("ELKSWeb closed.\n");
+  printf(EW_APP_NAME " closed.\n");
   return 0;
 }

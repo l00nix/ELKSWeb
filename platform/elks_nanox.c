@@ -6,6 +6,7 @@
 #include <nano-X.h>
 #include "elks_platform.h"
 #include "../font/font.h"
+#include "../src/version.h"
 
 int ew_screen_width, ew_screen_height, ew_pixel_aspect = 1, ew_color;
 static GR_WINDOW_ID window;
@@ -51,7 +52,7 @@ int ew_platform_init(const char *mode)
     ew_screen_height = info.rows;
     ew_color = info.ncolors >= 16;
     ew_clip(ew_screen_width, 0, ew_screen_height);
-    window = GrNewWindowEx(GR_WM_PROPS_NODECORATE, "ELKSWeb", GR_ROOT_WINDOW_ID,
+    window = GrNewWindowEx(GR_WM_PROPS_NODECORATE, EW_APP_NAME, GR_ROOT_WINDOW_ID,
                            0, 0, ew_screen_width, ew_screen_height, GR_RGB(0,0,0));
     gc = GrNewGC();
     if (!window || !gc) {

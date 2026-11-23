@@ -153,7 +153,7 @@ The version reports **0.5**. Choose a detected display mode to open the local we
 
 See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse settings and upgrades. The runtime is a standalone application package, not an ELKS disk image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
 
-### NEC PC-98: Nano-X build
+### NEC PC-98: WebNX (Nano-X build)
 
 On an ELKS PC-98 installation with Nano-X installed, the separate
 `elksnx` executable uses Nano-X's 640×400 colour display instead of the
@@ -164,9 +164,9 @@ source as the installed Nano-X server:
 TOPDIR=/path/to/built-elks MWDIR=/path/to/microwindows sh toolchain/build-nanox.sh
 ```
 
-Copy `build/nanox/elksnx` to `/bin/elksnx` and install the usual
-`/lib/elksweb/` page assets. From the ELKS graphics console run
-`elksnx /lib/elksweb/color.htm`. The bundled Nano-X client can start an
+Copy `build/nanox/elksnx` to `/bin/elksnx` and install the contents of
+`build/nanox/lib/webnx/` under `/lib/webnx/`. From the ELKS graphics console
+run `elksnx` to open the WebNX welcome page. The bundled Nano-X client can start an
 installed `/bin/nano-x` when its server is not already running.
 
 The existing `elksweb` binary is unchanged; it still selects the native IBM

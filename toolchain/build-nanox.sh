@@ -34,4 +34,8 @@ for source in src/*.c image/*.c font/*.c platform/elks_nanox.c \
 done
 "$cc" -march=i8086 -mtune=i8086 -mcmodel=medium -melks-libc \
     -Wl,--gc-sections,-Map,"$out/elksweb.map" "$@" -o "$out/elksnx"
-printf '%s\n' "ELKSWeb Nano-X runtime built: $out/elksnx"
+assets="$out/lib/webnx"
+mkdir -p "$assets"
+cp share/nanox/welcome.htm share/nanox/color.htm share/nanox/webnx.gif "$assets/"
+cp share/chart.gif "$assets/"
+printf '%s\n' "WebNX runtime built: $out/elksnx"
