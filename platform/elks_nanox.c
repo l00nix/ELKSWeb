@@ -67,7 +67,7 @@ int ew_platform_init(const char *mode)
     lifecycle_log("GrOpen begin", -1);
     if (GrOpen() < 0) {
         lifecycle_log("GrOpen failed", errno);
-        error = "cannot connect to Nano-X; start /bin/nano-x separately and check ps/free memory";
+        error = "cannot connect to Nano-X; check server availability and free memory";
         return -1;
     }
     lifecycle_log("connected", -1);

@@ -1,3 +1,12 @@
+# Shared-assets nightly 0.6dev2
+
+Both builders still produce `elksweb`; the optional Nano-X builder produces
+`webnx` (0.6dev2-nx1). Stage the files from `share/` under `/lib/web/`, including
+`share/nanox/welcome.htm` as `welcnx.htm`. The EPT nightly packages executables
+separately and gives all shared assets to `webdata`. See
+[Nano-X and EPT migration](NANOX-EXPERIMENT.md). The 0.6dev1 packager mentioned
+below is historical and does not generate this new split-package layout.
+
 # Building 0.6dev1
 
 This candidate combines PR #3 and the independent colour GIF workspace fix on

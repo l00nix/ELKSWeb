@@ -5,13 +5,13 @@
   <img src="artwork/elksweb-wordmark-yellow-globe.png" alt="ELKSWeb logo" width="640">
 </p>
 
-# ELKSWeb 0.6dev1
+# ELKSWeb 0.6dev2
 
 An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr/elks), written in C with the native ELKS IA16 toolchain and targeting 8088-compatible machines.
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Development candidate 0.6dev1:** VGA 16-colour rendering, faster CGA/EGA/VGA scrolling and improved colour GIF workspace allocation, contributed by [@astrobleem](https://github.com/astrobleem). The HP/PPC input and console fixes and 0.5 performance work are retained. See [candidate notes and comparison setup](docs/RELEASE-0.6dev1.md). [0.5 remains the general release](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5), including the EPT general catalogue; this branch does not publish or replace it.
+**Development candidate 0.6dev2:** Shared sample files now live under `/lib/web/`, owned by the EPT `webdata` package. Nano-X uses standard `GrOpen`/`GrClose` startup and exit. Install `webdata` before the nightly browser; see the [installation and migration guide](docs/NANOX-EXPERIMENT.md#install-and-migrate). This retains the 0.6dev1 changes: VGA 16-colour rendering, faster CGA/EGA/VGA scrolling and improved colour GIF workspace allocation, contributed by [@astrobleem](https://github.com/astrobleem). The HP/PPC input and console fixes and 0.5 performance work are retained. See [candidate notes and comparison setup](docs/RELEASE-0.6dev1.md). [0.5 remains the general release](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5), including the EPT general catalogue; this branch does not publish or replace it.
 
 General IBM PC compatibility remains the goal.
 
@@ -153,32 +153,28 @@ The version reports **0.5**. Choose a detected display mode to open the local we
 
 See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse settings and upgrades. The runtime is a standalone application package, not an ELKS disk image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
 
-### NEC PC-98: Nano-X build
+### Optional Nano-X browser
 
-This branch's separate Nano-X experiment identifies as **0.6dev1-nx2**.
-See the [experiment and diagnostic guide](docs/NANOX-EXPERIMENT.md) for minimal
-startup, lifecycle logs, migration from `elksnx`, validation scope and remaining hardware questions.
-
-On an ELKS PC-98 installation with Nano-X installed, the separate
-`webnx` executable uses Nano-X's 640×400 colour display instead of the
-IBM PC video, mouse and keyboard code. Build it with the same Microwindows
-source as the installed Nano-X server:
+The separate `webnx` experiment identifies as **0.6dev2-nx1**. It draws through
+a compatible Nano-X server for the installed hardware, including PC-98 or
+IBM-compatible servers, instead of accessing native video/input devices.
 
 ```sh
-TOPDIR=/path/to/built-elks MWDIR=/path/to/microwindows sh toolchain/build-nanox.sh
+ept install -n webdata
+ept install -n webnx
+webnx
 ```
 
-Copy `build/nanox/webnx` to `/bin/webnx` and install the experiment
-assets under `/lib/webnx/`. From the ELKS graphics console run
-`webnx /lib/webnx/welcome.htm`. The bundled Nano-X client can start an
-installed `/bin/nano-x` when its server is not already running. Prefer a working
-Nano-X session; on PC-98, test `nxstart` and its Close menu for session shutdown.
-Closing the browser does not itself guarantee that the text console is restored.
-The EPT nightly package is `webnx`: `ept install -n webnx`.
+Configure EPT with `REPO=http://ept.8088retro.com/local`. The direct nightly is
+installed with `ept install -n elksweb` after webdata and remains named elksweb.
+Shared pages, images and guides live in `/lib/web/`; the Nano-X default page is
+`welcnx.htm`, alongside native `welcome.htm` and `color.htm`.
 
-The existing `elksweb` binary is unchanged; it still selects the native IBM
-PC/Tandy/PCjr drivers. On PC-98, keyboard and mouse are supplied by the
-Nano-X server and scrolling redraws the page.
+The Nano-X client uses `GrOpen` and `GrClose`; its library can start an installed
+server, and the server controls session shutdown and text-console restoration.
+No special browser start/stop sequence is required. The server is not included.
+See the [guide](docs/NANOX-EXPERIMENT.md) for building, migration from earlier
+packages, optional diagnostics and remaining physical PC-98 questions.
 
 ## Low-memory systems
 

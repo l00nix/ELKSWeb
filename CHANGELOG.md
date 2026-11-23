@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.6dev2 / 0.6dev2-nx1 — shared-assets nightly
+
+- Follow ghaerr's PR #5 guidance: both clients use `/lib/web/`, with `welcnx.htm`
+  for Nano-X and shared GIF files. EPT `webdata` owns these files; executables
+  are separately owned by `elksweb` and `webnx`. Install webdata explicitly.
+- Keep `elksweb` named as before and preserve manually installed legacy default
+  pages as fallback. Missing defaults print an installation hint before graphics.
+- Document ordinary Nano-X GrOpen/GrClose operation. Manual server starts are
+  diagnostic only; session shutdown and console restoration belong to Nano-X.
+- Record astrobleem's emulator-only `clear` overlay workaround and tyama501's
+  physical PC-98 reports without claiming the overlay/exit issue is fixed.
+- No new EMS/kernel support or changes to HP/PPC input fixes.
+
+
 ## 0.6dev1 — development candidate (2026-11-22)
 
 - Integrate [@astrobleem’s PR #3](https://github.com/l00nix/ELKSWeb/pull/3): VGA 640x480 16-colour rendering, plane-aware cursor restoration and faster VGA/CGA/EGA viewport scrolling. Preserve monochrome VGA with `-video vga-mono`.

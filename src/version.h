@@ -2,8 +2,8 @@
 #ifndef ELKSWEB_VERSION_H
 #define ELKSWEB_VERSION_H
 #ifdef ELKSWEB_NANOX
-#define EW_VERSION "0.6dev1-nx2"
+#define EW_VERSION "0.6dev2-nx1"
 #else
-#define EW_VERSION "0.6dev1"
+#define EW_VERSION "0.6dev2"
 #endif
 #endif

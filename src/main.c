@@ -1263,6 +1263,35 @@ static void mouse_event(const struct ew_mouse_event *event) {
   focused = -1;
   dirty |= DRAW_FOCUS | DRAW_STATUS;
 }
+/* Shared sample files have one package owner (webdata). Keep old explicit
+ * launch scripts working, and fall back for manually installed older assets. */
+static const char *default_page(int colour)
+{
+#ifdef ELKSWEB_NANOX
+  (void)colour;
+  if (access("/lib/web/welcnx.htm", R_OK) == 0)
+    return "/lib/web/welcnx.htm";
+  if (access("/lib/webnx/welcome.htm", R_OK) == 0)
+    return "/lib/webnx/welcome.htm";
+#else
+  if (colour && access("/lib/web/color.htm", R_OK) == 0)
+    return "/lib/web/color.htm";
+  if (access("/lib/web/welcome.htm", R_OK) == 0)
+    return "/lib/web/welcome.htm";
+  if (colour && access("/lib/elksweb/color.htm", R_OK) == 0)
+    return "/lib/elksweb/color.htm";
+  if (access("/lib/elksweb/welcome.htm", R_OK) == 0)
+    return "/lib/elksweb/welcome.htm";
+  if (access("/root/welcome.htm", R_OK) == 0)
+    return "/root/welcome.htm";
+  /* A manually installed colour-only page is also usable in monochrome. */
+  if (access("/lib/web/color.htm", R_OK) == 0)
+    return "/lib/web/color.htm";
+  if (access("/lib/elksweb/color.htm", R_OK) == 0)
+    return "/lib/elksweb/color.htm";
+#endif
+  return NULL;
+}
 int main(int argc, char **argv) {
   const char *url = NULL, *video_mode=NULL;
   int k, i;
@@ -1293,23 +1322,24 @@ int main(int argc, char **argv) {
     } else
       url = argv[i];
   }
+  if (!url && !default_page(0)) {
+    fputs("ELKSWeb: no welcome page. Install shared assets with\n"
+          "  ept install -n webdata\n"
+          "or supply a URL or local file.\n", stderr);
+    return 1;
+  }
   k=ew_platform_init(video_mode);
   if (k) {
     if (k<0) fprintf(stderr, "ELKSWeb: %s\n", ew_platform_error());
     ew_source_free();
     return k<0 ? 1 : 0;
   }
-#ifdef ELKSWEB_NANOX
-  /* The optional EPT package owns its assets separately from elksweb. */
-  if (!url) url = "/lib/webnx/welcome.htm";
-#else
-  /* The colour display has its own start page when it is installed. */
-  if (!url && ew_color && access("/lib/elksweb/color.htm", R_OK) == 0)
-    url = "/lib/elksweb/color.htm";
-  if (!url)
-    url = access("/lib/elksweb/welcome.htm", R_OK) == 0
-        ? "/lib/elksweb/welcome.htm" : "/root/welcome.htm";
-#endif
+  if (!url) url = default_page(ew_color);
+  if (!url) { /* Assets may disappear between the preflight and video setup. */
+    ew_platform_shutdown();
+    ew_source_free();
+    return 1;
+  }
   signal(SIGINT, stopped);
   signal(SIGTERM, stopped);
   strcpy(ew_doc.title, "ELKSWeb " EW_VERSION);
