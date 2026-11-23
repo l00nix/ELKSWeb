@@ -1,44 +1,51 @@
-<html><head><title>Welcome to ELKSWeb 0.6dev2</title></head><body>
-<center><img src="elksweb.gif" width="320" height="107" alt="ELKSWeb"><br>
-<b>ELKSWeb 0.6dev2 - a small browser for ELKS</b></center>
+<html><head><title>Welcome to ELKSWeb and WebNX 0.6.2dev</title></head><body>
+<center><img src="/lib/web/elksweb.gif" width="160" height="54" alt="ELKSWeb">
+<img src="/lib/web/webnx.gif" width="152" height="51" alt="WebNX"><br>
+<b>ELKSWeb and WebNX 0.6.2dev - two ways to browse</b></center>
 <hr>
-<p><b>Start browsing:</b> press <b>F6</b> or <b>Ctrl-L</b>, type a hostname or HTTP address,
-then press <b>Enter</b>. Or select a link below with <b>Tab</b> and press <b>Enter</b>.</p>
+<p><b>elksweb</b> browses directly from the graphics console.
+<b>webnx</b> browses through Nano-X. Both open this page and use the same browser engine.</p>
+<p><b>Browse:</b> press <b>Ctrl-L</b>, enter a hostname or HTTP address, then press
+<b>Enter</b>. Select links with <b>Tab</b> and <b>Enter</b>.</p>
 <p><a href="http://frogfind.8088retro.com/">FrogFind search</a> |
 <a href="http://68knews.8088retro.com/">68k news mirror</a> |
 <a href="http://httpedia.com/">HTTPedia</a> |
+<a href="/lib/web/color.htm">Colour demo</a> |
 <a href="#keys">Keyboard help</a></p>
-<a name="keys"></a><h3>Keyboard help</h3>
-<p><b>Tab / Shift-Tab</b> Select the next / previous link or control.<br>
-<b>Enter</b> Follow the selected link or activate a control.<br>
-<b>Arrows / Page Up / Page Down</b> Scroll the page.<br>
-<b>Home / End</b> Jump to the beginning / end.<br>
-<b>Backspace</b> Go back. The top-left buttons go back and forward.<br>
-<b>F5</b> Reload. <b>Escape</b> Exit, or cancel a load when input is checked.<br>
-<b>F2</b> Invert black and white. <b>F3</b> Show or hide the browser bars.</p>
-<h3>Local files and display</h3>
-<p>To return here, enter <b>file:/lib/web/welcome.htm</b> in the address field.
-Use <b>file:/path/page.htm</b> to open another local page.</p>
-<p>Starting <b>elksweb</b> without options shows the display selector.
-Choose a listed mode and press Enter. Enter alone chooses CGA; Q quits.
-You can also start with <b>elksweb -video cga</b>, <b>-video ega</b> or <b>-video vga</b>.</p>
-<h3>New in 0.6dev2</h3>
-<p>Shared sample files now live in /lib/web/, installed with the webdata package.</p>
-<p>VGA 16-colour support, faster CGA/EGA/VGA scrolling and improved colour GIF
-workspace allocation, contributed by astrobleem. This is a development test build.
-Use -video vga-mono for the previous monochrome VGA display.
-CGA on the PPC and HP remains monochrome.
-The display selector and browser keyboard retain the local console
-at /dev/tty1. Inline image allocation failures show a memory error in the
-status bar. The HP cooked-key setting and serial-mouse support are retained.
-Low-memory online browsing and the intermittent console issue remain under investigation.</p>
+<a name="keys"></a><h3>Common controls</h3>
+<p><b>Tab / Shift-Tab</b> next / previous link or control. <b>Enter</b> activate.<br>
+<b>Arrows / Page Up / Page Down</b> scroll. <b>Home / End</b> beginning / end.<br>
+<b>Backspace</b> back. <b>Escape</b> exit or cancel editing.<br>
+<b>Ctrl-L</b> edit the address. The top-left buttons go back and forward.</p>
+<p>Function keys, where supported: <b>F6</b> address, <b>F5</b> reload,
+<b>F2</b> invert / dark theme, <b>F3</b> show / hide browser bars.
+Nano-X key availability depends on its server and input driver.</p>
+<h3>Choose how to browse</h3>
+<p><b>Direct console:</b> run <b>elksweb</b> and choose a display mode.
+Enter alone chooses CGA. Or run <b>elksweb -video cga</b> for a monochrome display.
+VGA, Tandy and PCjr colour modes require compatible hardware and ELKS setup.
+HP cooked-key and PPC/HP serial-mouse settings are retained.</p>
+<p><b>Nano-X:</b> run <b>webnx</b> with a compatible Nano-X server installed.
+Nano-X supplies the display, keyboard and mouse. Its client library can start
+an installed server; the server handles session shutdown and console restoration.
+Closing WebNX in an existing desktop leaves other clients running.</p>
+<p>Both accept a URL or local filename, <b>-invert</b> and <b>-noimages</b>.
+Open <b>/lib/web/welcome.htm</b> to return here. Use <b>exec</b> before your
+launch command to replace the waiting shell and save its memory.</p>
+<h3>Development and testing</h3>
+<p>One nightly package installs both browsers and these pages:
+<b>ept install -n elksweb</b>. Users of the old split packages must follow
+<b>/lib/web/nanox.txt</b> for the one-time migration before upgrading.</p>
+<p>0.6.2dev retains faster scrolling, VGA colour and GIF workspace improvements.
+The physical PC-98 console reports and intermittent Nano-X logo rendering remain
+open. No new EMS support or low-memory browsing guarantee is included.</p>
 <h3>What to expect</h3>
-<p>ELKSWeb reads HTTP and local HTML or text. GIF images are displayed;
-JPEG and PNG dimensions are used for layout, with placeholders.
-HTTPS, CSS and JavaScript are not supported. Large pages may reach memory
-limits, and loading on an 8088 can take time.</p>
-<p>This help page works offline. The search and news links need a working
-ELKS network connection. Configure the network and run <b>net start</b>
-from the ELKS shell before opening HTTP pages; availability also depends on the sites.</p>
-<hr><p>Thanks to astrobleem for colour support and to ghaerr, sammothxc and djohanse for feedback, and l00nix for PPC 512 and HP 200LX testing. Inspired by MicroWeb and the ELKS community. Happy browsing!</p>
+<p>HTTP and local HTML or text are supported. GIFs display; JPEG and PNG use
+placeholders. HTTPS, CSS and JavaScript are not supported. Large pages and
+images may exceed available memory; loading on an 8088 can take time.</p>
+<p>This page works offline. Internet links need working ELKS networking.
+Configure the network before opening HTTP pages.</p>
+<hr><p>Thanks to astrobleem for colour, scrolling, Nano-X and WebNX artwork;
+to ghaerr for guidance and the common page/package suggestion; and to the
+ELKS community and hardware testers.</p>
 </body></html>

@@ -1263,10 +1263,12 @@ static void mouse_event(const struct ew_mouse_event *event) {
   focused = -1;
   dirty |= DRAW_FOCUS | DRAW_STATUS;
 }
-/* Shared sample files have one package owner (webdata). Keep old explicit
+/* Both browsers and shared samples belong to elksweb. Keep old explicit
  * launch scripts working, and fall back for manually installed older assets. */
 static const char *default_page(int colour)
 {
+  if (access("/lib/web/welcome.htm", R_OK) == 0)
+    return "/lib/web/welcome.htm";
 #ifdef ELKSWEB_NANOX
   (void)colour;
   if (access("/lib/web/welcnx.htm", R_OK) == 0)
@@ -1276,8 +1278,6 @@ static const char *default_page(int colour)
 #else
   if (colour && access("/lib/web/color.htm", R_OK) == 0)
     return "/lib/web/color.htm";
-  if (access("/lib/web/welcome.htm", R_OK) == 0)
-    return "/lib/web/welcome.htm";
   if (colour && access("/lib/elksweb/color.htm", R_OK) == 0)
     return "/lib/elksweb/color.htm";
   if (access("/lib/elksweb/welcome.htm", R_OK) == 0)
@@ -1324,7 +1324,7 @@ int main(int argc, char **argv) {
   }
   if (!url && !default_page(0)) {
     fputs(EW_APP_NAME ": no welcome page. Install shared assets with\n"
-          "  ept install -n webdata\n"
+          "  ept install -n elksweb\n"
           "or supply a URL or local file.\n", stderr);
     return 1;
   }

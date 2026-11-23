@@ -1,55 +1,71 @@
-# Nano-X experiment: 0.6dev2-nx2
+# ELKSWeb and WebNX 0.6.2dev
 
-`webnx` is the optional ELKSWeb Nano-X client from astrobleem's
-[PR #5](https://github.com/l00nix/ELKSWeb/pull/5). The direct browser remains
-`elksweb` (0.6dev2); renaming it to `web` is a separate decision. Both retain
-the 0.6dev1 rendering and GIF work, HP/PPC fixes and Nano-X event handling.
-This nightly is not a stable 0.6 release and adds no kernel or EMS support.
+One `elksweb` package contains the direct `/bin/elksweb` browser, the optional
+`/bin/webnx` Nano-X client, and shared pages/images under `/lib/web/`.
+Both executables report **0.6.2dev** and open `/lib/web/welcome.htm` by default,
+including in native colour modes. The page shows both logos, common controls,
+and the differences between direct-console and Nano-X browsing. Colour tests
+are linked from the welcome page. This follows ghaerr's PR #5 guidance.
+
+The Nano-X contribution and WebNX branding are from astrobleem's PRs #5/#6.
+The rendering, GIF, HP/PPC and 0.5 performance fixes are retained. This is a
+nightly development build, not a stable 0.6 release; no EMS/kernel support is added.
 
 ## Install and migrate
 
-The EPT nightly has three packages with distinct file ownership:
-
-- `elksweb`: `/bin/elksweb`, direct graphics/input.
-- `webnx`: `/bin/webnx`, Nano-X graphics/input.
-- `webdata`: shared HTML, GIFs, licences and guides under `/lib/web/`.
-
-EPT's file catalogue has no dependency resolver. Install `webdata` explicitly
-before either new browser; installing just an executable does not fetch it.
-With `REPO=http://ept.8088retro.com/local` in `/etc/ept.cfg` and networking up:
+With networking up and `REPO=http://ept.8088retro.com/local` in `/etc/ept.cfg`,
+a fresh installation needs just:
 
 ```sh
-ept install -n webdata
-ept install -n webnx
+ept install -n elksweb
+```
+
+Choose `elksweb` for the direct console or `webnx` for Nano-X. Installing both
+executables uses disk space; only the one you launch consumes process memory.
+A compatible Nano-X server is still a separate system prerequisite, not bundled
+with the browser. Stable 0.5 remains unchanged in the general catalogue.
+
+### One-time migration from split nightlies
+
+Close the browsers and back up customized package files before upgrading.
+Use `ept list -n` to check which packages are installed. If present, remove
+**only the old separate packages before installing the combined package**:
+
+```sh
+ept remove webnx
+ept remove webdata
+```
+
+If the older `elksnx` package is installed, remove it too (`ept remove elksnx`).
+Skip commands for packages that are not installed. Then run:
+
+```sh
+ept install -n elksweb
+elksweb --version
 webnx --version
 ```
 
-For the direct browser, use `ept install -n elksweb` after installing webdata.
-It reports 0.6dev2; webnx reports 0.6dev2-nx2. Existing `elksweb` nightlies and
-old `webnx` installations upgrade under their existing package names. Close
-running browsers first. Back up any customized package files: EPT removes
-files dropped by an upgraded package, including the old `/lib/elksweb/` and
-`/lib/webnx/` managed assets. It does not move custom content automatically.
+Both should report 0.6.2dev. Do not remove the old packages after installing
+the combined one: older EPT clients retain their file ownership records and
+could delete its files. If this happened, remove the remaining old package
+records and reinstall `elksweb` using the command above. Do not hand-edit the
+EPT database. The `webnx`, `webdata` and `elksnx` packages are no longer listed
+in this nightly catalogue; the executable is still named `webnx`.
 
-If you still have the earlier `elksnx` package, install webdata and webnx
-successfully first, then `ept remove elksnx`. Update personal scripts or
-Nano-X menu entries from `/bin/elksnx` to `/bin/webnx`.
+Earlier direct-only `elksweb` installations upgrade normally. Existing explicit
+page paths are retained as compatibility copies of the same common sources:
+`/lib/web/welcnx.htm`, `start.htm`, `startnx.htm`, `/lib/elksweb/welcome.htm`,
+`/lib/webnx/welcome.htm` and `/lib/elksnx/welcome.htm`. Old colour-page paths also
+remain available. These copies use absolute `/lib/web/` asset links. Source
+maintainers edit only `share/welcome.htm` and `share/color.htm`; the staging
+script generates all compatibility copies. Paths fit FAT 8.3. Personal files
+under `/root` are not replaced, and explicit URL/file arguments still work.
+Update any old `/bin/elksnx` launch commands to `/bin/webnx`.
 
-The default pages are `/lib/web/welcome.htm` (direct monochrome),
-`/lib/web/color.htm` (direct colour), and `/lib/web/welcnx.htm` (Nano-X).
-WebNX branding and the transparent `webnx.gif` logo are contributed by
-astrobleem in PR #6. Its colour demo is `/lib/web/colornx.htm`; both Nano-X
-pages use the shared directory without overwriting the direct colour page.
-All refer to the same image files. Paths fit FAT 8.3. Explicit URL/file
-arguments still work; manually installed legacy default pages remain fallback
-locations. With no page available, a bare launch prints the webdata install
-command before initializing graphics. It can still open an explicit URL/file.
-
-Removing either browser leaves webdata and the other browser intact. Keep
-webdata while either browser needs these pages; EPT does not prevent its
-removal. Remove it separately with `ept remove webdata` only when no longer
-needed. A missing webdata installation can be restored with the install
-command above. Stable 0.5 remains self-contained and unchanged.
+A bare launch without any default page prints `ept install -n elksweb` before
+initializing graphics. `ept remove elksweb` removes both clients and the bundled
+assets. Downgrading to general 0.5 also removes the nightly's Nano-X client and
+shared/compatibility assets, restoring the self-contained stable package.
 
 ## Normal Nano-X startup and exit
 
@@ -88,7 +104,7 @@ Optional file logging:
 
 ```sh
 export ELKSWEB_NX_LOG=/tmp/webnx.log
-exec /bin/webnx /lib/web/welcnx.htm
+exec /bin/webnx /lib/web/welcome.htm
 ```
 
 The existing environment variable name is retained for compatibility. The log

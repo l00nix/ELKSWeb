@@ -1,6 +1,6 @@
-> For the **0.6dev2 nightly** shared-assets installation and migration, see
-> [the current EPT guide](NANOX-EXPERIMENT.md#install-and-migrate). The release
-> instructions below describe the earlier self-contained package layout.
+> For the **0.6.2dev nightly**, use the [current combined-package installation
+> and split-package migration guide](NANOX-EXPERIMENT.md#install-and-migrate).
+> The instructions below describe historical comparison packages.
 
 # 0.6dev1 comparison installation
 

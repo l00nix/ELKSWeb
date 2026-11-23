@@ -5,13 +5,13 @@
   <img src="artwork/elksweb-wordmark-yellow-globe.png" alt="ELKSWeb logo" width="640">
 </p>
 
-# ELKSWeb 0.6dev2
+# ELKSWeb 0.6.2dev
 
 An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr/elks), written in C with the native ELKS IA16 toolchain and targeting 8088-compatible machines.
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Development candidate 0.6dev2:** The optional WebNX 0.6dev2-nx2 client now includes [astrobleem’s WebNX branding and transparent logo from PR #6](https://github.com/l00nix/ELKSWeb/pull/6), plus a separate Nano-X colour demonstration page. Shared sample files now live under `/lib/web/`, owned by the EPT `webdata` package. Nano-X uses standard `GrOpen`/`GrClose` startup and exit. Install `webdata` before the nightly browser; see the [installation and migration guide](docs/NANOX-EXPERIMENT.md#install-and-migrate). This retains the 0.6dev1 changes: VGA 16-colour rendering, faster CGA/EGA/VGA scrolling and improved colour GIF workspace allocation, contributed by [@astrobleem](https://github.com/astrobleem). The HP/PPC input and console fixes and 0.5 performance work are retained. See [candidate notes and comparison setup](docs/RELEASE-0.6dev1.md). [0.5 remains the general release](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5), including the EPT general catalogue; this branch does not publish or replace it.
+**Development candidate 0.6.2dev:** One `elksweb` EPT package now installs both the direct browser and WebNX, with one welcome page showing both logos and explaining both launch options, following [ghaerr's guidance](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7112604032). Fresh installs use `ept install -n elksweb`; earlier split-package users should follow the [one-time migration instructions](docs/NANOX-EXPERIMENT.md#install-and-migrate). This retains astrobleem's VGA colour, faster scrolling, GIF workspace and Nano-X contributions, plus the HP/PPC fixes and 0.5 performance improvements. [0.5 remains the general release](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5).
 
 General IBM PC compatibility remains the goal.
 
@@ -155,26 +155,24 @@ See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse setting
 
 ### Optional Nano-X browser
 
-The separate `webnx` experiment identifies as **0.6dev2-nx2**. It draws through
-a compatible Nano-X server for the installed hardware, including PC-98 or
-IBM-compatible servers, instead of accessing native video/input devices.
+The nightly package includes both **ELKSWeb 0.6.2dev** and **WebNX 0.6.2dev**.
+Choose the direct `elksweb` executable or `webnx`, which uses a compatible
+Nano-X server for the hardware, including PC-98 or IBM-compatible servers.
+Both open `/lib/web/welcome.htm`, with common instructions and both logos.
+
+For a fresh install with `REPO=http://ept.8088retro.com/local` configured:
 
 ```sh
-ept install -n webdata
-ept install -n webnx
+ept install -n elksweb
 webnx
 ```
 
-Configure EPT with `REPO=http://ept.8088retro.com/local`. The direct nightly is
-installed with `ept install -n elksweb` after webdata and remains named elksweb.
-Shared pages, images and guides live in `/lib/web/`; the Nano-X default page is
-`welcnx.htm`, alongside native `welcome.htm` and `color.htm`.
-
+**Previously installed `webnx`, `webdata` or `elksnx` packages must be removed
+before installing the combined package.** See the [migration guide](docs/NANOX-EXPERIMENT.md#install-and-migrate).
 The Nano-X client uses `GrOpen` and `GrClose`; its library can start an installed
-server, and the server controls session shutdown and text-console restoration.
-No special browser start/stop sequence is required. The server is not included.
-See the [guide](docs/NANOX-EXPERIMENT.md) for building, migration from earlier
-packages, optional diagnostics and remaining physical PC-98 questions.
+server, and the server controls shutdown and console restoration. The server
+is not included. Physical PC-98 console reports and intermittent Nano-X logo
+rendering remain open. Stable 0.5 is unchanged.
 
 ## Low-memory systems
 

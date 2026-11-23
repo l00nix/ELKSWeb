@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.6.2dev — one package, one welcome page
+
+- Follow ghaerr’s PR #5 suggestion: one `elksweb` nightly contains both
+  executables and all pages/images. Both clients report 0.6.2dev.
+- Both clients open `/lib/web/welcome.htm`, displaying ELKSWeb and WebNX
+  logos, shared controls and direct-console/Nano-X differences.
+- Preserve prior page paths as compatibility copies from the same sources.
+  Document and test one-time removal of old split packages before migration.
+- Retain HP/PPC, graphics, GIF and performance fixes; no new EMS/kernel or
+  low-memory claims. Stable 0.5 and open Nano-X reports are unchanged.
+
 ## 0.6dev2-nx2 — WebNX branding nightly
 
 - Integrate astrobleem’s PR #6: WebNX window, document and console labels,
