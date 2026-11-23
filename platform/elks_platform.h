@@ -54,6 +54,8 @@ void ew_platform_shutdown(void);
 int ew_getkey(void);                 /* Nonblocking; zero means no key. */
 #ifdef ELKSWEB_NANOX
 int ew_platform_exposed(void);
+int ew_platform_closed(void);        /* Latched window-manager close request. */
+int ew_nanox_progress_key(void);     /* Poll while discarding transfer-time mouse input. */
 /* Batch only consecutive transparent glyphs with no intervening drawing. */
 void ew_nanox_text_begin(void);
 void ew_nanox_text_end(void);

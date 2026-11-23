@@ -155,6 +155,10 @@ See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse setting
 
 ### NEC PC-98: Nano-X build
 
+This branch's separate Nano-X experiment identifies as **0.6dev1-nx1**.
+See the [experiment and diagnostic guide](docs/NANOX-EXPERIMENT.md) for minimal
+startup, lifecycle logs, validation scope and remaining hardware questions.
+
 On an ELKS PC-98 installation with Nano-X installed, the separate
 `elksnx` executable uses Nano-X's 640×400 colour display instead of the
 IBM PC video, mouse and keyboard code. Build it with the same Microwindows

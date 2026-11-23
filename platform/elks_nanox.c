@@ -2,6 +2,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 #ifdef ELKSWEB_NANOX
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <nano-X.h>
 #include "elks_platform.h"
@@ -11,7 +14,7 @@ int ew_screen_width, ew_screen_height, ew_pixel_aspect = 1, ew_color;
 static GR_WINDOW_ID window;
 static GR_GC_ID gc;
 static int clip_right, clip_top, clip_bottom, color = -1;
-static int exposed, pending_mouse;
+static int exposed, closed, pending_mouse;
 static const char *error;
 static struct ew_mouse_event mouse;
 static unsigned buttons;
@@ -21,6 +24,30 @@ static const GR_COLOR palette[16] = {
     GR_RGB(85,85,85), GR_RGB(85,85,255), GR_RGB(85,255,85), GR_RGB(85,255,255),
     GR_RGB(255,85,85), GR_RGB(255,85,255), GR_RGB(255,255,85), GR_RGB(255,255,255)
 };
+
+/* Opt-in file diagnostics must not write to the PC-98 text plane. Preserve
+ * errno so a failed logging attempt cannot replace a connection error. */
+static void lifecycle_log(const char *stage, int err)
+{
+    const char *path = getenv("ELKSWEB_NX_LOG");
+    int saved_errno = errno;
+    FILE *file;
+    if (!path || !*path) return;
+    file = fopen(path, "a");
+    if (file) {
+        if (err >= 0) fprintf(file, "elksnx: %s errno=%d\n", stage, err);
+        else fprintf(file, "elksnx: %s\n", stage);
+        fclose(file);
+    }
+    errno = saved_errno;
+}
+
+static void close_connection(void)
+{
+    lifecycle_log("GrClose begin", -1);
+    GrClose();
+    lifecycle_log("GrClose end", -1);
+}
 
 static void foreground(int ink)
 {
@@ -37,14 +64,17 @@ int ew_platform_init(const char *mode)
         error = "this build uses Nano-X; select -video nanox or -video pc98";
         return -1;
     }
+    lifecycle_log("GrOpen begin", -1);
     if (GrOpen() < 0) {
-        error = "cannot connect to Nano-X (start nxstart first)";
+        lifecycle_log("GrOpen failed", errno);
+        error = "cannot connect to Nano-X; start /bin/nano-x separately and check ps/free memory";
         return -1;
     }
+    lifecycle_log("connected", -1);
     GrGetScreenInfo(&info);
     if (info.cols < 320 || info.cols > 640 || info.rows < 200 || info.rows > 480) {
         error = "unsupported Nano-X desktop size";
-        GrClose();
+        close_connection();
         return -1;
     }
     ew_screen_width = info.cols;
@@ -56,7 +86,7 @@ int ew_platform_init(const char *mode)
     gc = GrNewGC();
     if (!window || !gc) {
         error = "cannot create Nano-X window";
-        GrClose();
+        close_connection();
         return -1;
     }
     GrSetGCUseBackground(gc, GR_FALSE);
@@ -65,6 +95,7 @@ int ew_platform_init(const char *mode)
                    GR_EVENT_MASK_BUTTON_UP | GR_EVENT_MASK_CLOSE_REQ);
     GrMapWindow(window);
     GrSetFocus(window);
+    lifecycle_log("window ready", -1);
     return 0;
 }
 
@@ -75,7 +106,7 @@ const char *ew_platform_error(void)
 
 void ew_platform_shutdown(void)
 {
-    GrClose();
+    close_connection();
 }
 
 int ew_platform_exposed(void)
@@ -84,6 +115,8 @@ int ew_platform_exposed(void)
     exposed = 0;
     return result;
 }
+
+int ew_platform_closed(void) { return closed; }
 
 static int translate(GR_KEY key, GR_KEYMOD modifiers)
 {
@@ -130,7 +163,9 @@ int ew_getkey(void)
     GrGetNextEventTimeout(&event, GR_TIMEOUT_POLL);
     switch (event.type) {
     case GR_EVENT_TYPE_EXPOSURE: exposed = 1; break;
-    case GR_EVENT_TYPE_CLOSE_REQ: return EW_KEY_ESC;
+    case GR_EVENT_TYPE_CLOSE_REQ:
+        closed = 1;
+        return EW_KEY_ESC;
     case GR_EVENT_TYPE_KEY_DOWN:
         return translate(event.keystroke.ch, event.keystroke.modifiers);
     case GR_EVENT_TYPE_MOUSE_POSITION:
@@ -142,6 +177,19 @@ int ew_getkey(void)
         break;
     }
     return EW_KEY_NONE;
+}
+
+/* Transfers do not dispatch mouse actions. Consume their events here so a
+ * pending pointer update cannot block the following Escape or close request,
+ * or replay a click against the newly loaded page. Keep the button state. */
+int ew_nanox_progress_key(void)
+{
+    int key;
+    do {
+        pending_mouse = 0;
+        key = ew_getkey();
+    } while (pending_mouse);
+    return key;
 }
 
 int ew_mouse_read(struct ew_mouse_event *event)

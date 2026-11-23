@@ -13,10 +13,21 @@ cd "${ELKSWEB_SOURCE:-$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)}"
 out=build/nanox
 mkdir -p "$out"
 cc=${CC:-ia16-elf-gcc}
+command -v "$cc" >/dev/null
+test -r "$MWDIR/src/include/nano-X.h" || {
+    echo "MWDIR must contain src/include/nano-X.h from the server's source tree" >&2
+    exit 1
+}
+# A failed rebuild must not leave an earlier executable looking current.
+rm -f "$out/elksnx" "$out/elksweb.map"
 # Nano-X's small-model GrClose stores a callback in a data pointer. Keep the
 # actual function-pointer type when compiling its client for medium model.
 sed 's/void \* oldSignalHandler = signal/void (*oldSignalHandler)(int) = signal/' \
     "$MWDIR/src/nanox/client.c" > "$out/client.c"
+grep -Fq 'void (*oldSignalHandler)(int) = signal' "$out/client.c" || {
+    echo "Review this Nano-X client's GrClose signal callback for medium-model compatibility" >&2
+    exit 1
+}
 set --
 for source in src/*.c image/*.c font/*.c platform/elks_nanox.c \
         "$out/client.c" "$MWDIR"/src/nanox/nxproto.c \

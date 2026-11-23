@@ -545,9 +545,20 @@ static void draw(void) {
     ew_cursor_show(mouse_x, mouse_y);
 }
 int ew_net_progress(const char *s) {
+#ifdef ELKSWEB_NANOX
+  int k = ew_nanox_progress_key();
+  if (ew_platform_closed()) stopping = 1;
+#else
   int k = ew_getkey();
+#endif
   if (k == EW_KEY_ESC || stopping)
     return 1;
+#ifdef ELKSWEB_NANOX
+  if (ew_platform_exposed()) {
+    dirty |= DRAW_FRAME;
+    draw();
+  }
+#endif
   if (strcmp(status, s)) {
     message(s);
     draw();
@@ -1307,6 +1318,9 @@ int main(int argc, char **argv) {
     if (dirty)
       draw();
     k = ew_getkey();
+#ifdef ELKSWEB_NANOX
+    if (ew_platform_closed()) { stopping = 1; break; }
+#endif
     if (k) {
       if (hovered >= 0) { hovered = -1; dirty |= DRAW_STATUS; }
       ew_cursor_shape(0);
