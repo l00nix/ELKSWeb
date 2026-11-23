@@ -45,4 +45,10 @@ for source in src/*.c image/*.c font/*.c platform/elks_nanox.c \
 done
 "$cc" -march=i8086 -mtune=i8086 -mcmodel=medium -melks-libc \
     -Wl,--gc-sections,-Map,"$out/elksweb.map" "$@" -o "$out/webnx"
-printf '%s\n' "ELKSWeb Nano-X runtime built: $out/webnx"
+# Stage Nano-X pages alongside shared data without replacing direct pages.
+assets="$out/lib/web"
+mkdir -p "$assets"
+cp share/nanox/welcome.htm "$assets/welcnx.htm"
+cp share/nanox/color.htm "$assets/colornx.htm"
+cp share/nanox/webnx.gif share/chart.gif "$assets/"
+printf '%s\n' "WebNX runtime built: $out/webnx"

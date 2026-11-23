@@ -155,6 +155,20 @@ class ColorImages(unittest.TestCase):
             self.lib.ew_images_clear()
             width.value, height.value = 320, 200
 
+    def test_webnx_logo_transparency_and_odd_width(self):
+        blob = (ROOT/'share/nanox/webnx.gif').read_bytes()
+        rgba = Image.open(io.BytesIO(blob)).convert('RGBA')
+        self.lib.ew_images_clear()
+        self.assertEqual(self.lib.color_load(0, blob, len(blob)), 0)
+        stored = self.stored()
+        self.assertEqual((len(stored[0]), len(stored)), rgba.size)
+        for y, row in enumerate(stored):
+            for x, pixel in enumerate(row):
+                self.assertEqual(pixel < 0, rgba.getpixel((x,y))[3] == 0)
+        for x in (0, 1, -3):
+            self.check_draw(stored, 303, 101, x, 40, 32, 188)
+        self.lib.ew_images_clear()
+
     def test_natural_size_draws_every_pixel_at_odd_and_even_positions(self):
         self.lib.ew_images_clear()
         self.assertEqual(self.load(indexed(61, 37, lambda x, y: (x*5 + y*3) % 16)), 0)

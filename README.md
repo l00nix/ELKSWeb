@@ -11,7 +11,7 @@ An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Development candidate 0.6dev2:** Shared sample files now live under `/lib/web/`, owned by the EPT `webdata` package. Nano-X uses standard `GrOpen`/`GrClose` startup and exit. Install `webdata` before the nightly browser; see the [installation and migration guide](docs/NANOX-EXPERIMENT.md#install-and-migrate). This retains the 0.6dev1 changes: VGA 16-colour rendering, faster CGA/EGA/VGA scrolling and improved colour GIF workspace allocation, contributed by [@astrobleem](https://github.com/astrobleem). The HP/PPC input and console fixes and 0.5 performance work are retained. See [candidate notes and comparison setup](docs/RELEASE-0.6dev1.md). [0.5 remains the general release](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5), including the EPT general catalogue; this branch does not publish or replace it.
+**Development candidate 0.6dev2:** The optional WebNX 0.6dev2-nx2 client now includes [astrobleem’s WebNX branding and transparent logo from PR #6](https://github.com/l00nix/ELKSWeb/pull/6), plus a separate Nano-X colour demonstration page. Shared sample files now live under `/lib/web/`, owned by the EPT `webdata` package. Nano-X uses standard `GrOpen`/`GrClose` startup and exit. Install `webdata` before the nightly browser; see the [installation and migration guide](docs/NANOX-EXPERIMENT.md#install-and-migrate). This retains the 0.6dev1 changes: VGA 16-colour rendering, faster CGA/EGA/VGA scrolling and improved colour GIF workspace allocation, contributed by [@astrobleem](https://github.com/astrobleem). The HP/PPC input and console fixes and 0.5 performance work are retained. See [candidate notes and comparison setup](docs/RELEASE-0.6dev1.md). [0.5 remains the general release](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5), including the EPT general catalogue; this branch does not publish or replace it.
 
 General IBM PC compatibility remains the goal.
 
@@ -155,7 +155,7 @@ See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse setting
 
 ### Optional Nano-X browser
 
-The separate `webnx` experiment identifies as **0.6dev2-nx1**. It draws through
+The separate `webnx` experiment identifies as **0.6dev2-nx2**. It draws through
 a compatible Nano-X server for the installed hardware, including PC-98 or
 IBM-compatible servers, instead of accessing native video/input devices.
 

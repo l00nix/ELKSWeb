@@ -3,6 +3,7 @@
 #include "../font/font.h"
 #include "elksweb.h"
 #include "latin.h"
+#include "version.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1187,7 +1188,7 @@ static void parse_document(const char *base, int plain_mode) {
   parse_full = 0;
   skip[0] = 0;
   base_url = base;
-  strcpy(ew_doc.title, "ELKSWeb");
+  strcpy(ew_doc.title, EW_APP_NAME);
   while (source_byte(p) && !parse_full) {
     if (!plain_mode && source_byte(p) == '<') {
       if (bn) {
@@ -1850,7 +1851,7 @@ void ew_parse_image_source(const char *url) {
   int image = ew_image_lookup(url, &width, &height);
   if (ew_document_reset()) return;
   anchor_count = merge_start = 0;
-  strcpy(ew_doc.title, "Image - ELKSWeb");
+  strcpy(ew_doc.title, "Image - " EW_APP_NAME);
   if (!width || !height) { width = 64; height = 64; }
   if (width > (unsigned)(EW_PAGE_WIDTH-8)) {
     height = (unsigned)((unsigned long)height * (EW_PAGE_WIDTH-8) / width);

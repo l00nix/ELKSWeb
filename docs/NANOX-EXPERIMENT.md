@@ -1,4 +1,4 @@
-# Nano-X experiment: 0.6dev2-nx1
+# Nano-X experiment: 0.6dev2-nx2
 
 `webnx` is the optional ELKSWeb Nano-X client from astrobleem's
 [PR #5](https://github.com/l00nix/ELKSWeb/pull/5). The direct browser remains
@@ -25,7 +25,7 @@ webnx --version
 ```
 
 For the direct browser, use `ept install -n elksweb` after installing webdata.
-It reports 0.6dev2; webnx reports 0.6dev2-nx1. Existing `elksweb` nightlies and
+It reports 0.6dev2; webnx reports 0.6dev2-nx2. Existing `elksweb` nightlies and
 old `webnx` installations upgrade under their existing package names. Close
 running browsers first. Back up any customized package files: EPT removes
 files dropped by an upgraded package, including the old `/lib/elksweb/` and
@@ -37,6 +37,9 @@ Nano-X menu entries from `/bin/elksnx` to `/bin/webnx`.
 
 The default pages are `/lib/web/welcome.htm` (direct monochrome),
 `/lib/web/color.htm` (direct colour), and `/lib/web/welcnx.htm` (Nano-X).
+WebNX branding and the transparent `webnx.gif` logo are contributed by
+astrobleem in PR #6. Its colour demo is `/lib/web/colornx.htm`; both Nano-X
+pages use the shared directory without overwriting the direct colour page.
 All refer to the same image files. Paths fit FAT 8.3. Explicit URL/file
 arguments still work; manually installed legacy default pages remain fallback
 locations. With no page available, a bare launch prints the webdata install

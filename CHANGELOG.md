@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6dev2-nx2 — WebNX branding nightly
+
+- Integrate astrobleem’s PR #6: WebNX window, document and console labels,
+  a 1,519-byte transparent logo, and a Nano-X colour demo.
+- Adapt its assets to shared `/lib/web/` ownership by `webdata`: `welcnx.htm`,
+  `colornx.htm` and `webnx.gif`. Direct pages and executable identity stay intact.
+- Keep standard GrOpen/GrClose lifecycle and existing HP/PPC fixes.
+  This branding update does not resolve the open PC-98 or memory issues.
+
 ## 0.6dev2 / 0.6dev2-nx1 — shared-assets nightly
 
 - Follow ghaerr's PR #5 guidance: both clients use `/lib/web/`, with `welcnx.htm`

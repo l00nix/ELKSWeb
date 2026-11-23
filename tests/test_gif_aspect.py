@@ -80,6 +80,11 @@ class GifAspect(unittest.TestCase):
             rows.append(row)
         return rows
 
+    def test_webnx_logo_transparency_in_square_and_cga_aspects(self):
+        blob = (ROOT/'share/nanox/webnx.gif').read_bytes()
+        for aspect in (1, 2):
+            self.check_render(blob, aspect)
+
     def test_half_gray_is_checkerboard_after_two_to_one_reduction(self):
         rows=self.check_render(self.encoded([128]*128,8,16),2)
         self.assertEqual(rows,[[int((x+y)%2==0) for x in range(8)] for y in range(8)])

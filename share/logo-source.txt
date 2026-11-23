@@ -13,3 +13,7 @@ Distributed under GPL-2.0-or-later, as is ELKSWeb; see COPYING.
 Colour start page: elkswebc.gif is artwork/elksweb-wordmark-blue-gold.png
 resized to 304 pixels wide and reduced to 48 colours; chart.gif is a generated
 swatch of the sixteen IBM RGBI colours.
+
+WebNX: share/nanox/webnx.gif is the 303x101 transparent GIF contributed by
+astrobleem in PR #6 (commit dcf132ac17e9aa014546c0378661658e6364c805).
+It is installed as /lib/web/webnx.gif for the Nano-X pages.
