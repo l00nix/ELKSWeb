@@ -7,6 +7,9 @@ release of 0.6 or a replacement for the direct-graphics `elksweb` package.
 The direct executable still identifies as 0.6dev1. The Nano-X executable
 identifies as 0.6dev1-nx1.
 
+See the [initial validation record](NANOX-VALIDATION.md) for build checks,
+emulator evidence, measured memory recovery and remaining limitations.
+
 ## Changes beyond PR #5
 
 - Discard mouse events during network progress so a pending pointer event
