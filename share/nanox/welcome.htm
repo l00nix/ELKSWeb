@@ -1,0 +1,27 @@
+<html><head><title>ELKSWeb 0.6dev1-nx1 - Nano-X experiment</title></head><body>
+<center><img src="elkswebc.gif" width="304" height="101" alt="ELKSWeb"><br>
+<b>ELKSWeb 0.6dev1-nx1 - Nano-X experiment</b></center>
+<hr>
+<p>A separate experimental browser using Nano-X for display, keyboard and mouse.
+Thanks to astrobleem for the Nano-X client and colour support.</p>
+<p><b>Browse:</b> press <b>Ctrl-L</b>, enter a hostname or HTTP address, then press
+<b>Enter</b>. Use <b>Tab</b> and <b>Enter</b> to follow links.</p>
+<p><a href="http://frogfind.8088retro.com/">FrogFind search</a> |
+<a href="http://68knews.8088retro.com/">68k news mirror</a> |
+<a href="http://httpedia.com/">HTTPedia</a> |
+<a href="#testing">Testing notes</a></p>
+<center><img src="chart.gif" width="288" height="36" alt="16-colour chart"></center>
+<h3>Controls</h3>
+<p><b>Arrows</b> scroll. <b>Backspace</b> goes back. <b>Escape</b> cancels editing
+or exits the browser. Function keys and Page Up/Down depend on the Nano-X
+server's keyboard driver; some older ELKS servers do not translate all of them.</p>
+<h3 id="testing">Testing notes</h3>
+<p>This nightly installs as <b>elksnx</b> alongside the normal <b>elksweb</b>.
+It requires an existing Nano-X server built for your hardware. No kernel or
+EMS change is included.</p>
+<p>The physical PC-98 text-console overlap and apparent exit hang still need
+investigation. Please report your kernel/server versions, launch command,
+memory readings and whether the keyboard and text console work after exit.</p>
+<p>Launch and diagnostic instructions are installed in <b>/lib/elksnx/readme.txt</b>.
+Optional file logging: <b>export ELKSWEB_NX_LOG=/tmp/elksnx.log</b> before launch.</p>
+</body></html>

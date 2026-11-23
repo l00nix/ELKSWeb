@@ -1299,12 +1299,17 @@ int main(int argc, char **argv) {
     ew_source_free();
     return k<0 ? 1 : 0;
   }
+#ifdef ELKSWEB_NANOX
+  /* The optional EPT package owns its assets separately from elksweb. */
+  if (!url) url = "/lib/elksnx/welcome.htm";
+#else
   /* The colour display has its own start page when it is installed. */
   if (!url && ew_color && access("/lib/elksweb/color.htm", R_OK) == 0)
     url = "/lib/elksweb/color.htm";
   if (!url)
     url = access("/lib/elksweb/welcome.htm", R_OK) == 0
         ? "/lib/elksweb/welcome.htm" : "/root/welcome.htm";
+#endif
   signal(SIGINT, stopped);
   signal(SIGTERM, stopped);
   strcpy(ew_doc.title, "ELKSWeb " EW_VERSION);

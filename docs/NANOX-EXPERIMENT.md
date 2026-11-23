@@ -38,7 +38,8 @@ MWDIR=/path/to/microwindows sh toolchain/test-nanox.sh
 ```
 
 Output is `build/nanox/elksnx`. Install separately from `/bin/elksweb`, with
-the ordinary `/lib/elksweb/` HTML/GIF assets. The builder preserves the
+the independent `/lib/elksnx/` HTML/GIF assets. The default page is
+`/lib/elksnx/welcome.htm`; the ordinary browser keeps its own assets. The builder preserves the
 medium-model signal-handler correction in the Nano-X client and stops if
 the expected correction cannot be verified. Host checks cover Nano-X event
 ordering/cancellation and compare batched/unbatched text pixels. They do
@@ -58,7 +59,7 @@ sleep 3
 ps > /tmp/nx-processes.txt
 ls -l /tmp/nxsock > /tmp/nx-socket.txt
 meminfo -m > /tmp/nx-server-memory.txt
-exec /bin/elksnx /lib/elksweb/color.htm > /tmp/nx-client.log 2>&1
+exec /bin/elksnx /lib/elksnx/welcome.htm > /tmp/nx-client.log 2>&1
 ```
 
 The three-second wait is an initial diagnostic allowance, not a readiness

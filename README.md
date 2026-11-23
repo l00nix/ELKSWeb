@@ -168,9 +168,9 @@ source as the installed Nano-X server:
 TOPDIR=/path/to/built-elks MWDIR=/path/to/microwindows sh toolchain/build-nanox.sh
 ```
 
-Copy `build/nanox/elksnx` to `/bin/elksnx` and install the usual
-`/lib/elksweb/` page assets. From the ELKS graphics console run
-`elksnx /lib/elksweb/color.htm`. The bundled Nano-X client can start an
+Copy `build/nanox/elksnx` to `/bin/elksnx` and install the experiment
+assets under `/lib/elksnx/`. From the ELKS graphics console run
+`elksnx /lib/elksnx/welcome.htm`. The bundled Nano-X client can start an
 installed `/bin/nano-x` when its server is not already running.
 
 The existing `elksweb` binary is unchanged; it still selects the native IBM
