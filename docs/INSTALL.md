@@ -1,3 +1,23 @@
+# 0.6dev1 comparison installation
+
+0.6dev1 is a separate development candidate. Keep the complete 0.5 installation,
+including its executable, pages and launch scripts. On a modern host, extract
+the candidate runtime package and copy its `bin` and `lib` directories beneath
+`/root/web06` on ELKS. Do not overwrite `/bin/elksweb` or `/lib/elksweb` for this test.
+Run from the machine's local graphics console:
+
+```sh
+/root/web06/bin/elksweb --version
+/root/web06/bin/elksweb -video cga -invert /root/web06/lib/elksweb/welcome.htm
+```
+
+On the HP retain `export ELKSWEB_COOKED_KEYS=1` where required. Retain your
+working serial-mouse environment settings on either device. VGA testers can use
+`-video vga` with `/root/web06/lib/elksweb/color.htm`, or `-video vga-mono` for
+comparison. The package does not change networking, serial login or the kernel.
+See [candidate notes](RELEASE-0.6dev1.md). The instructions below describe the
+existing general-release installation; EPT general remains 0.5.
+
 # Install ELKSWeb 0.5 from a release
 
 No compiler is required. These instructions install the browser on an existing compatible ELKS system; they do not replace its operating system or format a disk. ELKSWeb is a native ELKS executable, not a DOS, Windows, macOS or modern Linux application.

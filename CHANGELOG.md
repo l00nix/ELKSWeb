@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6dev1 — development candidate (2026-11-22)
+
+- Integrate [@astrobleem’s PR #3](https://github.com/l00nix/ELKSWeb/pull/3): VGA 640x480 16-colour rendering, plane-aware cursor restoration and faster VGA/CGA/EGA viewport scrolling. Preserve monochrome VGA with `-video vga-mono`.
+- Integrate the independent [colour GIF workspace fix](https://github.com/astrobleem/ELKSWeb/commit/663cea00ca788007dd9de3ababcea35d9a46611c): split the colour LZW workspace into smaller allocations and allocate the column map only when needed. Monochrome retains its 16 KB workspace.
+- Preserve the 0.5 startup/GIF improvements, HP cooked keys, PPC/HP serial mouse, local-console handling, inversion and image-memory diagnostics.
+- Update both welcome pages and provide a separate candidate package for comparison with 0.5. No EMS, Nano-X, kernel change or new 512 KB support claim. See [candidate notes](docs/RELEASE-0.6dev1.md).
+
 ## 0.5 — release (2026-11-18)
 
 - Promote the 0.5dev2 code, including all dev1 colour features and dev2 startup/GIF performance improvements, to the general release.

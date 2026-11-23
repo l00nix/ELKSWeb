@@ -1,17 +1,11 @@
-# Building 0.5dev1
+# Building 0.6dev1
 
-This development branch integrates the Tandy/PCjr contribution using the medium
-memory model. Both builders target the 8086; the kernel must enable
-`CONFIG_EXEC_MMODEL`. More code segments do not increase near-data or physical RAM.
-Use [0.4](https://github.com/l00nix/ELKSWeb/tree/v0.4) for the frozen small-model
-baseline. Use `toolchain/package-release-0.5dev1.py --help` for this candidate;
-it verifies committed build inputs, binary/ELF audits and a matching validation
-record. Historical versioned packagers retain their original targets.
-
-The audited build strips symbols only from a temporary disassembly copy, avoiding
-symbol boundaries inside far-jump operands. It checks those bytes against the
-original ELF and checks both text sections against the native executable.
-See [integration status](DEVELOPMENT-0.5.md) for remaining qualification work.
+This candidate combines PR #3 and the independent colour GIF workspace fix on
+main at `d6befa51ef8cc13b9bb713a81a9155219e4e2ca3`. Both builders retain the
+8086 medium-model target; the kernel must enable `CONFIG_EXEC_MMODEL`.
+Use `toolchain/package-release-0.6dev1.py --help` to package committed source,
+an audited executable and its matching validation record. Historical packagers
+retain their version targets. See [candidate notes](RELEASE-0.6dev1.md).
 
 # Building and running
 

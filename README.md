@@ -5,13 +5,13 @@
   <img src="artwork/elksweb-wordmark-yellow-globe.png" alt="ELKSWeb logo" width="640">
 </p>
 
-# ELKSWeb 0.5
+# ELKSWeb 0.6dev1
 
 An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr/elks), written in C with the native ELKS IA16 toolchain and targeting 8088-compatible machines.
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**What’s new in 0.5:** [Tandy/PCjr 16-colour support, colour GIFs and HTML colours](#colour-support-in-05), contributed by [@astrobleem](https://github.com/astrobleem), plus faster monochrome startup, text and GIF rendering. The HP 200LX and PPC console, keyboard and serial-mouse fixes are retained. [Download 0.5](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5), read the [release notes](docs/RELEASE-0.5.md), or install from the [EPT mirror](http://ept.8088retro.com/) with `ept install elksweb` (general catalogue).
+**Development candidate 0.6dev1:** VGA 16-colour rendering, faster CGA/EGA/VGA scrolling and improved colour GIF workspace allocation, contributed by [@astrobleem](https://github.com/astrobleem). The HP/PPC input and console fixes and 0.5 performance work are retained. See [candidate notes and comparison setup](docs/RELEASE-0.6dev1.md). [0.5 remains the general release](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5), including the EPT general catalogue; this branch does not publish or replace it.
 
 General IBM PC compatibility remains the goal.
 
@@ -82,7 +82,7 @@ The photos below show his **0.5dev2** test of the colour welcome page and palett
 
 <img src="docs/screenshots/colour/astrobleem-colour-demo.png" alt="Astrobleem’s photograph of ELKSWeb 0.5dev2 showing all sixteen colours and keyboard help" width="400">
 
-Tandy/PCjr colour mode needs the matching [Tandy kernel](https://github.com/astrobleem/elks/blob/tandy-video-v0.9.2/Documentation/tandy-video.txt) with `tandyvideo=1`, or the matched [PCjr kernel and bootloader](https://github.com/astrobleem/elks/blob/pcjr-video-v0.9.2/Documentation/pcjr-video.txt). The browser package does not install these system components. CGA and EGA output remains monochrome, including the PPC and HP 200LX configurations. VGA colour uses standard mode 12h video memory and needs no Tandy/PCjr reservation. This branch has native QEMU colour, scrolling/redraw, navigation and exit checks plus an 8086 instruction audit; physical VGA and 8088 runtime testing remain pending.
+Tandy/PCjr colour mode needs the matching [Tandy kernel](https://github.com/astrobleem/elks/blob/tandy-video-v0.9.2/Documentation/tandy-video.txt) with `tandyvideo=1`, or the matched [PCjr kernel and bootloader](https://github.com/astrobleem/elks/blob/pcjr-video-v0.9.2/Documentation/pcjr-video.txt). The browser package does not install these system components. CGA and EGA output remains monochrome, including the PPC and HP 200LX configurations. VGA colour uses standard mode 12h video memory and needs no Tandy/PCjr reservation. The contribution has host and emulator checks, including an 8088 instruction audit and 86Box runtime evidence. Exact-candidate validation is recorded in the packaged VALIDATION.json; physical VGA and HP/PPC candidate qualification remain open.
 
 0.5 also retains the dev2 speed improvements: controlled PPC measurements reduced first-frame startup from **6.21 to 4.97 seconds**, and earlier GIF/text changes reduced complete welcome loading from **60.44 to 46.59 seconds**. These use instrumented candidates and fixed content, rather than final-release live Internet timings; see [methods and results](docs/PERFORMANCE-0.5.md).
 
@@ -97,7 +97,7 @@ Tandy/PCjr colour mode needs the matching [Tandy kernel](https://github.com/astr
 
 ## Future enhancements
 
-0.5 introduced experimental Tandy/PCjr colour. This local branch adds VGA colour while retaining the monochrome modes. Follow-up work includes:
+0.5 introduced experimental Tandy/PCjr colour. 0.6dev1 adds VGA colour while retaining the monochrome modes. Follow-up work includes:
 
 - **EGA colour GIF rendering**, while retaining monochrome CGA and HP 200LX output. This requires palette-aware image storage, video-plane drawing, scrolling and cursor handling, plus work to fit the 64 KB code-segment limit. The blue logo artwork is prepared for this future work; it is not the installed 0.1 logo.
 - **Faster page loading and rendering**, with measured reductions in CPU, disk and memory use.
