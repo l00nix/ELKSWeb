@@ -1,3 +1,7 @@
+> Historical record for `0.6dev1-nx1` under its original `elksnx` name.
+> The `0.6dev1-nx2` nightly renames the client to `webnx`; its corresponding-source
+> archive includes the exact-build and package validation record.
+
 # Nano-X experiment validation — 23 November 2026
 
 Candidate: **0.6dev1-nx1**, executable source commit `494e5f0`, based on

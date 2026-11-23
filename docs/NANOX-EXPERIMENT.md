@@ -1,14 +1,58 @@
-# Nano-X experiment: 0.6dev1-nx1
+# Nano-X experiment: 0.6dev1-nx2
 
-This separate experimental `elksnx` build combines astrobleem's
+This separate experimental `webnx` build combines astrobleem's
 [PR #5](https://github.com/l00nix/ELKSWeb/pull/5) with the 0.6dev1 source,
 including PR #3 and the independent colour GIF workspace fix. It is not a
 release of 0.6 or a replacement for the direct-graphics `elksweb` package.
 The direct executable still identifies as 0.6dev1. The Nano-X executable
-identifies as 0.6dev1-nx1.
+identifies as 0.6dev1-nx2.
 
 See the [initial validation record](NANOX-VALIDATION.md) for build checks,
 emulator evidence, measured memory recovery and remaining limitations.
+
+## Nightly installation and rename
+
+`0.6dev1-nx2` renames the Nano-X executable and EPT package from `elksnx`
+to `webnx`, with private assets under `/lib/webnx/`. The normal `elksweb`
+package and its launch scripts are unchanged. The diagnostic environment
+variable remains `ELKSWEB_NX_LOG` for compatibility.
+
+With EPT's `REPO` set to `http://ept.8088retro.com/local`:
+
+```sh
+ept update
+ept install -n webnx
+webnx --version
+```
+
+If you previously installed `elksnx`, close that client first. After the new
+installation succeeds, remove the old package with `ept remove elksnx`.
+Update your own launch scripts or Nano-X menu entries to `/bin/webnx` and
+`/lib/webnx/welcome.htm`. No compatibility executable or automatic server
+restart is installed. On a small filesystem, check space for both packages
+before installing; the old client can be removed first if you accept losing
+that comparison copy. Existing custom pages should be copied outside the old
+package's managed files before removal.
+
+## Nano-X session and console ownership
+
+`webnx` is a client of Nano-X, not a session manager. Use an existing working
+Nano-X session where possible. The bundled client library can attempt to
+start an installed `/bin/nano-x` if no server is running; this is not a
+replacement for hardware-specific session setup or shutdown.
+
+[Tyama501's PC-98 feedback](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7102067681)
+suggests testing under `nxstart` and using its Close menu to restore the
+regular console. Where memory permits, use that established session workflow.
+Closing `webnx` does not mean an existing Nano-X session should end, and the
+browser does not kill the server or other clients. If an `nxterm` shell is
+used, `exec /bin/webnx` releases that shell's memory while it runs.
+
+The minimal standalone commands below remain useful for diagnosis on
+memory-constrained machines, but are not a proven PC-98 session-shutdown fix.
+Record whether the server was started by `nxstart`, by hand or by the client
+library when reporting an exit issue. Avoid unnecessary `telnetd`/`ftpd`
+processes when measuring memory, accounting for any serial observer too.
 
 ## Changes beyond PR #5
 
@@ -37,9 +81,9 @@ ELKSWEB_ELKS=/path/to/built-elks MWDIR=/path/to/microwindows \
 MWDIR=/path/to/microwindows sh toolchain/test-nanox.sh
 ```
 
-Output is `build/nanox/elksnx`. Install separately from `/bin/elksweb`, with
-the independent `/lib/elksnx/` HTML/GIF assets. The default page is
-`/lib/elksnx/welcome.htm`; the ordinary browser keeps its own assets. The builder preserves the
+Output is `build/nanox/webnx`. Install separately from `/bin/elksweb`, with
+the independent `/lib/webnx/` HTML/GIF assets. The default page is
+`/lib/webnx/welcome.htm`; the ordinary browser keeps its own assets. The builder preserves the
 medium-model signal-handler correction in the Nano-X client and stops if
 the expected correction cannot be verified. Host checks cover Nano-X event
 ordering/cancellation and compare batched/unbatched text pixels. They do
@@ -53,13 +97,13 @@ other Nano-X clients running:
 
 ```sh
 meminfo -m > /tmp/nx-before.txt
-export ELKSWEB_NX_LOG=/tmp/elksnx.log
+export ELKSWEB_NX_LOG=/tmp/webnx.log
 /bin/nano-x > /tmp/nx-server.log 2>&1 &
 sleep 3
 ps > /tmp/nx-processes.txt
 ls -l /tmp/nxsock > /tmp/nx-socket.txt
 meminfo -m > /tmp/nx-server-memory.txt
-exec /bin/elksnx /lib/elksnx/welcome.htm > /tmp/nx-client.log 2>&1
+exec /bin/webnx /lib/webnx/welcome.htm > /tmp/nx-client.log 2>&1
 ```
 
 The three-second wait is an initial diagnostic allowance, not a readiness

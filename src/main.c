@@ -1280,7 +1280,7 @@ int main(int argc, char **argv) {
     else if (!strcmp(argv[i], "-help") || !strcmp(argv[i], "--help")) {
       puts("ELKSWeb " EW_VERSION "\n"
 #ifdef ELKSWEB_NANOX
-           "Usage: elksnx [-video nanox|pc98] [-invert] [-noimages] [http://URL or file]\n"
+           "Usage: webnx [-video nanox|pc98] [-invert] [-noimages] [http://URL or file]\n"
 #else
            "Usage: elksweb [-video cga|ega|vga|vga-mono|tandy|pcjr] [-invert] [-noimages] [http://URL or file]\n"
 #endif
@@ -1301,7 +1301,7 @@ int main(int argc, char **argv) {
   }
 #ifdef ELKSWEB_NANOX
   /* The optional EPT package owns its assets separately from elksweb. */
-  if (!url) url = "/lib/elksnx/welcome.htm";
+  if (!url) url = "/lib/webnx/welcome.htm";
 #else
   /* The colour display has its own start page when it is installed. */
   if (!url && ew_color && access("/lib/elksweb/color.htm", R_OK) == 0)

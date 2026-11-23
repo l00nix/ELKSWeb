@@ -19,7 +19,7 @@ test -r "$MWDIR/src/include/nano-X.h" || {
     exit 1
 }
 # A failed rebuild must not leave an earlier executable looking current.
-rm -f "$out/elksnx" "$out/elksweb.map"
+rm -f "$out/webnx" "$out/elksnx" "$out/elksweb.map"
 # Nano-X's small-model GrClose stores a callback in a data pointer. Keep the
 # actual function-pointer type when compiling its client for medium model.
 sed 's/void \* oldSignalHandler = signal/void (*oldSignalHandler)(int) = signal/' \
@@ -44,5 +44,5 @@ for source in src/*.c image/*.c font/*.c platform/elks_nanox.c \
     set -- "$@" "$object"
 done
 "$cc" -march=i8086 -mtune=i8086 -mcmodel=medium -melks-libc \
-    -Wl,--gc-sections,-Map,"$out/elksweb.map" "$@" -o "$out/elksnx"
-printf '%s\n' "ELKSWeb Nano-X runtime built: $out/elksnx"
+    -Wl,--gc-sections,-Map,"$out/elksweb.map" "$@" -o "$out/webnx"
+printf '%s\n' "ELKSWeb Nano-X runtime built: $out/webnx"

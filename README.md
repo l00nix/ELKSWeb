@@ -155,12 +155,12 @@ See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse setting
 
 ### NEC PC-98: Nano-X build
 
-This branch's separate Nano-X experiment identifies as **0.6dev1-nx1**.
+This branch's separate Nano-X experiment identifies as **0.6dev1-nx2**.
 See the [experiment and diagnostic guide](docs/NANOX-EXPERIMENT.md) for minimal
-startup, lifecycle logs, validation scope and remaining hardware questions.
+startup, lifecycle logs, migration from `elksnx`, validation scope and remaining hardware questions.
 
 On an ELKS PC-98 installation with Nano-X installed, the separate
-`elksnx` executable uses Nano-X's 640×400 colour display instead of the
+`webnx` executable uses Nano-X's 640×400 colour display instead of the
 IBM PC video, mouse and keyboard code. Build it with the same Microwindows
 source as the installed Nano-X server:
 
@@ -168,10 +168,13 @@ source as the installed Nano-X server:
 TOPDIR=/path/to/built-elks MWDIR=/path/to/microwindows sh toolchain/build-nanox.sh
 ```
 
-Copy `build/nanox/elksnx` to `/bin/elksnx` and install the experiment
-assets under `/lib/elksnx/`. From the ELKS graphics console run
-`elksnx /lib/elksnx/welcome.htm`. The bundled Nano-X client can start an
-installed `/bin/nano-x` when its server is not already running.
+Copy `build/nanox/webnx` to `/bin/webnx` and install the experiment
+assets under `/lib/webnx/`. From the ELKS graphics console run
+`webnx /lib/webnx/welcome.htm`. The bundled Nano-X client can start an
+installed `/bin/nano-x` when its server is not already running. Prefer a working
+Nano-X session; on PC-98, test `nxstart` and its Close menu for session shutdown.
+Closing the browser does not itself guarantee that the text console is restored.
+The EPT nightly package is `webnx`: `ept install -n webnx`.
 
 The existing `elksweb` binary is unchanged; it still selects the native IBM
 PC/Tandy/PCjr drivers. On PC-98, keyboard and mouse are supplied by the

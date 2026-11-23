@@ -35,8 +35,8 @@ static void lifecycle_log(const char *stage, int err)
     if (!path || !*path) return;
     file = fopen(path, "a");
     if (file) {
-        if (err >= 0) fprintf(file, "elksnx: %s errno=%d\n", stage, err);
-        else fprintf(file, "elksnx: %s\n", stage);
+        if (err >= 0) fprintf(file, "webnx: %s errno=%d\n", stage, err);
+        else fprintf(file, "webnx: %s\n", stage);
         fclose(file);
     }
     errno = saved_errno;
