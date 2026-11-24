@@ -1,0 +1,41 @@
+{
+  "version": "0.6.2dev",
+  "capture_date": "2026-11-23",
+  "binary_sha256": "971c5e61c1a4be4e102d762b0bfac851aa68c901f432d2a4b51b41aac37e26ae",
+  "screenshots": [
+    {
+      "file": "ppc-shared-welcome.png",
+      "device": "Physical Amstrad PPC 512 with PicoMEM 2",
+      "mode": "Direct CGA, inverted",
+      "method": "Read-only CGA framebuffer capture via /dev/kmem after page loading",
+      "original_pixels": [
+        640,
+        200
+      ],
+      "display_pixels": [
+        1280,
+        800
+      ],
+      "scaling": "nearest-neighbour",
+      "scope": "Welcome page and both GIF logos; not a stock 512 KB or Nano-X test",
+      "notes": "Extra capture processes during the initial launch caused document allocation failure. Exec-only launch succeeded; a small-buffer framebuffer read captured the completed page. Stable 0.5 was preserved and the console returned to login.",
+      "sha256": "591b2888aa73063077a2ace56f6fe2e744546fab1d8bb9f3d8eb7516938c2cc8"
+    },
+    {
+      "file": "vga-shared-welcome.png",
+      "device": "QEMU IBM-compatible 486, 8 MB RAM, standard VGA",
+      "mode": "Direct VGA, 640x480, 16 colours",
+      "page": "/lib/web/welcome.htm",
+      "scope": "ELKSWeb direct-renderer validation; not a Nano-X desktop or physical VGA capture",
+      "sha256": "831b3487667344cb2a3bd6b89eda449de2b93c1d74e3db8d1e2999ad6c374c02"
+    },
+    {
+      "file": "vga-colour-demo.png",
+      "device": "QEMU IBM-compatible 486, 8 MB RAM, standard VGA",
+      "mode": "Direct VGA, 640x480, 16 colours",
+      "page": "/lib/web/color.htm",
+      "scope": "ELKSWeb direct-renderer validation; not a Nano-X desktop or physical VGA capture",
+      "sha256": "1690d426e910b4742bdfb9ba44a416acecf4f784a3ff32771bead6487288307a"
+    }
+  ]
+}
