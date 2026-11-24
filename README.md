@@ -31,7 +31,7 @@ The [0.6.2dev nightly candidate](https://github.com/l00nix/ELKSWeb/tree/dev/0.6-
 
 ![ELKSWeb 0.6.2dev shared colour demo in VGA in QEMU](docs/screenshots/0.6.2dev/vga-colour-demo.png)
 
-Available through the [8088retro local EPT nightly catalogue](http://ept.8088retro.com/local/). Fresh installs use `ept install -n elksweb`; users of the old split packages should follow the [migration guide](https://github.com/l00nix/ELKSWeb/blob/dev/0.6-nanox/docs/NANOX-EXPERIMENT.md#install-and-migrate) first. [Capture details](docs/screenshots/0.6.2dev/captures.json). Physical PC-98 and intermittent Nano-X logo reports remain open.
+Available through the [main 8088retro EPT nightly catalogue](http://ept.8088retro.com/). Set `REPO=http://ept.8088retro.com` in `/etc/ept.cfg` and use `ept install -n elksweb`; `/local` is no longer required. Fresh installs need no package removals; users of the old split packages should follow the [migration guide](https://github.com/l00nix/ELKSWeb/blob/dev/0.6-nanox/docs/NANOX-EXPERIMENT.md#install-and-migrate) first. [Capture details](docs/screenshots/0.6.2dev/captures.json). Physical PC-98 and intermittent Nano-X logo reports remain open.
 
 ## Live browsing on retro hardware
 
@@ -178,7 +178,7 @@ Choose the direct `elksweb` executable or `webnx`, which uses a compatible
 Nano-X server for the hardware, including PC-98 or IBM-compatible servers.
 Both open `/lib/web/welcome.htm`, with common instructions and both logos.
 
-For a fresh install with `REPO=http://ept.8088retro.com/local` configured:
+For a fresh install with `REPO=http://ept.8088retro.com` in `/etc/ept.cfg` (no `/local` suffix):
 
 ```sh
 ept install -n elksweb

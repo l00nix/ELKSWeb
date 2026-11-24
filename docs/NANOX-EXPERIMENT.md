@@ -13,12 +13,21 @@ nightly development build, not a stable 0.6 release; no EMS/kernel support is ad
 
 ## Install and migrate
 
-With networking up and `REPO=http://ept.8088retro.com/local` in `/etc/ept.cfg`,
+With networking up and `REPO=http://ept.8088retro.com` in `/etc/ept.cfg`,
 a fresh installation needs just:
 
 ```sh
 ept install -n elksweb
+elksweb --version
+webnx --version
 ```
+
+Both version commands should report **0.6.2dev**. The main mirror's nightly
+catalogue now contains package **20261123.1-e781852**; `/local` is no longer
+required. `-n` selects the nightly catalogue of the configured repository.
+The old `/local` address still works for compatibility, including instructions
+inside previously published packages. A first-time install, or an upgrade from
+0.5 with no separate `webnx`, `webdata` or `elksnx` packages, needs no removals.
 
 Choose `elksweb` for the direct console or `webnx` for Nano-X. Installing both
 executables uses disk space; only the one you launch consumes process memory.
