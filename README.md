@@ -15,6 +15,24 @@ Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/g
 
 General IBM PC compatibility remains the goal.
 
+## Shared welcome page in 0.6.2dev
+
+The [0.6.2dev nightly candidate](https://github.com/l00nix/ELKSWeb/tree/dev/0.6-nanox) combines `elksweb` and `webnx` in one EPT package. Both open `/lib/web/welcome.htm`, showing both logos, common controls and the direct-console/Nano-X launch options, following [ghaerr's suggestion](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7112604032). Thanks to [astrobleem](https://github.com/astrobleem) for the colour support, Nano-X contribution and WebNX artwork. Stable 0.5 remains the general release.
+
+**Physical Amstrad PPC 512 with PicoMEM 2:** the shared welcome page and both GIF logos, captured from the CGA framebuffer with inverted colours. The 640×200 pixels are enlarged for readability. This checks welcome-page rendering in the current configuration, not stock 512 KB or Nano-X operation.
+
+![ELKSWeb 0.6.2dev shared welcome page on the physical PPC 512 in inverted CGA](docs/screenshots/0.6.2dev/ppc-shared-welcome.png)
+
+**ELKS virtual machine:** the same welcome page in 640×480 VGA colour on a QEMU 486 with 8 MB RAM. This is the direct `elksweb` renderer.
+
+![ELKSWeb 0.6.2dev shared welcome page in VGA colour in QEMU](docs/screenshots/0.6.2dev/vga-shared-welcome.png)
+
+**Shared colour demo:** both logos, coloured text and the 16-colour palette in the same VGA virtual machine.
+
+![ELKSWeb 0.6.2dev shared colour demo in VGA in QEMU](docs/screenshots/0.6.2dev/vga-colour-demo.png)
+
+Available through the [8088retro local EPT nightly catalogue](http://ept.8088retro.com/local/). Fresh installs use `ept install -n elksweb`; users of the old split packages should follow the [migration guide](https://github.com/l00nix/ELKSWeb/blob/dev/0.6-nanox/docs/NANOX-EXPERIMENT.md#install-and-migrate) first. [Capture details](docs/screenshots/0.6.2dev/captures.json). Physical PC-98 and intermittent Nano-X logo reports remain open.
+
 ## Live browsing on retro hardware
 
 ### Amstrad PPC 512
