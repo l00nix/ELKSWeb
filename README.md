@@ -31,7 +31,7 @@ The [0.6.2dev shared-page update](https://github.com/l00nix/ELKSWeb/tree/dev/0.6
 
 ![ELKSWeb 0.6.2dev shared colour demo in VGA in QEMU](docs/screenshots/0.6.2dev/vga-colour-demo.png)
 
-Available through the [main 8088retro EPT nightly catalogue](http://ept.8088retro.com/). Set `REPO=http://ept.8088retro.com` in `/etc/ept.cfg` and use `ept install -n elksweb`; `/local` is no longer required. Fresh installs need no package removals; users of the old split packages should follow the [migration guide](https://github.com/l00nix/ELKSWeb/blob/dev/0.6-nanox/docs/NANOX-EXPERIMENT.md#install-and-migrate) first. [Capture details](docs/screenshots/0.6.2dev/captures.json). Physical PC-98 and intermittent Nano-X logo reports remain open.
+Available through the [main 8088retro EPT nightly catalogue](http://ept.8088retro.com/). Set `REPO=http://ept.8088retro.com` in `/etc/ept.cfg` and use `ept install -n elksweb`; `/local` is no longer required. Fresh installs need no package removals; users of the old split packages should follow the [migration guide](https://github.com/l00nix/ELKSWeb/blob/dev/0.6-nanox/docs/NANOX-EXPERIMENT.md#install-and-migrate) first. [Capture details](docs/screenshots/0.6.2dev/captures.json). For a later successful physical PC-9801RX report, see [WebNX 0.6.4dev hardware testing](#nec-pc-9801rx--webnx-064dev). Broader Nano-X startup and intermittent logo checks remain ongoing.
 
 ## Live browsing on retro hardware
 
@@ -52,6 +52,18 @@ ELKSWeb 0.2 on a physical HP 200LX, showing the welcome page and the FrogFind mi
 ![ELKSWeb 0.2 welcome page on a physical HP 200LX](docs/screenshots/hp200lx/0.2/welcome-photo.png)
 
 ![ELKSWeb 0.2 displaying FrogFind and its frog GIF on a physical HP 200LX](docs/screenshots/hp200lx/0.2/frogfind-photo.png)
+
+### NEC PC-9801RX — WebNX 0.6.4dev
+
+[Takahiro Yamada (@tyama501) reported successful physical PC-9801RX testing](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7167416434) after installing 0.6.4dev through EPT: launching WebNX from `nxterm` after `nxstart`, opening the FrogFind and EPT mirrors, clicking welcome-page links with the mouse, and closing the browser. His configuration had **XMS enabled, with `httpd` and `ftpd` not running**. These are the reported test conditions, not a general minimum-memory requirement or a claim that the browser stores images in XMS.
+
+Photographs by Takahiro Yamada, reproduced with his permission. The shared welcome page shows both logos; the FrogFind photo shows an image placeholder, so this report does not establish successful frog GIF loading. Download-fix verification in [#7](https://github.com/l00nix/ELKSWeb/issues/7) and the separate page-cache report in [#8](https://github.com/l00nix/ELKSWeb/issues/8) remain pending.
+
+<img src="docs/screenshots/pc9801rx/0.6.4dev/welcome-photo.jpg" alt="Takahiro Yamada's PC-9801RX displaying the shared ELKSWeb and WebNX 0.6.4dev welcome page with both logos" width="800">
+
+<img src="docs/screenshots/pc9801rx/0.6.4dev/browsing-photo.jpg" alt="WebNX displaying the FrogFind mirror on PC-9801RX, with a placeholder for the frog image" width="800">
+
+<img src="docs/screenshots/pc9801rx/0.6.4dev/ept-photo.jpg" alt="WebNX displaying the 8088retro EPT mirror on PC-9801RX" width="800">
 
 ## Design
 
@@ -189,8 +201,9 @@ webnx
 before installing the combined package.** See the [migration guide](docs/NANOX-EXPERIMENT.md#install-and-migrate).
 The Nano-X client uses `GrOpen` and `GrClose`; its library can start an installed
 server, and the server controls shutdown and console restoration. The server
-is not included. Physical PC-98 console reports and intermittent Nano-X logo
-rendering remain open. Stable 0.5 is unchanged.
+is not included. [PC-9801RX startup, browsing and closing passed a reported
+0.6.4dev hardware test](#nec-pc-9801rx--webnx-064dev) under the conditions above;
+broader console and intermittent logo testing continues. Stable 0.5 is unchanged.
 
 ## Low-memory systems
 

@@ -177,5 +177,10 @@ Test normal startup, shared welcome/GIFs, links and fields, keyboard/mouse,
 transfer cancellation, exposure repainting, arrow/page scrolling, and repeated
 exit/relaunch. Record memory, console recovery and client/server processes.
 Try window close during editing and network activity. Label physical PC-98,
-IBM emulator and PPC/HP results separately. Physical PC-98 overlay/exit issues
-remain open; no special shutdown behaviour has been added to mask them.
+IBM emulator and PPC/HP results separately. Takahiro Yamada subsequently
+[reported successful 0.6.4dev startup, browsing, mouse links and closing on a
+physical PC-9801RX](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7167416434),
+launching from nxterm after nxstart with XMS enabled and httpd/ftpd stopped.
+That validates the reported configuration, not every earlier startup path;
+no special shutdown behaviour has been added to mask failures. His FrogFind
+photo shows an image placeholder, and download verification remains pending.

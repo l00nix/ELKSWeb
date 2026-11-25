@@ -1,0 +1,24 @@
+{
+  "author": "Takahiro Yamada (@tyama501)",
+  "report_and_permission": "https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7167416434",
+  "reported_version": "0.6.4dev",
+  "hardware": "NEC PC-9801RX",
+  "processing": "Original downloaded JPEGs, unedited. README constrains display width only.",
+  "photos": [
+    {
+      "file": "welcome-photo.jpg",
+      "source": "https://github.com/user-attachments/assets/1a1fc1ea-701d-44b7-b79d-6d81012239ec",
+      "sha256": "ac6140b4c14064b9fa6c55bbddf9fd282dcd3f0b569cc17d29c7cb02aacf26e7"
+    },
+    {
+      "file": "browsing-photo.jpg",
+      "source": "https://github.com/user-attachments/assets/61e66fa3-9b89-4aae-bd78-0d4284dc627a",
+      "sha256": "0415a0d254b8cbc7d5fc45265a43f4940db4d6f7cfe74b0c38a25dda8d1f0cbf"
+    },
+    {
+      "file": "ept-photo.jpg",
+      "source": "https://github.com/user-attachments/assets/90d2ca48-a1ae-42e9-b2b0-33bc88d31e0a",
+      "sha256": "aee164187c3d28e1d814939da0f304b7d1d305dc4d48d5c4b30714daf6e4e993"
+    }
+  ]
+}
