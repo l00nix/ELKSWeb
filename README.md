@@ -13,11 +13,13 @@ Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/g
 
 **What’s new in 0.5:** [Tandy/PCjr 16-colour support, colour GIFs and HTML colours](#colour-support-in-05), contributed by [@astrobleem](https://github.com/astrobleem), plus faster monochrome startup, text and GIF rendering. The HP 200LX and PPC console, keyboard and serial-mouse fixes are retained. [Download 0.5](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5), read the [release notes](docs/RELEASE-0.5.md), or install from the [EPT mirror](http://ept.8088retro.com/) with `ept install elksweb` (general catalogue).
 
+**Nightly 0.6.3dev:** Applies [astrobleem's form-field repaint fix (#7)](https://github.com/l00nix/ELKSWeb/issues/7) to both ELKSWeb and WebNX, so typing, deletion and caret movement repaint the field band instead of the whole page. The HP/PPC fixes and shared package are retained. With `REPO=http://ept.8088retro.com` in `/etc/ept.cfg`, run `ept install -n elksweb`. Issue #7 remains open pending tester verification; general 0.5 is unchanged.
+
 General IBM PC compatibility remains the goal.
 
 ## Shared welcome page in 0.6.2dev
 
-The [0.6.2dev nightly candidate](https://github.com/l00nix/ELKSWeb/tree/dev/0.6-nanox) combines `elksweb` and `webnx` in one EPT package. Both open `/lib/web/welcome.htm`, showing both logos, common controls and the direct-console/Nano-X launch options, following [ghaerr's suggestion](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7112604032). Thanks to [astrobleem](https://github.com/astrobleem) for the colour support, Nano-X contribution and WebNX artwork. Stable 0.5 remains the general release.
+The [0.6.2dev shared-page update](https://github.com/l00nix/ELKSWeb/tree/dev/0.6-nanox) combines `elksweb` and `webnx` in one EPT package. Both open `/lib/web/welcome.htm`, showing both logos, common controls and the direct-console/Nano-X launch options, following [ghaerr's suggestion](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7112604032). Thanks to [astrobleem](https://github.com/astrobleem) for the colour support, Nano-X contribution and WebNX artwork. Stable 0.5 remains the general release.
 
 **Physical Amstrad PPC 512 with PicoMEM 2:** the shared welcome page and both GIF logos, captured from the CGA framebuffer with inverted colours. The 640×200 pixels are enlarged for readability. This checks welcome-page rendering in the current configuration, not stock 512 KB or Nano-X operation.
 
