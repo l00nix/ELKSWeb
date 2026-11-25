@@ -31,7 +31,7 @@ The [0.6.2dev shared-page update](https://github.com/l00nix/ELKSWeb/tree/dev/0.6
 
 ![ELKSWeb 0.6.2dev shared colour demo in VGA in QEMU](docs/screenshots/0.6.2dev/vga-colour-demo.png)
 
-Available through the [main 8088retro EPT nightly catalogue](http://ept.8088retro.com/). Set `REPO=http://ept.8088retro.com` in `/etc/ept.cfg` and use `ept install -n elksweb`; `/local` is no longer required. Fresh installs need no package removals; users of the old split packages should follow the [migration guide](https://github.com/l00nix/ELKSWeb/blob/dev/0.6-nanox/docs/NANOX-EXPERIMENT.md#install-and-migrate) first. [Capture details](docs/screenshots/0.6.2dev/captures.json). For a later successful physical PC-9801RX report, see [WebNX 0.6.4dev hardware testing](#nec-pc-9801rx--webnx-064dev). Broader Nano-X startup and intermittent logo checks remain ongoing.
+Available through the [8088retro EPT catalogues](http://ept.8088retro.com/). Set `REPO=http://ept.8088retro.com` in `/etc/ept.cfg` and use `ept install elksweb` (or add `-n` for nightly); `/local` is no longer required. Fresh installs need no package removals; users of the old split packages should follow the [migration guide](https://github.com/l00nix/ELKSWeb/blob/dev/0.6-nanox/docs/NANOX-EXPERIMENT.md#install-and-migrate) first. [Capture details](docs/screenshots/0.6.2dev/captures.json). For a later successful physical PC-9801RX report, see [WebNX 0.6.4dev hardware testing](#nec-pc-9801rx--webnx-064dev). Broader Nano-X startup and intermittent logo checks remain ongoing.
 
 ## Live browsing on retro hardware
 
@@ -171,7 +171,7 @@ This colour mode is experimental. The supplied implementation was exercised in 8
 
 ## How to install a release
 
-Download the [0.5 runtime package](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5) on a modern computer, verify its checksum, and transfer it to an existing ELKS installation. Install `bin/elksweb` as `/bin/elksweb` and the files in `lib/elksweb/` under `/lib/elksweb/`. The executable is always named `elksweb`. Keep the included notices and corresponding-source archive available.
+Download the [0.6 runtime package](https://github.com/l00nix/ELKSWeb/releases/tag/v0.6) on a modern computer, verify its checksum, and transfer it to an existing ELKS installation. Copy the archive’s `bin/` and `lib/` contents to `/bin/` and `/lib/`, preserving executable permissions. Both browsers use `/lib/web/welcome.htm`. The executable is always named `elksweb`. Keep the included notices and corresponding-source archive available.
 
 ```sh
 chmod 755 /bin/elksweb
@@ -179,7 +179,7 @@ elksweb --version
 elksweb
 ```
 
-The version reports **0.5**. Choose a detected display mode to open the local welcome page. Configure native ELKS networking and run `net start` before using HTTP. Enter a hostname such as `68knews.8088retro.com` in the address field or an explicit URL.
+The version reports **0.6**. Choose a detected display mode to open the local welcome page. Configure native ELKS networking and run `net start` before using HTTP. Enter a hostname such as `68knews.8088retro.com` in the address field or an explicit URL.
 
 See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse settings and upgrades. The runtime is a standalone application package, not an ELKS disk image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
 
@@ -203,7 +203,7 @@ The Nano-X client uses `GrOpen` and `GrClose`; its library can start an installe
 server, and the server controls shutdown and console restoration. The server
 is not included. [PC-9801RX startup, browsing and closing passed a reported
 0.6.4dev hardware test](#nec-pc-9801rx--webnx-064dev) under the conditions above;
-broader console and intermittent logo testing continues. Stable 0.5 is unchanged.
+broader console testing and PC-98 verification of the 0.6 redraw fix continue.
 
 ## Low-memory systems
 
@@ -231,7 +231,7 @@ These projects are credited for their respective work; no endorsement or affilia
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). See the [0.5 release notes](docs/RELEASE-0.5.md) and [development integration record](docs/DEVELOPMENT-0.5.md). Historical checks remain in STATUS; broader compatibility and performance feedback are welcome. Testers and feedback are welcome.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). See the [0.6 release notes](docs/RELEASE-0.6.md) and [development integration record](docs/DEVELOPMENT-0.5.md). Historical checks remain in STATUS; broader compatibility and performance feedback are welcome. Testers and feedback are welcome.
 
 ## License and attribution
 
