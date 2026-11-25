@@ -21,7 +21,7 @@ class Gif(ctypes.Structure):
                 ("stride", ctypes.c_uint),
                 ("pixels", ctypes.POINTER(ctypes.c_ubyte)),
                 ("opacity", ctypes.POINTER(ctypes.c_ubyte)),
-                ("depth", ctypes.c_ubyte)]
+                ("depth", ctypes.c_ubyte),("masked", ctypes.c_ubyte),("store", ctypes.c_void_p),("opacity_at", ctypes.c_ulong)]
 
 
 def encoded(width, height, count, seed, interlaced=False, transparent=None):
@@ -62,7 +62,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="elksweb-gif-test-") as directory:
         shared = Path(directory) / "gif.so"
         subprocess.run(["cc", "-std=c89", "-Wall", "-Wextra", "-Werror",
-                        "-shared", "-fPIC", str(ROOT / "gif.c"), "-o", str(shared)], check=True)
+                        "-shared", "-fPIC", str(ROOT / "gif.c"),str(ROOT / "store.c"),str(ROOT.parent / "platform/elks_store.c"), "-o", str(shared)], check=True)
         lib = ctypes.CDLL(str(shared))
         lib.ew_gif_decode.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.POINTER(Gif)]
         lib.ew_gif_decode.restype = ctypes.c_int

@@ -20,7 +20,7 @@ BAYER = (0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5)
 class Gif(C.Structure):
     _fields_ = [('width',C.c_uint),('height',C.c_uint),('stride',C.c_uint),
                 ('pixels',C.POINTER(C.c_ubyte)),('opacity',C.POINTER(C.c_ubyte)),
-                ('depth',C.c_ubyte)]
+                ('depth',C.c_ubyte),('masked',C.c_ubyte),('store',C.c_void_p),('opacity_at',C.c_ulong)]
 
 @unittest.skipIf(Image is None, 'Independent GIF pixel oracle requires Pillow')
 class GifAspect(unittest.TestCase):
@@ -29,7 +29,7 @@ class GifAspect(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory(prefix='elksweb-gif-aspect-')
         library = pathlib.Path(cls.temp.name)/'gif.so'
         subprocess.run(['cc','-std=c89','-Wall','-Wextra','-Werror','-shared','-fPIC',
-                        str(ROOT/'image/gif.c'),'-o',str(library)],check=True,capture_output=True)
+                        str(ROOT/'image/gif.c'),str(ROOT/'image/store.c'),str(ROOT/'platform/elks_store.c'),'-o',str(library)],check=True,capture_output=True)
         cls.lib = C.CDLL(str(library))
         cls.lib.ew_gif_decode.argtypes = [C.c_void_p,C.c_uint,C.POINTER(Gif)]
         cls.lib.ew_gif_decode_aspect.argtypes = [C.c_void_p,C.c_uint,C.POINTER(Gif),C.c_uint]
