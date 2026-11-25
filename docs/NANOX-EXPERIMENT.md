@@ -8,8 +8,7 @@ and the differences between direct-console and Nano-X browsing. Colour tests
 are linked from the welcome page. This follows ghaerr's PR #5 guidance.
 
 The Nano-X contribution and WebNX branding are from astrobleem's PRs #5/#6.
-The rendering, GIF, HP/PPC and 0.5 performance fixes are retained. This is a
-nightly development build, available through EPT nightly; no EMS/kernel support is added.
+The rendering, GIF, HP/PPC and 0.5 performance fixes are retained. Release 0.6 is available in general and nightly; no EMS/kernel support is added.
 
 ## First-load image redraw (0.6)
 
@@ -50,14 +49,14 @@ With networking up and `REPO=http://ept.8088retro.com` in `/etc/ept.cfg`,
 a fresh installation needs just:
 
 ```sh
-ept install -n elksweb
+ept install elksweb
 elksweb --version
 webnx --version
 ```
 
-Both version commands should report **0.6**. The main mirror's nightly
-catalogue contains the combined **0.6** candidate; `/local` is no longer
-required. `-n` selects the nightly catalogue of the configured repository.
+Both version commands should report **0.6**. The main mirror's general and
+nightly catalogues contain the combined **0.6** release; `/local` is not required.
+Use `ept install -n elksweb` to select nightly instead of general.
 The old `/local` address still works for compatibility, including instructions
 inside previously published packages. A first-time install, or an upgrade from
 0.5 with no separate `webnx`, `webdata` or `elksnx` packages, needs no removals.
@@ -65,7 +64,7 @@ inside previously published packages. A first-time install, or an upgrade from
 Choose `elksweb` for the direct console or `webnx` for Nano-X. Installing both
 executables uses disk space; only the one you launch consumes process memory.
 A compatible Nano-X server is still a separate system prerequisite, not bundled
-with the browser. Stable 0.5 remains unchanged in the general catalogue.
+with the browser. The 0.5 release remains available on GitHub for comparison.
 
 ### One-time migration from split nightlies
 
@@ -82,7 +81,7 @@ If the older `elksnx` package is installed, remove it too (`ept remove elksnx`).
 Skip commands for packages that are not installed. Then run:
 
 ```sh
-ept install -n elksweb
+ept install elksweb
 elksweb --version
 webnx --version
 ```
@@ -104,9 +103,9 @@ script generates all compatibility copies. Paths fit FAT 8.3. Personal files
 under `/root` are not replaced, and explicit URL/file arguments still work.
 Update any old `/bin/elksnx` launch commands to `/bin/webnx`.
 
-A bare launch without any default page prints `ept install -n elksweb` before
+A bare launch without any default page prints `ept install elksweb` before
 initializing graphics. `ept remove elksweb` removes both clients and the bundled
-assets. Downgrading to general 0.5 also removes the nightly's Nano-X client and
+assets. Downgrading to the old 0.5 package also removes the Nano-X client and
 shared/compatibility assets, restoring the self-contained stable package.
 
 ## Normal Nano-X startup and exit

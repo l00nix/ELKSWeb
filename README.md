@@ -11,13 +11,13 @@ An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Nightly candidate 0.6:** Fixes images remaining as placeholders after mouse-click navigation in ELKSWeb and WebNX. The frog now appears on the first load on the physical PPC with the fixed test build, without F2 or F5. The HP/PPC fixes, colour and scrolling support, shared package, and astrobleem's form/download fixes are retained. Install with `ept install -n elksweb` from `REPO=http://ept.8088retro.com`. PC-98 verification of this redraw fix and issue #7 download verification remain open. [0.5 remains the general release](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5).
+**New in 0.6:** Fixes images remaining as placeholders after mouse-click navigation in ELKSWeb and WebNX. The frog now appears on the first load on the physical PPC with the fixed test build, without F2 or F5. The HP/PPC fixes, colour and scrolling support, shared package, and astrobleem's form/download fixes are retained. Install with `ept install elksweb` from `REPO=http://ept.8088retro.com`. PC-98 verification of this redraw fix and issue #7 download verification remain open. [0.5 remains available for comparison](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5).
 
 General IBM PC compatibility remains the goal.
 
 ## Shared welcome page in 0.6.2dev
 
-The [0.6.2dev shared-page update](https://github.com/l00nix/ELKSWeb/tree/dev/0.6-nanox) combines `elksweb` and `webnx` in one EPT package. Both open `/lib/web/welcome.htm`, showing both logos, common controls and the direct-console/Nano-X launch options, following [ghaerr's suggestion](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7112604032). Thanks to [astrobleem](https://github.com/astrobleem) for the colour support, Nano-X contribution and WebNX artwork. Stable 0.5 remains the general release.
+The [0.6.2dev shared-page update](https://github.com/l00nix/ELKSWeb/tree/dev/0.6-nanox) combines `elksweb` and `webnx` in one EPT package. Both open `/lib/web/welcome.htm`, showing both logos, common controls and the direct-console/Nano-X launch options, following [ghaerr's suggestion](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7112604032). Thanks to [astrobleem](https://github.com/astrobleem) for the colour support, Nano-X contribution and WebNX artwork. Release 0.6 is available in both general and nightly.
 
 **Physical Amstrad PPC 512 with PicoMEM 2:** the shared welcome page and both GIF logos, captured from the CGA framebuffer with inverted colours. The 640×200 pixels are enlarged for readability. This checks welcome-page rendering in the current configuration, not stock 512 KB or Nano-X operation.
 
@@ -185,7 +185,7 @@ See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse setting
 
 ### Optional Nano-X browser
 
-The nightly package includes both **ELKSWeb 0.6** and **WebNX 0.6**.
+The 0.6 package includes both **ELKSWeb 0.6** and **WebNX 0.6**.
 Choose the direct `elksweb` executable or `webnx`, which uses a compatible
 Nano-X server for the hardware, including PC-98 or IBM-compatible servers.
 Both open `/lib/web/welcome.htm`, with common instructions and both logos.
