@@ -1270,7 +1270,11 @@ static void mouse_event(const struct ew_mouse_event *event) {
         image_map(r, mouse_x - (r->x - hscroll), mouse_y - y);
       else
         activate();
-      dirty |= DRAW_FOCUS;
+      /* Successful navigation clears focus and queues the new page's image
+       * update. A focus-only clip here would suppress those images, leaving
+       * placeholders until another repaint. Failed navigation and controls
+       * retain focus and still need their highlight/caret painted. */
+      if (focused >= 0) dirty |= DRAW_FOCUS;
       return;
     }
   }

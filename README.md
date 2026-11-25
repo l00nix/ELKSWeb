@@ -5,13 +5,13 @@
   <img src="artwork/elksweb-wordmark-yellow-globe.png" alt="ELKSWeb logo" width="640">
 </p>
 
-# ELKSWeb 0.6.4dev
+# ELKSWeb 0.6
 
 An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr/elks), written in C with the native ELKS IA16 toolchain and targeting 8088-compatible machines.
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Development candidate 0.6.4dev:** Applies [astrobleem's download follow-up fixes (#7)](https://github.com/l00nix/ELKSWeb/issues/7#issuecomment-7156977194): editing a download filename repaints only its controls, and successful downloads flush ELKS filesystem buffers before “File saved” appears. Both fixes cover ELKSWeb and WebNX. The 0.6.3dev form-field fix, HP/PPC fixes, GIF handling and combined package are retained. Install with `ept install -n elksweb` from `REPO=http://ept.8088retro.com`. Issue #7 remains open for verification of this candidate. [0.5 remains the general release](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5).
+**Nightly candidate 0.6:** Fixes images remaining as placeholders after mouse-click navigation in ELKSWeb and WebNX. The frog now appears on the first load on the physical PPC with the fixed test build, without F2 or F5. The HP/PPC fixes, colour and scrolling support, shared package, and astrobleem's form/download fixes are retained. Install with `ept install -n elksweb` from `REPO=http://ept.8088retro.com`. PC-98 verification of this redraw fix and issue #7 download verification remain open. [0.5 remains the general release](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5).
 
 General IBM PC compatibility remains the goal.
 
@@ -185,7 +185,7 @@ See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse setting
 
 ### Optional Nano-X browser
 
-The nightly package includes both **ELKSWeb 0.6.4dev** and **WebNX 0.6.4dev**.
+The nightly package includes both **ELKSWeb 0.6** and **WebNX 0.6**.
 Choose the direct `elksweb` executable or `webnx`, which uses a compatible
 Nano-X server for the hardware, including PC-98 or IBM-compatible servers.
 Both open `/lib/web/welcome.htm`, with common instructions and both logos.

@@ -1,15 +1,29 @@
-# ELKSWeb and WebNX 0.6.4dev
+# ELKSWeb and WebNX 0.6
 
 One `elksweb` package contains the direct `/bin/elksweb` browser, the optional
 `/bin/webnx` Nano-X client, and shared pages/images under `/lib/web/`.
-Both executables report **0.6.4dev** and open `/lib/web/welcome.htm` by default,
+Both executables report **0.6** and open `/lib/web/welcome.htm` by default,
 including in native colour modes. The page shows both logos, common controls,
 and the differences between direct-console and Nano-X browsing. Colour tests
 are linked from the welcome page. This follows ghaerr's PR #5 guidance.
 
 The Nano-X contribution and WebNX branding are from astrobleem's PRs #5/#6.
 The rendering, GIF, HP/PPC and 0.5 performance fixes are retained. This is a
-nightly development build, not a stable 0.6 release; no EMS/kernel support is added.
+nightly development build, available through EPT nightly; no EMS/kernel support is added.
+
+## First-load image redraw (0.6)
+
+Successful mouse navigation could leave a decoded image behind its placeholder:
+the old focus repaint clipped out the pending image update. F2 or F5 made the
+image visible. The shared fix preserves the pending image repaint without adding
+a full-page redraw. It covers links, linked images and form-submit controls in
+ELKSWeb and WebNX.
+
+The user confirmed the frog appears on the first mouse-click load on the physical
+PPC with the fixed 0.6.4test1 build promoted here. Regression tests reproduce the
+old failure and pass in both compile paths at 200, 350 and 480 pixel heights.
+PC-98 verification is still requested; this does not resolve the separate page-cache
+report in issue #8 or establish additional low-memory support.
 
 ## Form and download fixes (issue #7)
 
@@ -41,8 +55,8 @@ elksweb --version
 webnx --version
 ```
 
-Both version commands should report **0.6.4dev**. The main mirror's nightly
-catalogue contains the combined **0.6.4dev** candidate; `/local` is no longer
+Both version commands should report **0.6**. The main mirror's nightly
+catalogue contains the combined **0.6** candidate; `/local` is no longer
 required. `-n` selects the nightly catalogue of the configured repository.
 The old `/local` address still works for compatibility, including instructions
 inside previously published packages. A first-time install, or an upgrade from
@@ -73,7 +87,7 @@ elksweb --version
 webnx --version
 ```
 
-Both should report 0.6.4dev. Do not remove the old packages after installing
+Both should report 0.6. Do not remove the old packages after installing
 the combined one: older EPT clients retain their file ownership records and
 could delete its files. If this happened, remove the remaining old package
 records and reinstall `elksweb` using the command above. Do not hand-edit the

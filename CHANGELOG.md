@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6 — nightly candidate (2026-11-25)
+
+- Fix first-load GIF placeholders after mouse navigation: preserve the new page image repaint instead of clipping it to a stale focus region. Covers both ELKSWeb and WebNX without an extra full-page redraw.
+- Confirm the fix on the physical PPC: FrogFind now shows its frog on the first mouse-click load, without F2 or F5 (tested as 0.6.4test1). Ask for PC-98 verification following Takahiro Yamada’s PR #5 report.
+- Add regressions for text links, image links and form submission in both compile paths at three display heights; all 366 core tests pass.
+- Retain astrobleem’s graphics, Nano-X, form and download contributions, ghaerr’s shared-package guidance, and existing HP/PPC input, display and GIF fixes. General 0.5 remains available; issues #7/#8 stay open.
+
 ## 0.6.4dev — download repaint and save flushing
 
 - Apply [astrobleem’s two follow-up patches](https://github.com/l00nix/ELKSWeb/issues/7#issuecomment-7156977194) independently: repaint only download controls during filename editing, and call `sync()` after successful close before reporting “File saved”.
