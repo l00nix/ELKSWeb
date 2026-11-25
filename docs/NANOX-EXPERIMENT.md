@@ -1,8 +1,8 @@
-# ELKSWeb and WebNX 0.6.3dev
+# ELKSWeb and WebNX 0.6.4dev
 
 One `elksweb` package contains the direct `/bin/elksweb` browser, the optional
 `/bin/webnx` Nano-X client, and shared pages/images under `/lib/web/`.
-Both executables report **0.6.3dev** and open `/lib/web/welcome.htm` by default,
+Both executables report **0.6.4dev** and open `/lib/web/welcome.htm` by default,
 including in native colour modes. The page shows both logos, common controls,
 and the differences between direct-console and Nano-X browsing. Colour tests
 are linked from the welcome page. This follows ghaerr's PR #5 guidance.
@@ -11,14 +11,24 @@ The Nano-X contribution and WebNX branding are from astrobleem's PRs #5/#6.
 The rendering, GIF, HP/PPC and 0.5 performance fixes are retained. This is a
 nightly development build, not a stable 0.6 release; no EMS/kernel support is added.
 
-## Form-field repaint fix (issue #7)
+## Form and download fixes (issue #7)
 
-0.6.3dev applies astrobleem's [issue #7](https://github.com/l00nix/ELKSWeb/issues/7)
-change: text insertion, deletion and caret movement redraw the focused field
-band rather than the whole page. Both clients share these handlers. Full-page
-redrawing remains the fallback when the viewport changes. This preserves
-form submission, existing graphics/input fixes and shared asset ownership.
-The issue remains open pending verification by testers on their systems.
+0.6.3dev changed form-field typing, deletion and caret movement to repaint the
+focused field band. Astrobleem verified that packaged fix on his CompuADD
+386SX/16; QEMU also passed form submission and exit. His physical FrogFind
+search encountered a separate page-cache error, so the results page was not
+verified in that run.
+
+0.6.4dev applies his [two follow-up patches](https://github.com/l00nix/ELKSWeb/issues/7#issuecomment-7156977194):
+filename editing redraws only the download controls, and a successful save
+calls `sync()` after closing the file and before showing “File saved”. This
+flushes ELKS filesystem buffers. It is not a guarantee against media errors
+or device caches, and the ELKS sync interface provides no per-file error result.
+Existing write/close failure handling and cancellation are retained.
+
+Both clients share these changes. No kernel or Nano-X server changes are
+included. Issue #7 stays open for verification of the packaged 0.6.4dev build;
+astrobleem's power-cycle result applies to his own patched build.
 
 ## Install and migrate
 
@@ -31,8 +41,8 @@ elksweb --version
 webnx --version
 ```
 
-Both version commands should report **0.6.3dev**. The main mirror's nightly
-catalogue contains the combined **0.6.3dev** candidate; `/local` is no longer
+Both version commands should report **0.6.4dev**. The main mirror's nightly
+catalogue contains the combined **0.6.4dev** candidate; `/local` is no longer
 required. `-n` selects the nightly catalogue of the configured repository.
 The old `/local` address still works for compatibility, including instructions
 inside previously published packages. A first-time install, or an upgrade from
@@ -63,7 +73,7 @@ elksweb --version
 webnx --version
 ```
 
-Both should report 0.6.3dev. Do not remove the old packages after installing
+Both should report 0.6.4dev. Do not remove the old packages after installing
 the combined one: older EPT clients retain their file ownership records and
 could delete its files. If this happened, remove the remaining old package
 records and reinstall `elksweb` using the command above. Do not hand-edit the

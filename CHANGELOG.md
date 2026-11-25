@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.4dev — download repaint and save flushing
+
+- Apply [astrobleem’s two follow-up patches](https://github.com/l00nix/ELKSWeb/issues/7#issuecomment-7156977194) independently: repaint only download controls during filename editing, and call `sync()` after successful close before reporting “File saved”.
+- Preserve form submission, save error/cancellation handling, shared assets, GIF and HP/PPC fixes. General 0.5 is unchanged.
+- Extend direct/Nano-X repaint tests across long filenames, colour/inversion, caret and focus changes; verify flush ordering and save-failure paths.
+- Record the reporter’s physical 0.6.3dev form fix confirmation. Keep #7 open for verification of this candidate; the reported FrogFind page-cache failure is separate.
+
 ## 0.6.3dev — form-field repaint fix
 
 - Apply [astrobleem’s issue #7 fix](https://github.com/l00nix/ELKSWeb/issues/7):

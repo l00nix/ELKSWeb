@@ -146,3 +146,11 @@ viewport-scroll fallback and HTTP submission. Writes outside the field band
 are forbidden during stationary editing, and each incremental frame must
 match a full repaint. These are host checks; the Nano-X transport and physical
 hardware require separate validation.
+
+`test_download_repaint.py` extends those checks to download filename editing,
+long names, focus/caret clearing, monochrome/colour themes, cancellation and
+save-page restoration in both clients. `test_browser_failures.py` also checks
+that a successful save closes before syncing and reports success only after
+sync returns, while write/close failures and cancellation never report success.
+Host stubs prove ordering, not storage durability; persistence needs native
+filesystem and hardware testing.
