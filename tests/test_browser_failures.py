@@ -168,6 +168,29 @@ class BrowserFailures(unittest.TestCase):
         finally:server.close()
         self.recover()
 
+    def test_save_flushes_after_close_before_success(self):
+        self.binary()
+        with tempfile.TemporaryDirectory(prefix='ew-sync-') as folder:
+            path=pathlib.Path(folder)/'saved.bin'
+            self.lib.qa_browser_save(os.fsencode(path),16|32,0)
+            self.assertEqual(path.read_bytes(),self.payload)
+            self.assertEqual(self.lib.qa_browser_sync_calls(),1)
+            self.assertTrue(self.lib.qa_browser_sync_order())
+            self.assertEqual(self.lib.qa_browser_status(),b'File saved')
+            self.assertFalse(self.lib.qa_browser_download_open())
+
+    def test_save_failures_do_not_flush_or_report_success(self):
+        for fault,cancel in ((1,0),(2,0),(4,0),(64,0),(2|8,0),(0,1)):
+            with self.subTest(fault=fault,cancel=cancel):
+                self.binary()
+                with tempfile.TemporaryDirectory(prefix='ew-sync-fail-') as folder:
+                    path=pathlib.Path(folder)/'saved.bin'
+                    self.lib.qa_browser_save(os.fsencode(path),fault,cancel)
+                    self.assertEqual(self.lib.qa_browser_sync_calls(),0)
+                    self.assertNotEqual(self.lib.qa_browser_status(),b'File saved')
+                    self.assertTrue(self.lib.qa_browser_download_open())
+                self.lib.qa_browser_cancel_download()
+
     def test_history_slot_allocation_failure_preserves_navigation(self):
         before=self.lib.qa_allocator_live()
         # Document buffers and URL bank are already retained from home;

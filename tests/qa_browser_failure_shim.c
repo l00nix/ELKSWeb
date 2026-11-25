@@ -8,6 +8,8 @@
 #include <sys/types.h>
 static unsigned save_fault, save_written, save_interrupt;
 static int cancel_key;
+static int save_closed, save_sync_calls, save_sync_order;
+static void qa_save_sync(void);
 static int qa_save_open(const char *path,int flags,...)
 {
   if (save_fault&1) { errno=EACCES;return -1; }
@@ -30,6 +32,7 @@ static int qa_save_close(int fd)
 {
   int result=close(fd);
   if (save_fault&4) { errno=EIO;return -1; }
+  save_closed = result == 0;
   return result;
 }
 static int qa_save_unlink(const char *path)
@@ -42,12 +45,20 @@ static int qa_save_unlink(const char *path)
 #define write qa_save_write
 #define close qa_save_close
 #define unlink qa_save_unlink
+#define sync qa_save_sync
 #include "../src/main.c"
 #undef main
 #undef open
 #undef write
 #undef close
 #undef unlink
+#undef sync
+static void qa_save_sync(void) {
+  ++save_sync_calls;
+  save_sync_order = save_closed && download_edit && strcmp(status,"File saved");
+}
+int qa_browser_sync_calls(void) {return save_sync_calls;}
+int qa_browser_sync_order(void) {return save_sync_order;}
 /* Keep actual parser query adapters, but main.c owns network progress. */
 #define ew_net_progress qa_unused_net_progress
 #include "qa_core_shim.c"
@@ -89,6 +100,7 @@ void qa_browser_save(const char *path,unsigned fault,int cancel)
   strncpy(download_name,path,sizeof(download_name)-1);
   download_name[sizeof(download_name)-1]=0;
   save_fault=fault;save_written=save_interrupt=0;
+  save_closed=save_sync_calls=save_sync_order=0;
   cancel_key=cancel ? EW_KEY_ESC : 0;
   key(EW_KEY_ENTER);
 }

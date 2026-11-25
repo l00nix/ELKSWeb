@@ -849,7 +849,13 @@ static void key(int k) {
       if (failed) {
         message(unlink(download_name) ? "Save failed; incomplete file remains" :
                 "Save failed or cancelled; incomplete file removed");
-      } else { download_edit = 0; dirty |= DRAW_TITLE | DRAW_ADDRESS; message("File saved"); }
+      } else {
+        /* DOS FAT may still hold the directory entry and data in ELKS buffers. */
+        sync();
+        download_edit = 0;
+        dirty |= DRAW_TITLE | DRAW_ADDRESS;
+        message("File saved");
+      }
     } else if (download_button) { /* Typing does not edit an unfocused field. */ }
     else if (k == EW_KEY_HOME) download_pos = 0;
     else if (k == EW_KEY_END) download_pos = n;
