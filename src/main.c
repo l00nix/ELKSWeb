@@ -30,6 +30,7 @@ static int focused = -1, editing = 0, selectall = 0, inverse = 0, chrome = 1;
 #define DRAW_SCROLL 32
 #define DRAW_FOCUS 64
 #define DRAW_IMAGES 128
+#define DRAW_DOWNLOAD 256
 static int hcount = 0, hpos = -1, dirty = DRAW_ALL;
 static unsigned field_pos, address_pos;
 static int mouse_active, mouse_x = 320, mouse_y = 100, scroll_drag, drag_offset;
@@ -511,8 +512,14 @@ static void draw(void) {
         ew_hline(x + 4, end - 4, 3, f);
       }
     }
-    if (download_edit) {
-      unsigned start = 0, n = strlen(download_name);
+    ew_clip(SW, 0, EW_SCREEN_HEIGHT);
+  }
+  if (download_edit && (dirty & (DRAW_PAGE | DRAW_DOWNLOAD))) {
+    unsigned start = 0, n = strlen(download_name);
+    f = pal[R_TEXT];
+    b = pal[R_PAGE];
+    ew_clip(PW, t, bot);
+    if (dirty & DRAW_PAGE) {
       centered_text(38, "Do you want to download this file?", EW_LARGE | EW_BOLD);
       ew_hline(8, 56, PW - 16, pal[R_RULE]);
       centered_text(60, address, EW_SMALL | EW_BOLD);
@@ -521,23 +528,24 @@ static void draw(void) {
       snprintf(temp, sizeof(temp), "Size: %lu KB", (unsigned long)ew_source_length / 1024);
       centered_text(84, temp, EW_SMALL | EW_BOLD);
       ew_hline(8, 98, PW - 16, pal[R_RULE]);
-      x = download_x();
-      ew_rect(x, 102, download_w(), EW_CONTROL_HEIGHT, pal[R_EDGE]);
-      while (start < download_pos &&
-             ew_body_width(download_name + start, download_pos - start, 0) > download_w() - 11)
-        start++;
-      n -= start;
-      while (n && ew_body_width(download_name + start, n, 0) > download_w() - 8) n--;
-      textn(x + 3, 104, download_name + start, n, f, b, 0);
-      if (!download_button)
-        ew_vline(x + 3 + ew_body_width(download_name + start, download_pos - start, 0),
-                 104, EW_BODY_HEIGHT, f);
-      x = download_button_x();
-      if (ew_color) ew_fillrect(x + 1, 129, 73, EW_CONTROL_HEIGHT - 2, pal[R_FACE]);
-      ew_rect(x, 128, 75, EW_CONTROL_HEIGHT, pal[R_EDGE]);
-      if (download_button) ew_rect(x + 1, 129, 73, EW_CONTROL_HEIGHT-2, pal[R_LINK]);
-      textn(x + 8, 130, "Download", 8, pal[R_FACE_TEXT], pal[R_FACE], 0);
     }
+    x = download_x();
+    ew_fillrect(x + 1, 103, download_w() - 2, EW_CONTROL_HEIGHT - 2, b);
+    ew_rect(x, 102, download_w(), EW_CONTROL_HEIGHT, pal[R_EDGE]);
+    while (start < download_pos &&
+           ew_body_width(download_name + start, download_pos - start, 0) > download_w() - 11)
+      start++;
+    n -= start;
+    while (n && ew_body_width(download_name + start, n, 0) > download_w() - 8) n--;
+    textn(x + 3, 104, download_name + start, n, f, b, 0);
+    if (!download_button)
+      ew_vline(x + 3 + ew_body_width(download_name + start, download_pos - start, 0),
+               104, EW_BODY_HEIGHT, f);
+    x = download_button_x();
+    ew_fillrect(x + 1, 129, 73, EW_CONTROL_HEIGHT - 2, ew_color ? pal[R_FACE] : b);
+    ew_rect(x, 128, 75, EW_CONTROL_HEIGHT, pal[R_EDGE]);
+    if (download_button) ew_rect(x + 1, 129, 73, EW_CONTROL_HEIGHT-2, pal[R_LINK]);
+    textn(x + 8, 130, "Download", 8, pal[R_FACE_TEXT], pal[R_FACE], 0);
     ew_clip(SW, 0, EW_SCREEN_HEIGHT);
   }
   dirty = 0;
@@ -859,7 +867,7 @@ static void key(int k) {
                n - download_pos + 1);
       download_name[download_pos++] = k;
     }
-    dirty |= DRAW_PAGE | DRAW_STATUS;
+    dirty |= download_edit ? DRAW_DOWNLOAD : DRAW_PAGE;
     return;
   }
   if (select_open >= 0) {
@@ -1134,7 +1142,7 @@ static void mouse_event(const struct ew_mouse_event *event) {
                ew_body_width(download_name + start, download_pos - start + 1, 0) < mouse_x)
           download_pos++;
         download_button = 0;
-        dirty |= DRAW_PAGE | DRAW_STATUS;
+        dirty |= DRAW_DOWNLOAD;
       } else if (mouse_y >= NAV_Y && mouse_y < NAV_Y+EW_CONTROL_HEIGHT) {
         download_edit = 0;
         dirty |= DRAW_PAGE | DRAW_TITLE | DRAW_ADDRESS;

@@ -352,6 +352,29 @@ class RepaintRegions(unittest.TestCase):
         try:self.lib.qa_repaint_load((server.url+'/file.bin').encode())
         finally:server.close()
         self.assertEqual(self.lib.qa_repaint_download(),1)
+    def test_download_edit_only_paints_controls(self):
+        self.lib.qa_download_filename.restype=C.c_char_p
+        for height in (200,350,480):
+            self.prepare(height)
+            self.download()
+            original=self.lib.qa_download_filename()
+            for action,value in [(3,original),(ord('x'),original+b'x'),
+                                 (0,original+b'x'),(1,original+b'x'),
+                                 (2,original+b'x'),(5,(original+b'x')[1:]),
+                                 (3,(original+b'x')[1:]),(4,original[1:]),
+                                 (6,original[1:]),(7,original[1:]),
+                                 ('click',original[1:])]:
+                with self.subTest(height=height,action=action):
+                    self.reset()
+                    if action=='click':self.lib.qa_download_click_name()
+                    else:self.lib.qa_download_key(action)
+                    self.assertEqual(self.lib.qa_download_filename(),value)
+                    self.no_full_clear()
+                    self.assertEqual(self.count(0,0,640,102),0)
+                    self.assertEqual(self.count(0,152,640,height),0)
+                    self.assertGreater(self.count(0,102,624,152),0)
+                    self.assertEqual(self.lib.qa_repaint_full_equivalence(),0)
+
     def test_download_progress_then_cancel_restores_page(self):
         self.prepare();self.lib.qa_repaint_snapshot();self.download();self.reset()
         self.lib.qa_repaint_progress(b'Saving file...')

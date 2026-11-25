@@ -29,7 +29,7 @@ void ew_scroll(int first,int last,int delta) {
 void ew_pixel(int x,int y,int color) {
   if(x<0 || x>=640 || y<0 || y>=ew_screen_height ||
      x>=clip_right || y<clip_top || y>=clip_bottom)return;
-  ++writes[y][x];pixels[y][x]=!!color;
+  ++writes[y][x];pixels[y][x]=(unsigned char)color;
 }
 void ew_hline(int x,int y,int width,int color) {
   int i;for(i=0;i<width;i++)ew_pixel(x+i,y,color);
@@ -49,7 +49,7 @@ void ew_clear(int color) {
   int x,y;++clears;
   /* Real clear writes the entire framebuffer; it does not obey clipping. */
   for(y=0;y<ew_screen_height;y++)for(x=0;x<640;x++) {
-    ++writes[y][x];pixels[y][x]=!!color;
+    ++writes[y][x];pixels[y][x]=(unsigned char)color;
   }
 }
 void ew_cursor_show(int x,int y) {(void)x;(void)y;}
@@ -73,7 +73,7 @@ void qa_repaint_prepare(const char *html,int height) {
   for(hi=0;hi<hcount;hi++)ew_far_free(history[hi]);
   memset(history,0,sizeof(history));hcount=0;hpos=-1;
   ew_images_clear();ew_source_free();
-  ew_screen_height=height;ew_pixel_aspect=height==200?2:1;
+  ew_screen_height=height;ew_pixel_aspect=height==200?2:1;ew_color=0;
   ew_clip(640,0,height);
   focused=hovered=select_open=-1;
   scroll=hscroll=editing=download_edit=stopping=mouse_active=inverse=0;
@@ -271,4 +271,25 @@ int qa_field_band(int end) {
     if(end ? y>edge : y<edge)edge=y;
   }
   if(edge<top())edge=top();if(edge>bottom())edge=bottom();return edge;
+}
+
+void qa_download_key(int which) {
+  static const int keys[]={EW_KEY_LEFT,EW_KEY_RIGHT,EW_KEY_HOME,EW_KEY_END,
+    EW_KEY_BACKSPACE,EW_KEY_DELETE,EW_KEY_TAB,EW_KEY_BACKTAB};
+  key(which >= 0 && which < 8 ? keys[which] : which);
+  if(dirty)draw();
+}
+void qa_download_click_name(void) {
+  struct ew_mouse_event e;memset(&e,0,sizeof(e));
+  e.x=download_x()+8;e.y=105;e.buttons=e.pressed=EW_MOUSE_LEFT;
+  mouse_event(&e);if(dirty)draw();
+}
+const char *qa_download_filename(void) {return download_name;}
+void qa_download_style(int color, int inverted) {
+  ew_color=color;inverse=inverted;dirty=DRAW_ALL;draw();
+}
+void qa_download_name(const char *name) {
+  strncpy(download_name,name,sizeof(download_name)-1);
+  download_name[sizeof(download_name)-1]=0;
+  download_pos=strlen(download_name);dirty=DRAW_ALL;draw();
 }
