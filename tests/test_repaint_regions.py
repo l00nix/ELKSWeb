@@ -26,7 +26,7 @@ class RepaintRegions(unittest.TestCase):
         sources += [ROOT/'font/font.c',ROOT/'font/body_font.c',ROOT/'image/gif.c',
                     ROOT/'image/dimensions.c',ROOT/'tests/qa_repaint_shim.c']
         result=subprocess.run(['cc','-shared','-fPIC','-g','-Wall','-Wextra',
-            '-DEW_HOST_TEST','-I'+str(ROOT/'src'),'-I'+str(ROOT/'platform'),
+            '-DEW_HOST_TEST',*getattr(cls,'defines',[]),'-I'+str(ROOT/'src'),'-I'+str(ROOT/'platform'),
             *map(str,sources),'-o',str(so)],capture_output=True,text=True)
         if result.returncode:raise RuntimeError(result.stderr)
         cls.lib=C.CDLL(str(so))

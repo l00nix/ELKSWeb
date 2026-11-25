@@ -5,13 +5,13 @@
   <img src="artwork/elksweb-wordmark-yellow-globe.png" alt="ELKSWeb logo" width="640">
 </p>
 
-# ELKSWeb 0.6.2dev
+# ELKSWeb 0.6.3dev
 
 An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr/elks), written in C with the native ELKS IA16 toolchain and targeting 8088-compatible machines.
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Development candidate 0.6.2dev:** One `elksweb` EPT package now installs both the direct browser and WebNX, with one welcome page showing both logos and explaining both launch options, following [ghaerr's guidance](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7112604032). Fresh installs use `ept install -n elksweb`; earlier split-package users should follow the [one-time migration instructions](docs/NANOX-EXPERIMENT.md#install-and-migrate). This retains astrobleem's VGA colour, faster scrolling, GIF workspace and Nano-X contributions, plus the HP/PPC fixes and 0.5 performance improvements. [0.5 remains the general release](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5).
+**Development candidate 0.6.3dev:** Form-field typing, deletion and caret movement now repaint the field band instead of the whole page, applying [astrobleem's issue #7 fix](https://github.com/l00nix/ELKSWeb/issues/7). The same change covers the direct browser and WebNX; scrolling still falls back to a full repaint when needed. Available with `ept install -n elksweb` from `REPO=http://ept.8088retro.com`. The combined package, shared welcome page, HP/PPC fixes and 0.5 performance improvements are retained. Issue #7 remains open pending tester verification. [0.5 remains the general release](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5).
 
 General IBM PC compatibility remains the goal.
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.3dev — form-field repaint fix
+
+- Apply [astrobleem’s issue #7 fix](https://github.com/l00nix/ELKSWeb/issues/7):
+  typing, deleting and moving the caret repaint the focused field band rather
+  than the full page in both WebNX and the direct browser.
+- Preserve the full-redraw fallback for viewport changes, form submission,
+  HP/PPC input and display fixes, GIF handling and the combined package.
+- Add framebuffer-write and full-repaint-equivalence regression checks for
+  both compile paths. Issue #7 stays open pending tester verification.
+
 ## 0.6.2dev — one package, one welcome page
 
 - Follow ghaerr’s PR #5 suggestion: one `elksweb` nightly contains both

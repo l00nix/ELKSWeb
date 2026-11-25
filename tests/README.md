@@ -136,3 +136,13 @@ from live-site results; preserve relative image URLs. Do not treat a text-only
 FrogFind load as completion. The first frame is not the fully loaded page.
 Pixel comparisons, colour-mode tests and HP/PPC input/console regressions remain
 required alongside timings. Speed does not establish rendering correctness.
+
+## Form-field repaint regression (issue #7)
+
+`test_field_repaint.py` exercises the actual edit handlers with instrumented
+host framebuffers in direct and Nano-X compile paths. It checks insertion,
+Backspace/Delete, Left/Right/Home/End, UTF-8 boundaries, long fields, focus,
+viewport-scroll fallback and HTTP submission. Writes outside the field band
+are forbidden during stationary editing, and each incremental frame must
+match a full repaint. These are host checks; the Nano-X transport and physical
+hardware require separate validation.

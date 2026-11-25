@@ -1035,22 +1035,22 @@ static void key(int k) {
       field_pos = n;
     if (k == EW_KEY_LEFT) {
       field_pos=ew_text_step(l->value,field_pos,-1);
-      dirty |= DRAW_PAGE | DRAW_STATUS;
+      dirty |= DRAW_FOCUS;
       return;
     }
     if (k == EW_KEY_RIGHT) {
       field_pos=ew_text_step(l->value,field_pos,1);
-      dirty |= DRAW_PAGE | DRAW_STATUS;
+      dirty |= DRAW_FOCUS;
       return;
     }
     if (k == EW_KEY_HOME) {
       field_pos = 0;
-      dirty |= DRAW_PAGE | DRAW_STATUS;
+      dirty |= DRAW_FOCUS;
       return;
     }
     if (k == EW_KEY_END) {
       field_pos = n;
-      dirty |= DRAW_PAGE | DRAW_STATUS;
+      dirty |= DRAW_FOCUS;
       return;
     }
     if (k == EW_KEY_BACKSPACE || k == EW_KEY_DELETE) {
@@ -1060,7 +1060,7 @@ static void key(int k) {
       else if (k==EW_KEY_DELETE && field_pos<n)
         end=ew_text_step(l->value,field_pos,1);
       memmove(l->value+field_pos,l->value+end,n-end+1);
-      dirty |= DRAW_PAGE | DRAW_STATUS;
+      dirty |= DRAW_FOCUS;
       return;
     }
     if (k >= 32 && k < 127) {
@@ -1069,7 +1069,7 @@ static void key(int k) {
                 n - field_pos + 1);
         l->value[field_pos++] = k;
       }
-      dirty |= DRAW_PAGE | DRAW_STATUS;
+      dirty |= DRAW_FOCUS;
       return;
     }
   }

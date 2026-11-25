@@ -230,3 +230,45 @@ unsigned qa_address_painted_matches(const char *url) {
   return !different;
 }
 const char *qa_current_url(void) {return current;}
+
+/* Exercise the same renderer under the Nano-X compile-time paths. Real client
+ * event/text transport is tested separately with the native Nano-X build. */
+#ifdef ELKSWEB_NANOX
+void ew_nanox_glyph(int x, int y, const unsigned char *glyph, int advance,
+                    int height, int fg, int bg, int bold, int italic)
+{
+    int row, col, skew;
+    unsigned char bits;
+    if (bg >= 0) ew_fillrect(x, y, advance, height, bg);
+    for (row = 0; row < height; row++) {
+        bits = glyph[row];
+        if (bold) bits |= bits >> 1;
+        skew = italic ? (height - 1 - row) / 6 : 0;
+        for (col = 0; col < advance; col++, bits <<= 1)
+            if (bits & 128) ew_pixel(x + col + skew, y + row, fg);
+    }
+}
+void ew_nanox_text_begin(void) {}
+void ew_nanox_text_end(void) {}
+int ew_nanox_progress_key(void) { return 0; }
+int ew_platform_exposed(void) { return 0; }
+int ew_platform_closed(void) { return 0; }
+#endif
+void qa_field_key(int code) {
+  static const int codes[]={EW_KEY_LEFT,EW_KEY_RIGHT,EW_KEY_HOME,EW_KEY_END,
+    EW_KEY_BACKSPACE,EW_KEY_DELETE,EW_KEY_ENTER};
+  key(code>=0 && code<7 ? codes[code] : code);
+  if(dirty)draw();
+}
+const char *qa_field_value(void) {return focused<0 ? "" : ew_doc.links[focused].value;}
+unsigned qa_field_position(void) {return field_pos;}
+int qa_field_band(int end) {
+  unsigned i;int y,edge=end?top():bottom();
+  for(i=0;i<ew_doc.run_count;i++) {
+    struct ew_run *r=&ew_doc.runs[i];
+    if((int)r->link!=focused+1)continue;
+    y=top()+r->y-scroll+(end?run_height(r):0);
+    if(end ? y>edge : y<edge)edge=y;
+  }
+  if(edge<top())edge=top();if(edge>bottom())edge=bottom();return edge;
+}
