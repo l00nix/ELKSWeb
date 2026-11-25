@@ -181,7 +181,7 @@ elksweb
 
 The version reports **0.6**. Choose a detected display mode to open the local welcome page. Configure native ELKS networking and run `net start` before using HTTP. Enter a hostname such as `68knews.8088retro.com` in the address field or an explicit URL.
 
-See [INSTALL.md](docs/INSTALL.md) for exact file paths, checksums, mouse settings and upgrades. The runtime is a standalone application package, not an ELKS disk image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
+See the [0.6 installation notes](docs/RELEASE-0.6.md#install) and [migration guide](docs/NANOX-EXPERIMENT.md#install-and-migrate) for file paths and upgrades; [INSTALL.md](docs/INSTALL.md) retains checksum and mouse guidance. The runtime is a standalone application package, not an ELKS disk image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
 
 ### Optional Nano-X browser
 
