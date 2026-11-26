@@ -1,7 +1,7 @@
-<html><head><title>Welcome to ELKSWeb and WebNX 0.6</title></head><body>
+<html><head><title>Welcome to ELKSWeb and WebNX 0.6.1dev</title></head><body>
 <center><img src="/lib/web/elksweb.gif" width="160" height="54" alt="ELKSWeb">
 <img src="/lib/web/webnx.gif" width="152" height="51" alt="WebNX"><br>
-<b>ELKSWeb and WebNX 0.6 - two ways to browse</b></center>
+<b>ELKSWeb and WebNX 0.6.1dev - two ways to browse</b></center>
 <hr>
 <p><b>elksweb</b> browses directly from the graphics console.
 <b>webnx</b> browses through Nano-X. Both open this page and use the same browser engine.</p>
@@ -11,8 +11,12 @@
 <a href="http://68knews.8088retro.com/">68k news mirror</a> |
 <a href="http://httpedia.com/">HTTPedia</a> |
 <a href="/lib/web/color.htm">Colour demo</a> |
-<a href="#keys">Keyboard help</a></p>
+<a href="/lib/web/keys.htm">Keyboard help</a></p>
 <a name="keys"></a><h3>Common controls</h3>
+<p><b>Ctrl-G</b> opens the offline <a href="/lib/web/keys.htm">keyboard help page</a>.<br>
+<b>Ctrl-R</b> reloads; <b>Ctrl-D</b> redraws without fetching the page again.<br>
+<b>Ctrl-V</b> switches light/dark; <b>Ctrl-T</b> shows/hides browser bars.<br>
+<b>Ctrl-B / Ctrl-F</b> go back / forward. <b>Ctrl-N / Ctrl-W</b> select next / previous.</p>
 <p><b>Tab / Shift-Tab</b> next / previous link or control. <b>Enter</b> activate.<br>
 <b>Arrows / Page Up / Page Down</b> scroll. <b>Home / End</b> beginning / end.<br>
 <b>Backspace</b> back. <b>Escape</b> exit or cancel editing.<br>
@@ -34,9 +38,9 @@ Open <b>/lib/web/welcome.htm</b> to return here. Use <b>exec</b> before your
 launch command to replace the waiting shell and save its memory.</p>
 <h3>Installation and testing</h3>
 <p>One package installs both browsers and these pages:
-<b>ept install elksweb</b>. Users of the old split packages must follow
+<b>ept install -n elksweb</b> for this development build. Stable 0.6 remains in general. Users of the old split packages must follow
 <b>/lib/web/nanox.txt</b> for the one-time migration before upgrading.</p>
-<p>0.6 retains faster scrolling, VGA colour and GIF workspace improvements.
+<p>0.6.1dev adds control-key shortcuts and offline keyboard help. It retains faster scrolling, VGA colour and GIF workspace improvements.
 Images now repaint after mouse navigation without needing a reload.
 Further Nano-X hardware testing remains welcome. No new EMS support or low-memory browsing guarantee is included.</p>
 <h3>What to expect</h3>

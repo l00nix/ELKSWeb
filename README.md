@@ -11,6 +11,8 @@ An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
+**Nightly 0.6.1dev:** adds Ctrl-R reload, Ctrl-D redraw, Ctrl-V theme, Ctrl-T bars and Ctrl-G offline keyboard help, while keeping Ctrl-L for the address and the existing function keys. Ctrl-B/F navigate history; Ctrl-N/W select the next/previous control. Install with `ept install -n elksweb` from `REPO=http://ept.8088retro.com`. Stable 0.6 remains in general. [Shortcut details and test scope](docs/RELEASE-0.6.1dev.md).
+
 **New in 0.6:** Fixes images remaining as placeholders after mouse-click navigation in ELKSWeb and WebNX. The frog now appears on the first load on the physical PPC with the fixed test build, without F2 or F5. The HP/PPC fixes, colour and scrolling support, shared package, and astrobleem's form/download fixes are retained. Install with `ept install elksweb` from `REPO=http://ept.8088retro.com`. PC-98 verification of this redraw fix and issue #7 download verification remain open. [0.5 remains available for comparison](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5).
 
 General IBM PC compatibility remains the goal.

@@ -44,6 +44,8 @@ enum ew_key {
     EW_KEY_F6, EW_KEY_F7, EW_KEY_F8, EW_KEY_F9, EW_KEY_F10
 };
 
+#define EW_CTRL(c) ((c) & 0x1f)
+
 /* A null mode asks on the text console; cga/ega/vga/vga-mono/tandy/pcjr bypass the prompt.
  * Returns0 on success,1 on user cancellation,-1 on failure. An unsupported
  * adapter is rejected before changing video mode; console settings are

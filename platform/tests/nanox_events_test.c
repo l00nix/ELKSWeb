@@ -40,6 +40,28 @@ int main(void)
 {
     GR_EVENT *event;
     struct ew_mouse_event mouse;
+    const char *controls = "lrdvtgbfnwih";
+    unsigned i;
+
+    /* Cooked PC-98/ELKS bytes and modifier-bearing server events must agree.
+     * Ordinary letters, Tab and Backspace must retain their meanings. */
+    for (i = 0; controls[i]; ++i) {
+        event = push(GR_EVENT_TYPE_KEY_DOWN);
+        event->keystroke.ch = controls[i];
+        event->keystroke.modifiers = MWKMOD_CTRL;
+        assert(ew_getkey() == EW_CTRL(controls[i]));
+        event = push(GR_EVENT_TYPE_KEY_DOWN);
+        event->keystroke.ch = controls[i] - 'a' + 'A';
+        event->keystroke.modifiers = MWKMOD_CTRL | MWKMOD_SHIFT;
+        assert(ew_getkey() == EW_CTRL(controls[i]));
+        event = push(GR_EVENT_TYPE_KEY_DOWN);
+        event->keystroke.ch = EW_CTRL(controls[i]);
+        assert(ew_getkey() == EW_CTRL(controls[i]));
+        event = push(GR_EVENT_TYPE_KEY_DOWN);
+        event->keystroke.ch = controls[i];
+        assert(ew_getkey() == controls[i]);
+        queue_reset();
+    }
 
     /* Normal dispatch preserves down/up order and never overwrites an unread
      * click with a later event. */

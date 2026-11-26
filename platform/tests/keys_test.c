@@ -15,6 +15,18 @@ int main(void)
 {
     struct ew_key_state s;
     ew_keys_reset(&s);
+    {
+        static const unsigned char scans[] = {0x26,0x13,0x20,0x2f,0x14,0x22,0x30,0x21,0x31,0x11};
+        const char *letters = "lrdvtgbfnw";
+        unsigned i;
+        for (i = 0; letters[i]; ++i) {
+            ew_keys_scancode(&s, 0x1d);
+            assert(ew_keys_scancode(&s, scans[i]) == EW_CTRL(letters[i]));
+            ew_keys_scancode(&s, scans[i] | 0x80);
+            ew_keys_scancode(&s, 0x9d);
+            assert(ew_keys_tty(&s, EW_CTRL(letters[i])) == EW_CTRL(letters[i]));
+        }
+    }
     assert(ew_keys_scancode(&s, 0x1e) == 'a');
     assert(ew_keys_scancode(&s, 0x2a) == 0);
     assert(ew_keys_scancode(&s, 0x1e) == 'A');

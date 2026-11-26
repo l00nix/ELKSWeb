@@ -817,6 +817,19 @@ static void activate(void) {
 static void key(int k) {
   int max = ew_doc.height - (bottom() - top());
   unsigned n;
+  /* Do not use Ctrl-I/H: they are indistinguishable from Tab/Backspace.
+   * Aliases take the existing paths, including modal editing behaviour. */
+  if (k == EW_CTRL('L')) k = EW_KEY_F6;
+  else if (k == EW_CTRL('R')) k = EW_KEY_F5;
+  else if (k == EW_CTRL('V')) k = EW_KEY_F2;
+  else if (k == EW_CTRL('T')) k = EW_KEY_F3;
+  else if (k == EW_CTRL('N')) k = EW_KEY_TAB;
+  else if (k == EW_CTRL('W')) k = EW_KEY_BACKTAB;
+  else if (k == EW_CTRL('D')) {
+    /* Repaint only: keep the URL, history, forms and decoded images intact. */
+    dirty |= DRAW_ALL;
+    return;
+  }
   if (download_edit) {
     n = strlen(download_name);
     if (k == EW_KEY_ESC) { download_edit = 0; dirty |= DRAW_TITLE | DRAW_ADDRESS; message("Download cancelled"); }
@@ -1008,6 +1021,20 @@ static void key(int k) {
   }
   if (k == EW_KEY_F5) {
     load(current, NULL, 0);
+    return;
+  }
+  if (k == EW_CTRL('G')) {
+#ifndef EW_HELP_PAGE
+#define EW_HELP_PAGE "/lib/web/keys.htm"
+#endif
+    /* An incomplete installation must not replace the current document. */
+    if (access(EW_HELP_PAGE, R_OK)) message("Keyboard help missing: reinstall elksweb");
+    else load("file:" EW_HELP_PAGE, NULL, 1);
+    return;
+  }
+  if (k == EW_CTRL('B') || k == EW_CTRL('F')) {
+    int next = hpos + (k == EW_CTRL('B') ? -1 : 1);
+    if (next >= 0 && next < hcount) history_go(next);
     return;
   }
   if (k == EW_KEY_TAB) {
@@ -1331,8 +1358,10 @@ int main(int argc, char **argv) {
 #else
            "Usage: elksweb [-video cga|ega|vga|vga-mono|tandy|pcjr] [-invert] [-noimages] [http://URL or file]\n"
 #endif
-           "F6/Ctrl-L address  Tab links  Enter activate  F5 reload\n"
-           "F2 invert/dark  F3 hide bars  arrows/PgUp/PgDn scroll  Esc exit");
+           "Ctrl-L address  Ctrl-R reload  Ctrl-D redraw  Ctrl-G help\n"
+           "Ctrl-V invert/dark  Ctrl-T bars  Ctrl-B/F back/forward\n"
+           "Tab/Ctrl-N next  Shift-Tab/Ctrl-W previous  Enter activate\n"
+           "Arrows/PgUp/PgDn scroll  Esc exit  F2/F3/F5/F6 also supported");
       return 0;
     } else if (argv[i][0] == '-') {
       fprintf(stderr, EW_APP_NAME ": unknown option %s\n", argv[i]);

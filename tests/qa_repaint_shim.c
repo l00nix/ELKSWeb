@@ -89,6 +89,12 @@ void qa_repaint_key(int which) {
   key(which>=0 && which<9 ? codes[which] : which);
   if(dirty)draw();
 }
+void qa_shortcut(int code) {key(code);if(dirty)draw();}
+int qa_shortcut_inverse(void) {return inverse;}
+int qa_shortcut_chrome(void) {return chrome;}
+int qa_shortcut_focus(void) {return focused;}
+int qa_shortcut_history(void) {return hcount;}
+void qa_shortcut_stale_pixel(void) {pixels[0][0] ^= 1;}
 void qa_repaint_status(const char *s) {message(s);if(dirty)draw();}
 void qa_repaint_progress(const char *s) {ew_net_progress(s);}
 void qa_repaint_hover(int x,int y) {

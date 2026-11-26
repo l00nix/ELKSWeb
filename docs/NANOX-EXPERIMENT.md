@@ -1,4 +1,9 @@
-# ELKSWeb and WebNX 0.6
+# ELKSWeb and WebNX
+
+Nightly **0.6.1dev** adds control-key alternatives and offline keyboard help.
+Install with `ept install -n elksweb`; press Ctrl-G for help. See
+[0.6.1dev notes](RELEASE-0.6.1dev.md). Stable/general remains **0.6**.
+The release 0.6 description and migration instructions below still apply.
 
 One `elksweb` package contains the direct `/bin/elksweb` browser, the optional
 `/bin/webnx` Nano-X client, and shared pages/images under `/lib/web/`.

@@ -136,8 +136,11 @@ static int translate(GR_KEY key, GR_KEYMOD modifiers)
     case MWKEY_TAB:
         return modifiers & MWKMOD_SHIFT ? EW_KEY_BACKTAB : EW_KEY_TAB;
     default:
-        if ((key == 'l' || key == 'L') && (modifiers & MWKMOD_CTRL))
-            return 12;
+        /* Servers may send either ASCII control bytes or a letter with CTRL.
+         * Preserve both forms, including Tab/Backspace and existing Ctrl-L. */
+        if ((modifiers & MWKMOD_CTRL) &&
+            ((key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z')))
+            return EW_CTRL(key);
         return key < 128 ? key : EW_KEY_NONE;
     }
 }

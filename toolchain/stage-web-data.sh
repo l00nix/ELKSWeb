@@ -7,6 +7,7 @@ dest=$1
 mkdir -p "$dest/lib/web" "$dest/lib/elksweb" "$dest/lib/webnx" "$dest/lib/elksnx"
 cp "$base/share/welcome.htm" "$dest/lib/web/welcome.htm"
 cp "$base/share/color.htm" "$dest/lib/web/color.htm"
+cp "$base/share/keys.htm" "$dest/lib/web/keys.htm"
 cp "$base/share/elksweb.gif" "$base/share/elkswebc.gif" "$base/share/chart.gif" \
    "$base/share/nanox/webnx.gif" "$dest/lib/web/"
 # These are byte-identical compatibility copies, not separate welcome sources.
