@@ -1,0 +1,11 @@
+{
+  "author": "Takahiro Yamada (@tyama501)",
+  "report": "https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7223112379",
+  "source": "https://github.com/user-attachments/assets/cf6c8a33-e534-47d6-943c-44490e4f3e3d",
+  "downloaded": "2026-11-27",
+  "version_reported": "0.6.1dev",
+  "finding": "Frog appeared without reloading; contributor also thanked us for Ctrl-key controls.",
+  "file": "frogfind-photo.jpg",
+  "sha256": "76c33829635746ca34779d6737b6c7a2bf3dd7556e211717f28f0d74992ce286",
+  "processing": "Original attachment bytes, no image edits."
+}
