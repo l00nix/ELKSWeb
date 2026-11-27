@@ -671,7 +671,7 @@ static int load(const char *url, const char *post, int add_history) {
       if (image_run < ew_doc.run_count) {
         draw();
         ew_images_load();
-        if (ew_image_reflow) {
+        if (ew_image_reflow && ew_images_resized()) {
           ew_parse_source(current);
           dirty |= DRAW_PAGE | DRAW_TITLE;
         } else dirty |= DRAW_IMAGES;

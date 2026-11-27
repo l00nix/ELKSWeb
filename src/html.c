@@ -1726,7 +1726,8 @@ static void parse_document(const char *base, int plain_mode) {
         ew_doc.text_len += len;
         ew_copy_to_far(ew_doc.text + ew_doc.text_len, alt, alt_len);
         ew_doc.text_len += alt_len;
-        ew_doc.text[ew_doc.text_len++]=ismap ? EW_LINK_ISMAP : 0;
+        ew_doc.text[ew_doc.text_len++]=(ismap ? EW_LINK_ISMAP : 0) |
+            (!has_width || !has_height ? EW_IMAGE_UNSIZED : 0);
         if (ismap) ew_doc.links[linkid-1].flags|=EW_LINK_ISMAP;
         px += width;
         if (lineheight < height + 2)
