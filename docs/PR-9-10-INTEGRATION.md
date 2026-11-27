@@ -35,4 +35,22 @@ Private build logs, audit JSON, binaries, emulator screenshots and runtime scrip
 
 Physical PPC and HP runs are still required for memory pressure, networking, GIFs, keyboard/mouse and timing. Use the same frozen workloads and alternate baseline/candidate runs before claiming a performance gain. PR-reported measurements are not newly reproduced results for this combined build.
 
-The two accompanying comment files are drafts. No PR comments, approvals, merges or closures were submitted as part of this integration. EPT, installed device binaries and stable releases were not changed.
+The two accompanying comment files were subsequently approved and posted: [PR #9 comment](https://github.com/l00nix/ELKSWeb/pull/9#issuecomment-7223393542), [PR #10 comment](https://github.com/l00nix/ELKSWeb/pull/10#issuecomment-7223393930). Neither PR was merged or closed. EPT and stable releases were not changed.
+
+## Physical PPC smoke test — 27 November 2026
+
+The exact combined binaries were installed separately in `/root/w061perf` on the physical Amstrad PPC 512 with PicoMEM 2. Read-back SHA-256 checks matched the audited builds above. The installed `/bin/elksweb`, `/bin/webnx`, Nano-X server, EPT ownership records, original console launcher and boot configuration were preserved and reverified, as was the older `/root/web050/elksweb` comparison binary.
+
+Three automatic direct-console runs completed: installed 0.6.1dev welcome page, candidate welcome page, and candidate first-load `http://frogfind.8088retro.com/`. Raw CGA framebuffer captures taken 120 and 135 seconds after each launch were identical within each run. The current and candidate welcome captures were also byte-identical. Visual review confirmed both welcome logos and the FrogFind frog. All three processes exited with status zero after SIGTERM, and the machine returned to console login.
+
+These were rendering and graceful-signal-exit smoke tests, not load-time measurements. Mouse input was disabled; FTP was stopped during the runs, with networking and Telnet available. No physical keyboard/mouse actions were injected. WebNX keyboard/scrolling/hang validation and HP testing remain pending.
+
+Launchers on the PPC:
+
+- `exec /root/startperf`: candidate direct browser with the existing Microsoft serial-mouse settings.
+- `exec /root/startcur`: installed direct browser for comparison, with identical settings and page.
+- `exec /root/nxperf`: candidate WebNX help page, images and mouse disabled for the initial hang/scrolling check.
+- `exec /root/nxcur`: installed WebNX with the same initial settings for comparison.
+- Add `gif` to either Nano-X launcher to open the shared welcome page with images enabled. Mouse remains disabled.
+
+The physical capture runner, logs, screenshots, installation hashes and comparison results are retained privately at `work/ppc-perf061-20261127/` in the parent workspace. FTP was used briefly after the runs to retrieve captures and verify preservation, then stopped again for the interactive WebNX test.
