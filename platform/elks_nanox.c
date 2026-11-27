@@ -164,7 +164,13 @@ int ew_getkey(void)
 {
     GR_EVENT event;
     if (pending_mouse) return EW_KEY_NONE;
-    GrGetNextEventTimeout(&event, GR_TIMEOUT_POLL);
+    /* Complete the event exchange before issuing more drawing requests.
+     * Timeout polling leaves a GetNextEvent reply outstanding. On ELKS's
+     * small Unix sockets, queued replies can fill the server-to-client pipe
+     * while a redraw fills the other direction, blocking both processes in
+     * write(). CheckNextEvent returns NONE when no event is queued and does
+     * not leave an asynchronous reply behind. */
+    GrCheckNextEvent(&event);
     switch (event.type) {
     case GR_EVENT_TYPE_EXPOSURE: exposed = 1; break;
     case GR_EVENT_TYPE_CLOSE_REQ:

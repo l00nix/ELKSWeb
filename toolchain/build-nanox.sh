@@ -20,14 +20,9 @@ test -r "$MWDIR/src/include/nano-X.h" || {
 }
 # A failed rebuild must not leave an earlier executable looking current.
 rm -f "$out/webnx" "$out/elksnx" "$out/elksweb.map"
-# Nano-X's small-model GrClose stores a callback in a data pointer. Keep the
-# actual function-pointer type when compiling its client for medium model.
-sed 's/void \* oldSignalHandler = signal/void (*oldSignalHandler)(int) = signal/' \
-    "$MWDIR/src/nanox/client.c" > "$out/client.c"
-grep -Fq 'void (*oldSignalHandler)(int) = signal' "$out/client.c" || {
-    echo "Review this Nano-X client's GrClose signal callback for medium-model compatibility" >&2
-    exit 1
-}
+# Preserve medium-model callback compatibility and expose the upstream
+# synchronous event check in the tiny client used by ELKS.
+python3 toolchain/prepare-nanox-client.py "$MWDIR/src/nanox/client.c" "$out/client.c"
 set --
 for source in src/*.c image/*.c font/*.c platform/elks_nanox.c \
         "$out/client.c" "$MWDIR"/src/nanox/nxproto.c \

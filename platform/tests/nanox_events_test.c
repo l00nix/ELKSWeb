@@ -9,14 +9,13 @@
 static GR_EVENT events[16];
 static unsigned count, next, polls;
 
-void GrGetNextEventTimeout(GR_EVENT *event, GR_TIMEOUT timeout)
+void GrCheckNextEvent(GR_EVENT *event)
 {
-    assert(timeout == GR_TIMEOUT_POLL);
     ++polls;
     if (next < count) *event = events[next++];
     else {
         memset(event, 0, sizeof(*event));
-        event->type = GR_EVENT_TYPE_TIMEOUT;
+        event->type = GR_EVENT_TYPE_NONE;
     }
 }
 
