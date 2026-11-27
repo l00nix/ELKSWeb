@@ -508,6 +508,18 @@ void ew_gif_free(struct ew_gif *image)
     memset(image, 0, sizeof(*image));
 }
 
+int ew_gif_alloc(struct ew_gif *image, unsigned pixel_bytes, unsigned opacity_bytes)
+{
+    if (!image || !pixel_bytes) return EW_GIF_NO_MEMORY;
+    image->pixels = far_alloc(pixel_bytes);
+    image->opacity = opacity_bytes ? far_alloc(opacity_bytes) : NULL;
+    if (!image->pixels || (opacity_bytes && !image->opacity)) {
+        ew_gif_free(image);
+        return EW_GIF_NO_MEMORY;
+    }
+    return EW_GIF_OK;
+}
+
 unsigned ew_gif_copy_row(const struct ew_gif *image, unsigned row,
                          unsigned char *pixels, unsigned char *opacity)
 {

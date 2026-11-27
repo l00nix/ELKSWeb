@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <stdint.h>
 #define IMAGE_LIMIT 8
 /* One display row of packed colour pixels, plus the odd-start nibble. */
 #define EW_TANDY_LINE 321
@@ -24,12 +26,177 @@ static char document_error[96];
  * instead of being lost. */
 #define COLOR_CACHE_BYTES 81920UL
 static unsigned long color_bytes;
+/* Decoded-bitmap cache. LZW decoding dominates image cost on an 8088 (about
+ * 21 s of the 46.6 s welcome load on the PPC), so every successfully decoded
+ * GIF is also written to a small file in /tmp, and a later decode of the same
+ * bytes for the same display settings reads that file back instead. Entries
+ * are keyed by the compressed bytes, not the URL, so a changed image can never
+ * return a stale bitmap. A fixed number of slots bounds the disk used, and a
+ * checksum over the stored planes rejects torn or damaged files.
+ * EW_GIFCACHE=0 disables it; any other value names the cache directory.
+ * Bump CACHE_FORMAT whenever decoder output changes for the same input. */
+#include "version.h"
+#define CACHE_FORMAT 1
+#define CACHE_SLOTS 8U
+#define CACHE_LIMIT 40000U
+struct cache_key {
+  uint16_t format, mode, limit_width, limit_height, sum1, sum2;
+  uint32_t length;
+};
+struct cache_head {
+  char magic[4];
+  struct cache_key key;
+  uint16_t width, height, stride, opacity, depth, check1, check2;
+};
+static unsigned char chunk[512];
+static char cache_path[48];
+static const char *cache_dir(void) {
+  const char *dir = getenv("EW_GIFCACHE");
+#ifdef EW_HOST_TEST
+  if (!dir) return NULL;
+#else
+  if (!dir) return "/tmp";
+#endif
+  if (!*dir || (dir[0] == '0' && !dir[1]) || strlen(dir) > sizeof(cache_path) - 16)
+    return NULL;
+  return dir;
+}
+static void cache_sum(const unsigned char EW_FAR *data, unsigned size,
+                      uint16_t *sum1, uint16_t *sum2) {
+  uint16_t a = *sum1, b = *sum2;
+  while (size--) { a += *data++; b += a; }
+  *sum1 = a; *sum2 = b;
+}
+static int cache_begin(const unsigned char EW_FAR *data, unsigned size,
+                       struct cache_key *key) {
+  static const char build[] = EW_APP_NAME " " EW_VERSION;
+  uint16_t a = 0, b = 0;
+  if (!cache_dir()) return 0;
+  memset(key, 0, sizeof(*key));
+  cache_sum((const unsigned char EW_FAR *)build, sizeof(build) - 1, &a, &b);
+  key->format = (uint16_t)(CACHE_FORMAT ^ (a << 4) ^ b);
+  key->mode = (uint16_t)((ew_color ? 0x100U : 0) | (ew_pixel_aspect & 0xff));
+  cache_sum(data, size, &key->sum1, &key->sum2);
+  key->length = size;
+  return 1;
+}
+static int cache_open(const struct cache_key *key, int flags) {
+  const char *dir = cache_dir();
+  uint16_t mix = key->sum1;
+  unsigned slot;
+  if (!dir) return -1;
+  /* Spread every key field over the slots; a collision only costs a decode. */
+  mix = (uint16_t)(mix * 31U + key->sum2);
+  mix = (uint16_t)(mix * 31U + key->limit_width);
+  mix = (uint16_t)(mix * 31U + key->limit_height);
+  mix = (uint16_t)(mix * 31U + key->mode);
+  slot = (unsigned)(mix ^ (mix >> 8)) % CACHE_SLOTS;
+  snprintf(cache_path, sizeof(cache_path), "%s/ewbmp%u.dat", dir, slot);
+  return open(cache_path, flags, 0600);
+}
+/* 32-bit products: a 640x480 colour image would overflow 16 bits on ELKS. */
+static unsigned long cache_opacity_bytes(unsigned depth, unsigned width, unsigned height,
+                                         unsigned stride) {
+  return (unsigned long)(depth == 4 ? (width + 7) >> 3 : stride) * height;
+}
+static int cache_io(int fd, unsigned char EW_FAR *plane, unsigned bytes, int writing,
+                    uint16_t *sum1, uint16_t *sum2) {
+  unsigned done = 0, want, i;
+  int got;
+  while (done < bytes) {
+    want = bytes - done > sizeof(chunk) ? sizeof(chunk) : bytes - done;
+    if (writing) for (i = 0; i < want; ++i) chunk[i] = plane[done + i];
+    got = writing ? write(fd, chunk, want) : read(fd, chunk, want);
+    if (got < 0 && errno == EINTR) continue;
+    if (got != (int)want) return -1;
+    if (!writing) ew_copy_to_far(plane + done, chunk, want);
+    done += want;
+  }
+  cache_sum(plane, bytes, sum1, sum2);
+  return 0;
+}
+/* Returns 0 with the image filled on a hit; otherwise the image stays empty. */
+static int cache_load(const struct cache_key *key, struct ew_gif *image) {
+  struct cache_head head;
+  unsigned long pixel_bytes, opacity_bytes;
+  uint16_t a = 0, b = 0;
+  int fd = cache_open(key, O_RDONLY), got;
+  if (fd < 0) return -1;
+  do got = read(fd, &head, sizeof(head)); while (got < 0 && errno == EINTR);
+  if (got != (int)sizeof(head) || memcmp(head.magic, "EWB1", 4) ||
+      memcmp(&head.key, key, sizeof(*key)) || !head.width || !head.height ||
+      head.width > EW_GIF_MAX_WIDTH || head.height > EW_GIF_MAX_HEIGHT ||
+      (head.depth > 1 && head.depth != 4) ||
+      head.stride != (head.depth == 4 ? (head.width + 1) >> 1 : (head.width + 7) >> 3))
+    goto miss;
+  pixel_bytes = (unsigned long)head.stride * head.height;
+  opacity_bytes = head.opacity ?
+      cache_opacity_bytes(head.depth, head.width, head.height, head.stride) : 0;
+  if (pixel_bytes + opacity_bytes > CACHE_LIMIT ||
+      ew_gif_alloc(image, (unsigned)pixel_bytes, (unsigned)opacity_bytes) != EW_GIF_OK)
+    goto miss;
+  image->width = head.width;
+  image->height = head.height;
+  image->stride = head.stride;
+  image->depth = (unsigned char)head.depth;
+  if (cache_io(fd, image->pixels, (unsigned)pixel_bytes, 0, &a, &b) ||
+      (opacity_bytes && cache_io(fd, image->opacity, (unsigned)opacity_bytes, 0, &a, &b)) ||
+      a != head.check1 || b != head.check2) {
+    ew_gif_free(image);
+    goto miss;
+  }
+  close(fd);
+  return 0;
+miss:
+  close(fd);
+  return -1;
+}
+static void cache_store(const struct cache_key *key, const struct ew_gif *image) {
+  struct cache_head head;
+  unsigned long pixel_bytes = (unsigned long)image->stride * image->height, opacity_bytes;
+  int fd;
+  if (image->depth > 1 && image->depth != 4) return;
+  opacity_bytes = image->opacity ?
+      cache_opacity_bytes(image->depth, image->width, image->height, image->stride) : 0;
+  if (pixel_bytes + opacity_bytes > CACHE_LIMIT) return;
+  fd = cache_open(key, O_WRONLY | O_CREAT | O_TRUNC);
+  if (fd < 0) return;
+  memset(&head, 0, sizeof(head));
+  head.key = *key;
+  head.width = image->width;
+  head.height = image->height;
+  head.stride = image->stride;
+  head.opacity = opacity_bytes != 0;
+  head.depth = image->depth;
+  /* Write the header without its magic first, so a reader never accepts a
+   * file whose planes are still being written; the checksum covers the rest. */
+  if (write(fd, &head, sizeof(head)) != (int)sizeof(head) ||
+      cache_io(fd, image->pixels, (unsigned)pixel_bytes, 1, &head.check1, &head.check2) ||
+      (opacity_bytes && cache_io(fd, image->opacity, (unsigned)opacity_bytes, 1,
+                                 &head.check1, &head.check2)) ||
+      lseek(fd, 0L, SEEK_SET) < 0) goto failed;
+  memcpy(head.magic, "EWB1", 4);
+  if (write(fd, &head, sizeof(head)) != (int)sizeof(head)) goto failed;
+  close(fd);
+  return;
+failed:
+  close(fd);
+  unlink(cache_path);
+}
 static int decode(const unsigned char EW_FAR *data, unsigned size, struct ew_gif *image) {
   unsigned width, height, limit_width, limit_height, attempt;
   unsigned long need;
-  int result = EW_GIF_NO_MEMORY;
-  if (!ew_color) return ew_gif_decode_aspect(data, size, image, ew_pixel_aspect);
-  if (size < 10) return ew_gif_decode_color(data, size, image, 1, 1);
+  int result = EW_GIF_NO_MEMORY, cached;
+  struct cache_key key;
+  if (size < 10) return ew_color ? ew_gif_decode_color(data, size, image, 1, 1) :
+                                   ew_gif_decode_aspect(data, size, image, ew_pixel_aspect);
+  cached = cache_begin(data, size, &key);
+  if (!ew_color) {
+    if (cached && !cache_load(&key, image)) return EW_GIF_OK;
+    result = ew_gif_decode_aspect(data, size, image, ew_pixel_aspect);
+    if (cached && result == EW_GIF_OK) cache_store(&key, image);
+    return result;
+  }
   limit_width = EW_PAGE_WIDTH - 8;
   limit_height = 200;
   for (attempt = 0; attempt < 6; ++attempt, limit_width -= limit_width >> 2,
@@ -46,7 +213,11 @@ static int decode(const unsigned char EW_FAR *data, unsigned size, struct ew_gif
     }
     need = (unsigned long)((width + 1) >> 1) * height;
     if (color_bytes + need > COLOR_CACHE_BYTES) continue;
+    key.limit_width = limit_width;
+    key.limit_height = limit_height;
+    if (cached && !cache_load(&key, image)) { result = EW_GIF_OK; break; }
     result = ew_gif_decode_color(data, size, image, limit_width, limit_height);
+    if (cached && result == EW_GIF_OK) cache_store(&key, image);
     if (result != EW_GIF_NO_MEMORY) break;
   }
   if (result == EW_GIF_OK) color_bytes += (unsigned long)image->stride * image->height;
@@ -86,7 +257,7 @@ void ew_images_clear(void) {
   image_urls = NULL;
 }
 int ew_images_load_document(const char *url) {
-  static unsigned char header[512];
+  unsigned char *header = chunk; /* Only needed before the decode below. */
   unsigned char EW_FAR *compressed;
   unsigned i, amount, head, width=0, height=0;
   int known, gif, result;
@@ -94,7 +265,7 @@ int ew_images_load_document(const char *url) {
   if (!url || strlen(url)>=EW_URL) return document_fail("Image URL too long");
   if (!ew_source_length) return document_fail("Empty image document");
   if (ew_source_error()[0]) return document_fail(ew_source_error());
-  head=ew_source_length>sizeof(header) ? sizeof(header) : (unsigned)ew_source_length;
+  head=ew_source_length>sizeof(chunk) ? sizeof(chunk) : (unsigned)ew_source_length;
   for (i=0;i<head;++i) header[i]=ew_source_byte((uint32_t)i);
   if (ew_source_error()[0]) return document_fail(ew_source_error());
   known=ew_image_dimensions(header,head,&width,&height);
@@ -137,7 +308,6 @@ int ew_images_load_document(const char *url) {
 static int load_image(const char *url, struct ew_gif *image,
                       unsigned *width, unsigned *height) {
   static char final[EW_URL], error[96], path[40];
-  static unsigned char chunk[512];
   unsigned attempt, count, i;
   int fd = -1, got, result = -1;
   int32_t size;

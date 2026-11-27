@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased — decoded GIF cache
+
+- Cache decoded GIF bitmaps in `/tmp` (8 slots, entries up to 40,000 bytes), keyed by the compressed bytes, display mode and decode limits, so the welcome logos and repeat images skip LZW decoding after the first load. Damaged, torn or mismatched entries are decoded again. `EW_GIFCACHE=0` disables the cache; any other value names its directory.
+- The direct-image path now shares the image layer's 512-byte I/O buffer instead of keeping its own.
+
 ## 0.6 — release (2026-11-25)
 
 - Fix first-load GIF placeholders after mouse navigation: preserve the new page image repaint instead of clipping it to a stale focus region. Covers both ELKSWeb and WebNX without an extra full-page redraw.

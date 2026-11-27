@@ -52,6 +52,11 @@ int ew_gif_decode_aspect(const unsigned char EW_GIF_FAR *data, unsigned length,
 int ew_gif_decode_color(const unsigned char EW_GIF_FAR *data, unsigned length,
                         struct ew_gif *out, unsigned max_width, unsigned max_height);
 void ew_gif_free(struct ew_gif *image);
+/* Give an empty image uninitialised pixel and (when opacity_bytes is nonzero)
+ * opacity planes from the decoder's allocator, so ew_gif_free releases them.
+ * Used to restore a previously decoded bitmap without decoding again.
+ * Returns EW_GIF_OK or EW_GIF_NO_MEMORY, leaving the image empty on failure. */
+int ew_gif_alloc(struct ew_gif *image, unsigned pixel_bytes, unsigned opacity_bytes);
 /* Each destination, when non-NULL, needs image->stride bytes (at most 80).
  * Returns stride, or zero for a row outside the image.
  */
