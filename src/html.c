@@ -53,11 +53,19 @@ static const char EW_FAR *parse_tail;
 static uint32_t parse_length;
 static int file_source;
 static unsigned pre_column;
-static unsigned char source_byte(uint32_t offset) {
+/* Disk-backed pages are read through a 512-byte block cache in memory.c.
+ * Most bytes are already in the current block, so test that inline and only
+ * call ew_source_byte to change blocks or report errors. The subtraction
+ * wraps for offsets below the block, so one compare covers both ends. */
+static inline unsigned char source_byte(uint32_t offset) {
+  if (file_source) {
+    uint32_t delta = offset - ew_source_window_base;
+    if (delta < ew_source_window_size)
+      return ew_source_window[(unsigned)delta];
+    return offset < parse_length ? ew_source_byte(offset) : 0;
+  }
   if (offset >= parse_length)
     return 0;
-  if (file_source)
-    return ew_source_byte(offset);
   return offset < EW_SOURCE || !parse_tail
              ? parse_source[(unsigned)offset]
              : parse_tail[(unsigned)(offset - EW_SOURCE)];
@@ -1160,6 +1168,8 @@ static void parse_document(const char *base, int plain_mode) {
   int tag_overflow;
   unsigned italic_depth = 0, mono_depth = 0, pre_depth = 0;
   char quote = 0;
+  /* Byte at p, read once per loop pass. Valid until p moves. */
+  unsigned char ch;
   struct ew_run EW_FAR *r;
   struct ew_link *l;
   ew_image_reflow = 0;
@@ -1189,8 +1199,8 @@ static void parse_document(const char *base, int plain_mode) {
   skip[0] = 0;
   base_url = base;
   strcpy(ew_doc.title, EW_APP_NAME);
-  while (source_byte(p) && !parse_full) {
-    if (!plain_mode && source_byte(p) == '<') {
+  while ((ch = source_byte(p)) && !parse_full) {
+    if (!plain_mode && ch == '<') {
       if (bn) {
         if (title) {
           n = strlen(ew_doc.title);
@@ -1213,23 +1223,23 @@ static void parse_document(const char *base, int plain_mode) {
       n = 0;
       quote = 0;
       tag_overflow = 0;
-      while (source_byte(p)) {
-        if (!quote && source_byte(p) == '>')
+      while ((ch = source_byte(p))) {
+        if (!quote && ch == '>')
           break;
-        if (source_byte(p) == '\'' || source_byte(p) == '"') {
-          if (quote == source_byte(p))
+        if (ch == '\'' || ch == '"') {
+          if (quote == ch)
             quote = 0;
           else if (!quote)
-            quote = source_byte(p);
+            quote = ch;
         }
         if (n < sizeof(tag) - 1)
-          tag[n++] = source_byte(p);
+          tag[n++] = ch;
         else
           tag_overflow = 1;
         p++;
       }
       tag[n] = 0;
-      if (source_byte(p))
+      if (ch)
         p++;
       closing = tag[0] == '/';
       n = 0;
@@ -1739,7 +1749,7 @@ static void parse_document(const char *base, int plain_mode) {
       p++;
       continue;
     }
-    if (isspace((unsigned char)source_byte(p))) {
+    if (isspace(ch)) {
       if (bn) {
         if (title) {
           n = strlen(ew_doc.title);
@@ -1754,7 +1764,7 @@ static void parse_document(const char *base, int plain_mode) {
         bn = 0;
       }
       if (inpre) {
-        unsigned char whitespace = source_byte(p);
+        unsigned char whitespace = ch;
         if (whitespace == '\n') {
           int empty = px == indent;
           newline(0);
@@ -1782,7 +1792,7 @@ static void parse_document(const char *base, int plain_mode) {
       unsigned long value;
       unsigned character;
       const char *expansion;
-      if (!plain_mode && source_byte(p) == '&') { ++p; value = entity(&p); }
+      if (!plain_mode && ch == '&') { ++p; value = entity(&p); }
       else value = utf8_character(&p);
       character = text_character(value);
       expansion = text_expansion(value);

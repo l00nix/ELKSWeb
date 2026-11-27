@@ -28,13 +28,22 @@ static unsigned url_hashed;
 static FILE *source_file;
 static char source_path[40];
 static char source_error[64];
-static unsigned char source_cache[512];
-static uint32_t source_cache_base, source_write_pos, source_read_pos;
+/* The current page-cache block is shared with the parser's inline fast path
+ * (see source_byte in html.c). ew_source_window_size counts only valid bytes
+ * below ew_source_length, and is zero whenever the block must not be read:
+ * before a refill completes, after any source error, and between pages. */
+unsigned char ew_source_window[512];
+uint32_t ew_source_window_base;
+unsigned ew_source_window_size;
+#define source_cache ew_source_window
+#define source_cache_base ew_source_window_base
+static uint32_t source_write_pos, source_read_pos;
 static unsigned source_cache_size;
 static int source_writing;
 
 const char *ew_source_error(void) { return source_error; }
 static int source_fail(const char *message) {
+  ew_source_window_size = 0;
   strncpy(source_error, message, sizeof(source_error) - 1);
   source_error[sizeof(source_error) - 1] = 0;
   return -1;
@@ -46,6 +55,7 @@ void ew_source_abort(void) {
   source_path[0] = 0;
   source_writing = 0;
   source_cache_size = 0;
+  ew_source_window_size = 0;
   source_read_pos = 0;
   ew_source_length = 0;
 }
@@ -75,6 +85,7 @@ int ew_source_begin(void) {
   source_writing = 1;
   source_write_pos = 0;
   source_cache_size = 0;
+  ew_source_window_size = 0;
   return 0;
 }
 int ew_source_finish(uint32_t length) {
@@ -83,6 +94,7 @@ int ew_source_finish(uint32_t length) {
   ew_source_length = length;
   source_writing = 0;
   source_cache_size = 0;
+  ew_source_window_size = 0;
   source_read_pos = 0;
   return 0;
 }
@@ -92,6 +104,7 @@ unsigned char ew_source_byte(uint32_t offset) {
       offset >= source_cache_base + source_cache_size) {
     source_cache_base = offset & ~511UL;
     source_cache_size = 0;
+    ew_source_window_size = 0;
     /* Sequential parsing already leaves the stream at the next block.
      * Avoid a kernel seek for every 512 bytes; lookbehind/replay still seeks. */
     if (source_cache_base != source_read_pos &&
@@ -103,6 +116,11 @@ unsigned char ew_source_byte(uint32_t offset) {
     if (!source_cache_size || ferror(source_file)) {
       source_fail("Cannot read page cache"); return 0;
     }
+    /* Publish the block for the parser, never past the page length. */
+    ew_source_window_size =
+        ew_source_length - source_cache_base < source_cache_size
+            ? (unsigned)(ew_source_length - source_cache_base)
+            : source_cache_size;
   }
   if (offset >= source_cache_base + source_cache_size) {
     source_fail("Incomplete page cache"); return 0;

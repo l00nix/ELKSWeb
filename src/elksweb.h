@@ -131,6 +131,10 @@ int ew_source_begin(void);
 int ew_source_finish(uint32_t length);
 void ew_source_abort(void);
 unsigned char ew_source_byte(uint32_t offset);
+/* Current page-cache block, read directly by the parser's fast path. */
+extern unsigned char ew_source_window[512];
+extern uint32_t ew_source_window_base;
+extern unsigned ew_source_window_size;
 const char *ew_source_error(void);
 int32_t ew_fetch_to_fd(const char *url, int output_fd, uint32_t cap,
                        char *final_url, char *error, unsigned errorcap);
