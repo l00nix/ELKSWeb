@@ -36,6 +36,8 @@
 #define EW_RUN_TEXTAREA 11
 #define EW_CONTROL_VALUE 1
 #define EW_LINK_ISMAP 2
+/* Image flag byte: layout used the image's natural size (width or height absent). */
+#define EW_IMAGE_UNSIZED 4
 #define EW_IMAGE_ALT 128
 #define EW_CHARSET_UTF8 0
 #define EW_CHARSET_LATIN1 1
@@ -99,6 +101,7 @@ void ew_copy_to_far(void EW_FAR *dst, const void *src, unsigned size);
 void ew_zero_far(void EW_FAR *dst, unsigned size);
 const char EW_FAR *ew_store_url(const char *url);
 void ew_parse_source(const char *base);
+void ew_reflow_source(const char *base);
 void ew_parse_text_source(const char *base);
 int ew_anchor_y(const char *fragment);
 void ew_parse_image_source(const char *url);
@@ -106,6 +109,7 @@ int32_t ew_fetch_document(const char *url, char *final_url, char *error,
                           unsigned errorcap, const char *post);
 void ew_images_clear(void);
 void ew_images_load(void);
+int ew_images_resized(void);
 int ew_images_load_document(const char *url);
 const char *ew_image_document_error(void);
 const char EW_FAR *ew_image_alt(const struct ew_run EW_FAR *run);

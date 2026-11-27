@@ -214,6 +214,32 @@ const char EW_FAR *ew_image_alt(const struct ew_run EW_FAR *r) {
   while (pos<ew_doc.text_len && n<EW_IMAGE_ALT && ew_doc.text[pos]) { ++pos; ++n; }
   return pos<ew_doc.text_len && n<EW_IMAGE_ALT ? ew_doc.text+start : NULL;
 }
+/* Pages are parsed with no images loaded, so an unsized image was laid out
+ * from a zero natural size. Reflow only when one now has a known size. */
+int ew_images_resized(void) {
+  unsigned i, j, pos, k;
+  for (i = 0; i < ew_doc.run_count; i++) {
+    const struct ew_run EW_FAR *r = &ew_doc.runs[i];
+    const char EW_FAR *alt = ew_image_alt(r);
+    const char EW_FAR *url;
+    if (r->kind != EW_RUN_IMAGE) continue;
+    if (!alt) return 1;
+    pos = image_alt_offset(r);
+    while (*alt++) ++pos;
+    if (pos + 1 >= ew_doc.text_len ||
+        !(ew_doc.text[pos + 1] & EW_IMAGE_UNSIZED)) continue;
+    url = ew_doc.text + r->off;
+    for (k = 0; k < image_count; ++k) {
+      const char EW_FAR *cached = image_urls + k * EW_URL;
+      for (j = 0; j < EW_URL && url[j] && url[j] == cached[j]; ++j) {}
+      if (j < EW_URL && !url[j] && !cached[j]) {
+        if (natural_width[k] || natural_height[k]) return 1;
+        break;
+      }
+    }
+  }
+  return 0;
+}
 int ew_image_is_map(const struct ew_run EW_FAR *r) {
   const char EW_FAR *alt=ew_image_alt(r);
   unsigned pos=image_alt_offset(r);

@@ -89,6 +89,10 @@ struct table_plan {
 };
 static struct table_plan table_plans[16];
 static unsigned char table_plan_count, table_replay;
+/* table_plans_used: the last parse_html laid tables out from table_plans.
+ * unsized_in_table: an image sized from its natural size sits in a table, so
+ * loading it can change that table's column minimums and invalidate plans. */
+static unsigned char table_plans_used, unsized_in_table;
 static void table_minimum(unsigned width) {
   if (!table_replay && table.open && table.eligible && width>table.cell_minimum)
     table.cell_minimum=width>16000 ? 16000 : width;
@@ -1717,7 +1721,11 @@ static void parse_document(const char *base, int plain_mode) {
         r = run(EW_RUN_IMAGE);
         if (!r)
           continue;
-        if (!has_width || !has_height) ew_image_reflow = 1;
+        if (!has_width || !has_height) {
+          ew_image_reflow = 1;
+          if (table.active || saved_table.active || table_ignored)
+            unsized_in_table = 1;
+        }
         r->off = ew_doc.text_len;
         r->n = width;
         r->w = height;
@@ -1726,7 +1734,8 @@ static void parse_document(const char *base, int plain_mode) {
         ew_doc.text_len += len;
         ew_copy_to_far(ew_doc.text + ew_doc.text_len, alt, alt_len);
         ew_doc.text_len += alt_len;
-        ew_doc.text[ew_doc.text_len++]=ismap ? EW_LINK_ISMAP : 0;
+        ew_doc.text[ew_doc.text_len++]=(ismap ? EW_LINK_ISMAP : 0) |
+            (!has_width || !has_height ? EW_IMAGE_UNSIZED : 0);
         if (ismap) ew_doc.links[linkid-1].flags|=EW_LINK_ISMAP;
         px += width;
         if (lineheight < height + 2)
@@ -1803,22 +1812,23 @@ static void parse_document(const char *base, int plain_mode) {
   ew_doc.height = py + lineheight + 8;
   ew_document_trim();
 }
-static void parse_html(const char *base) {
-  unsigned char charset=parse_charset;
-  table_plan_count=table_replay=0;
+static void parse_replay(const char *base, unsigned char charset) {
+  table_replay=table_plans_used=1;
+  parse_charset=charset;
   parse_document(base,0);
-  if (table_plan_count && !ew_doc.truncated) {
-    table_replay=1;
+  if (ew_doc.truncated) {
+    /* Reflow must not discard content that fit before column negotiation. */
+    table_plan_count=table_plans_used=0;
     parse_charset=charset;
     parse_document(base,0);
-    if (ew_doc.truncated) {
-      /* Reflow must not discard content that fit before column negotiation. */
-      table_plan_count=0;
-      parse_charset=charset;
-      parse_document(base,0);
-    }
   }
   table_replay=0;
+}
+static void parse_html(const char *base) {
+  unsigned char charset=parse_charset;
+  table_plan_count=table_replay=table_plans_used=unsized_in_table=0;
+  parse_document(base,0);
+  if (table_plan_count && !ew_doc.truncated) parse_replay(base,charset);
 }
 void ew_parse(const char EW_FAR *html, const char *base) {
   parse_charset = EW_CHARSET_UTF8;
@@ -1835,6 +1845,18 @@ void ew_parse_source(const char *base) {
   parse_tail = ew_source_tail;
   parse_length = ew_source_length;
   parse_html(base);
+}
+/* Re-lay out the same source after images supplied their natural sizes.
+ * Table plans measured before the images loaded stay valid when no unsized
+ * image sits in a table, so one replay pass replaces the measuring pass. */
+void ew_reflow_source(const char *base) {
+  parse_charset = ew_document_charset;
+  file_source = 1;
+  parse_source = ew_source;
+  parse_tail = ew_source_tail;
+  parse_length = ew_source_length;
+  if (!table_plans_used || unsized_in_table) parse_html(base);
+  else parse_replay(base,parse_charset);
 }
 void ew_parse_text_source(const char *base) {
   parse_charset = ew_document_charset;
