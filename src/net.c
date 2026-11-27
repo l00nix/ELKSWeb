@@ -28,6 +28,11 @@ static int response_status;
 static int fail(const char *s);
 static int segmented_output;
 static int spool_fd = -1;
+/* Image fetches size a far buffer from Content-Length instead of spooling
+ * to /tmp. Only bodies without a length fall back to the spill file. */
+static int image_mode;
+static unsigned char EW_FAR *image_buffer;
+static int (*image_spill)(void);
 static unsigned char spool_buffer[512];
 static unsigned spool_size;
 static int spool_flush(void) {
@@ -176,9 +181,19 @@ int ew_host_is_ipv4(const char *host) {
   }
   return 0;
 }
+/* One-entry resolver cache. A page's images nearly always share its host
+ * (or the HTTP_PROXY host), so repeat lookups are the common case. The
+ * entry is dropped when a connect to it fails, so a stale address costs
+ * one failed load rather than sticking for the session. */
+static char dns_host[96];
+static unsigned long dns_address;
 static int connecthost(const char *host, unsigned port) {
   struct sockaddr_in sa;
   unsigned long address;
+  if (dns_address && !strcmp(host, dns_host)) {
+    address = dns_address;
+    goto resolved;
+  }
 #ifdef EW_HOST_TEST
   struct hostent *he = gethostbyname(host);
   if (!he)
@@ -195,6 +210,11 @@ static int connecthost(const char *host, unsigned port) {
   if (!address)
     return fail("Host name not found");
 #endif
+  if (strlen(host) < sizeof(dns_host)) {
+    strcpy(dns_host, host);
+    dns_address = address;
+  }
+resolved:
   fd = socket(AF_INET, SOCK_STREAM, 0);
   if (fd < 0)
     return fail("Network unavailable: start ELKS net first");
@@ -207,11 +227,15 @@ static int connecthost(const char *host, unsigned port) {
   sa.sin_port = htons(port);
   sa.sin_addr.s_addr = address;
 #ifdef EW_HOST_TEST
-  if (connect(fd, (struct sockaddr *)&sa, sizeof(sa)) < 0)
+  if (connect(fd, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
+    dns_address = 0;
     return fail("Connection failed");
+  }
 #else
-  if (in_connect(fd, (struct sockaddr *)&sa, sizeof(sa), 10) < 0)
+  if (in_connect(fd, (struct sockaddr *)&sa, sizeof(sa), 10) < 0) {
+    dns_address = 0;
     return fail("Connection failed or timed out");
+  }
 #endif
   return 0;
 }
@@ -382,6 +406,16 @@ static int32_t request(const char *url, char EW_FAR *out, uint32_t cap, char *lo
     length = -1; /* Transfer-Encoding overrides Content-Length. */
   if (segmented_output && response_type == EW_CONTENT_BINARY)
     cap = 0x7ffffffeUL; /* Downloads stream to disk, never the HTML buffers. */
+  if (image_mode && !chunked && length >= 0) {
+    uint32_t want = (uint32_t)length < cap ? (uint32_t)length : cap - 1;
+    image_buffer = ew_far_alloc((unsigned long)want + 1);
+    if (!image_buffer) return fail("Not enough memory to decode image");
+    out = (char EW_FAR *)image_buffer;
+  } else if (image_mode) {
+    spool_fd = image_spill();
+    if (spool_fd < 0) return fail("Cannot create image cache");
+    spool_size = 0;
+  }
   while (length != 0) {
     if (chunked && chunk == 0) {
       if (line(header, sizeof(header)) < 0)
@@ -431,7 +465,7 @@ static int32_t fetch(const char *url, char EW_FAR *out, uint32_t cap, char *fina
   response_charset = EW_CHARSET_UTF8;
   strcpy(response_media, "text/html");
   failure[0] = 0;
-  if (!ec || !cap || (!out && !segmented_output && spool_fd < 0))
+  if (!ec || !cap || (!out && !segmented_output && spool_fd < 0 && !image_mode))
     return -1;
   error[0] = 0;
   for (path = url; *path; ++path)
@@ -465,6 +499,23 @@ static int32_t fetch(const char *url, char EW_FAR *out, uint32_t cap, char *fina
         break;
       }
       response_type = file_type(next);
+      if (image_mode) {
+        long length = fseek(f, 0L, SEEK_END) ? -1L : ftell(f);
+        uint32_t want;
+        if (length < 0 || fseek(f, 0L, SEEK_SET)) {
+          fclose(f);
+          fail("Cannot read local file");
+          break;
+        }
+        want = (uint32_t)length < cap ? (uint32_t)length : cap - 1;
+        image_buffer = ew_far_alloc((unsigned long)want + 1);
+        if (!image_buffer) {
+          fclose(f);
+          fail("Not enough memory to decode image");
+          break;
+        }
+        out = (char EW_FAR *)image_buffer;
+      }
       response_charset = EW_CHARSET_UTF8;
       strcpy(response_media, response_type == EW_CONTENT_TEXT ? "text/plain" :
                                response_type == EW_CONTENT_IMAGE ? "image" : "text/html");
@@ -564,6 +615,33 @@ int32_t ew_fetch_to_fd(const char *url, int output_fd, uint32_t cap,
     size = -1;
     if (ec) { strncpy(error, failure, ec - 1); error[ec - 1] = 0; }
   }
+  spool_fd = -1;
+  spool_size = 0;
+  return size;
+}
+
+int32_t ew_fetch_image(const char *url, uint32_t cap, unsigned char EW_FAR **out,
+                       int (*spill)(void), char *final_url, char *error,
+                       unsigned ec) {
+  int32_t size;
+  *out = NULL;
+  segmented_output = 0;
+  image_mode = 1;
+  image_buffer = NULL;
+  image_spill = spill;
+  spool_fd = -1;
+  spool_size = 0;
+  size = fetch(url, NULL, cap, final_url, error, ec, NULL);
+  if (size >= 0 && spool_fd >= 0 && spool_flush()) {
+    size = -1;
+    if (ec) { strncpy(error, failure, ec - 1); error[ec - 1] = 0; }
+  }
+  if (size < 0) {
+    ew_far_free(image_buffer);
+  } else *out = image_buffer;
+  image_buffer = NULL;
+  image_mode = 0;
+  image_spill = NULL;
   spool_fd = -1;
   spool_size = 0;
   return size;
