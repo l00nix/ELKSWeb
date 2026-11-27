@@ -137,6 +137,12 @@ unsigned char ew_source_byte(uint32_t offset);
 const char *ew_source_error(void);
 int32_t ew_fetch_to_fd(const char *url, int output_fd, uint32_t cap,
                        char *final_url, char *error, unsigned errorcap);
+/* Fetch an image body. Sized bodies prefer a caller-owned far buffer in
+ * *out. Unknown lengths or allocation failure use the fd spill() opened
+ * instead (*out is NULL). Empty responses may have neither destination. */
+int32_t ew_fetch_image(const char *url, uint32_t cap, unsigned char EW_FAR **out,
+                       int (*spill)(void), char *final_url, char *error,
+                       unsigned errorcap);
 void ew_document_trim(void);
 const char *ew_url_scheme(const char *url);
 unsigned ew_select_count(unsigned link);

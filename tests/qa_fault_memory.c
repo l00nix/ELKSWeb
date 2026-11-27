@@ -4,12 +4,15 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
-static unsigned qa_calls, qa_fail_at, qa_live;
+static unsigned qa_calls, qa_fail_at, qa_fail_once, qa_live;
 static void *qa_fault_malloc(size_t size)
 {
   void *p;
   ++qa_calls;
-  if (qa_fail_at && qa_calls >= qa_fail_at) return NULL;
+  if (qa_fail_at && qa_calls >= qa_fail_at) {
+    if (qa_fail_once) qa_fail_at = 0;
+    return NULL;
+  }
   p = malloc(size);
   if (p) ++qa_live;
   return p;
@@ -18,7 +21,8 @@ static void qa_fault_free(void *p)
 {
   if (p) { --qa_live; free(p); }
 }
-void qa_allocator_reset(unsigned fail_at) { qa_calls = 0; qa_fail_at = fail_at; }
+void qa_allocator_reset(unsigned fail_at) { qa_calls = 0; qa_fail_at = fail_at; qa_fail_once = 0; }
+void qa_allocator_fail_once(unsigned fail_at) { qa_allocator_reset(fail_at); qa_fail_once = 1; }
 unsigned qa_allocator_live(void) { return qa_live; }
 static unsigned qa_io_fail;
 void qa_io_reset(unsigned failure) { qa_io_fail = failure; }

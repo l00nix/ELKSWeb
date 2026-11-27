@@ -1,5 +1,5 @@
 """Actual HTML/source/HTTP/GIF/cache integration, rendered pixels tested separately."""
-import ctypes as C, pathlib, subprocess, tempfile, unittest
+import ctypes as C, os, pathlib, socket, subprocess, tempfile, threading, time, unittest
 from test_core_regression import OneHTTP
 HERE=pathlib.Path(__file__).resolve().parent
 SRC=HERE.parent/'src'
@@ -82,5 +82,86 @@ class Images(unittest.TestCase):
             self.assertEqual(self.lib.ew_source_byte(0),0)
             self.assertEqual(self.lib.ew_fetch_document(url,final,error,128,None),len(body))
             self.assertEqual(self.lib.ew_images_load_document(url),0)
+
+    def paused_image(self,head,first,rest,fail_once=0):
+        """Serve head+first, note /tmp spill files mid-body, then send rest."""
+        sock=socket.socket();sock.bind(('127.0.0.1',0));sock.listen(1);sock.settimeout(3)
+        seen={}
+        def spills():return set(pathlib.Path('/tmp').glob(f'ei{os.getpid()&65535:04x}*.gif'))
+        def serve():
+            conn,_=sock.accept()
+            with conn:
+                request=b''
+                while b'\r\n\r\n' not in request:request+=conn.recv(1024)
+                conn.sendall(head+first);time.sleep(.4);seen['mid']=spills();conn.sendall(rest)
+        before=spills();thread=threading.Thread(target=serve,daemon=True);thread.start()
+        url=f'http://127.0.0.1:{sock.getsockname()[1]}/paused.gif'.encode()
+        try:
+            self.lib.ew_parse(b'<img src="'+url+b'">',b'http://host/')
+            if fail_once:self.lib.qa_allocator_fail_once(fail_once)
+            self.lib.ew_images_load()
+        finally:thread.join(timeout=4);sock.close()
+        return url,before,seen['mid'],spills()
+    def test_sized_image_streams_to_memory_without_tmp_file(self):
+        gif=(HERE/'fixtures/image.gif').read_bytes()
+        url,before,mid,after=self.paused_image(b'HTTP/1.0 200 OK\r\nContent-Length: '+str(len(gif)).encode()+b'\r\n\r\n',gif[:10],gif[10:])
+        width=C.c_uint();height=C.c_uint()
+        self.assertGreaterEqual(self.lib.ew_image_lookup(url,C.byref(width),C.byref(height)),0)
+        self.assertEqual((width.value,height.value),(16,16))
+        self.assertEqual(mid,before,'Content-Length images must not spool to /tmp')
+        self.assertEqual(after,before)
+    def test_unsized_image_spills_to_tmp_and_cleans_up(self):
+        gif=(HERE/'fixtures/image.gif').read_bytes()
+        url,before,mid,after=self.paused_image(b'HTTP/1.0 200 OK\r\n\r\n',gif[:10],gif[10:])
+        self.assertGreaterEqual(self.lib.ew_image_lookup(url,None,None),0)
+        self.assertEqual(len(mid-before),1,'Close-delimited images still need the spill file')
+        self.assertEqual(after,before)
+    def test_chunked_image_decodes_through_spill(self):
+        gif=(HERE/'fixtures/image.gif').read_bytes();half=len(gif)//2
+        body=b'%x\r\n'%half+gif[:half]+b'\r\n'+b'%x\r\n'%(len(gif)-half)+gif[half:]+b'\r\n0\r\n\r\n'
+        server=OneHTTP(b'HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n'+body)
+        try:
+            url=(server.url+'/chunked.gif').encode();self.lib.ew_parse(b'<img src="'+url+b'">',b'http://host/');self.lib.ew_images_load()
+            self.assertGreaterEqual(self.lib.ew_image_lookup(url,None,None),0)
+        finally:server.close()
+    def test_short_sized_image_body_fails_cleanly(self):
+        gif=(HERE/'fixtures/image.gif').read_bytes()
+        server=OneHTTP(b'HTTP/1.0 200 OK\r\nContent-Length: '+str(len(gif)+50).encode()+b'\r\n\r\n'+gif)
+        try:
+            url=(server.url+'/short.gif').encode();self.lib.ew_parse(b'<img src="'+url+b'">',b'http://host/');self.lib.ew_images_load()
+            self.assertLess(self.lib.ew_image_lookup(url,None,None),0)
+        finally:server.close()
+    def test_image_allocation_failure_reports_memory(self):
+        gif=(HERE/'fixtures/image.gif').read_bytes()
+        server=OneHTTP(b'HTTP/1.0 200 OK\r\nContent-Length: '+str(len(gif)).encode()+b'\r\n\r\n'+gif)
+        try:
+            url=(server.url+'/nomem.gif').encode();self.lib.ew_parse(b'<img src="'+url+b'">',b'http://host/')
+            self.lib.qa_allocator_reset(2);self.lib.ew_images_load();self.lib.qa_allocator_reset(0)
+            self.assertLess(self.lib.ew_image_lookup(url,None,None),0)
+            self.assertIn(b'memory',self.lib.ew_image_document_error())
+        finally:server.close()
+
+    def test_sized_image_allocation_can_retry_after_connection_closes(self):
+        gif=(HERE/'fixtures/image.gif').read_bytes()
+        # First allocation stores URLs; fail the direct compressed buffer once.
+        url,before,mid,after=self.paused_image(b'HTTP/1.0 200 OK\r\nContent-Length: '+str(len(gif)).encode()+b'\r\n\r\n',gif[:10],gif[10:],fail_once=2)
+        self.assertGreaterEqual(self.lib.ew_image_lookup(url,None,None),0)
+        self.assertEqual(len(mid-before),1)
+        self.assertEqual(after,before)
+
+    def test_empty_image_response_is_safe_and_next_image_still_loads(self):
+        gif=(HERE/'fixtures/image.gif').read_bytes()
+        server=OneHTTP([b'HTTP/1.0 204 No Content\r\n\r\n',b'HTTP/1.0 200 OK\r\nContent-Length: '+str(len(gif)).encode()+b'\r\n\r\n'+gif])
+        spills=lambda:set(pathlib.Path('/tmp').glob(f'ei{os.getpid()&65535:04x}*.gif'))
+        before=spills()
+        try:
+            missing=(server.url+'/empty.gif').encode();valid=(server.url+'/valid.gif').encode()
+            self.lib.ew_parse(b'<img src="'+missing+b'"><img src="'+valid+b'">',b'http://host/')
+            self.lib.ew_images_load()
+            self.assertLess(self.lib.ew_image_lookup(missing,None,None),0)
+            self.assertGreaterEqual(self.lib.ew_image_lookup(valid,None,None),0)
+        finally:server.close()
+        self.assertEqual(len(server.requests),2)
+        self.assertEqual(spills(),before)
 
 if __name__=='__main__':unittest.main()

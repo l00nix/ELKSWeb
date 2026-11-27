@@ -134,45 +134,69 @@ int ew_images_load_document(const char *url) {
               "Unrecognized or incomplete image document");
   return known ? 1 : -1;
 }
-static int load_image(const char *url, struct ew_gif *image,
-                      unsigned *width, unsigned *height) {
-  static char final[EW_URL], error[96], path[40];
-  static unsigned char chunk[512];
-  unsigned attempt, count, i;
-  int fd = -1, got, result = -1;
-  int32_t size;
-  unsigned char EW_FAR *compressed = NULL;
+/* Spill file for unknown lengths or a failed direct allocation; opened lazily so
+ * the common sized response never touches /tmp. */
+static char spill_path[40];
+static int spill_fd = -1;
+static int open_spill(void) {
+  unsigned attempt;
   for (attempt = 0; attempt < 16; ++attempt) {
-    snprintf(path, sizeof(path), "/tmp/ei%04x%02x.gif", (unsigned)getpid() & 0xffffU, attempt);
-    fd = open(path, O_RDWR | O_CREAT | O_EXCL, 0600);
-    if (fd >= 0) break;
+    snprintf(spill_path, sizeof(spill_path), "/tmp/ei%04x%02x.gif",
+             (unsigned)getpid() & 0xffffU, attempt);
+    spill_fd = open(spill_path, O_RDWR | O_CREAT | O_EXCL, 0600);
+    if (spill_fd >= 0) return spill_fd;
     if (errno != EEXIST) return -1;
   }
-  if (fd < 0) return -1;
-  size = ew_fetch_to_fd(url, fd, EW_SOURCE, final, error, sizeof(error));
-  if (size <= 0 || lseek(fd, 0L, SEEK_SET) < 0) goto done;
+  return -1;
+}
+static unsigned char EW_FAR *read_spill(int32_t size) {
+  static unsigned char chunk[512];
+  unsigned char EW_FAR *compressed;
+  unsigned count = 0, i;
+  int got;
+  if (lseek(spill_fd, 0L, SEEK_SET) < 0) return NULL;
   compressed = ew_far_alloc((unsigned long)size);
   if (!compressed) {
     document_fail("Not enough memory to decode image");
-    goto done;
+    return NULL;
   }
-  count = 0;
   while ((uint32_t)count < (uint32_t)size) {
     unsigned want = (unsigned)size - count;
     if (want > sizeof(chunk)) want = sizeof(chunk);
-    got = read(fd, chunk, want);
+    got = read(spill_fd, chunk, want);
     if (got < 0 && errno == EINTR) continue;
-    if (got <= 0) goto done;
+    if (got <= 0) {
+      ew_far_free(compressed);
+      return NULL;
+    }
     for (i = 0; i < (unsigned)got; ++i) compressed[count++] = chunk[i];
   }
+  return compressed;
+}
+static int load_image(const char *url, struct ew_gif *image,
+                      unsigned *width, unsigned *height) {
+  static char final[EW_URL], error[96];
+  int result = -1;
+  int32_t size;
+  unsigned char EW_FAR *compressed = NULL;
+  spill_fd = -1;
+  size = ew_fetch_image(url, EW_SOURCE, &compressed, open_spill, final, error,
+                        sizeof(error));
+  if (size > 0 && !compressed && spill_fd >= 0) compressed = read_spill(size);
+  if (size < 0 && !strcmp(error, "Not enough memory to decode image"))
+    document_fail(error);
+  if (size <= 0 || !compressed) goto done;
   ew_image_dimensions(compressed, (unsigned)size, width, height);
   result = decode(compressed, (unsigned)size, image);
   if (result == EW_GIF_NO_MEMORY) document_fail(ew_gif_error(result));
   result = result == EW_GIF_OK ? 0 : -1;
 done:
   ew_far_free(compressed);
-  close(fd);
-  unlink(path);
+  if (spill_fd >= 0) {
+    close(spill_fd);
+    unlink(spill_path);
+    spill_fd = -1;
+  }
   return result;
 }
 void ew_images_load(void) {

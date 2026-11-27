@@ -36,8 +36,8 @@ void ew_copy_to_far(void *d,const void *s,unsigned n) { memcpy(d,s,n); }
 void ew_copy_from_far(char *d,const char *s,unsigned n) { if(n) { strncpy(d,s,n-1); d[n-1]=0; } }
 unsigned char ew_source_byte(uint32_t n) { (void)n; return 0; }
 const char *ew_source_error(void) { return ""; }
-int32_t ew_fetch_to_fd(const char*u,int f,uint32_t c,char*v,char*e,unsigned n) {
-  (void)u;(void)f;(void)c;(void)v;(void)e;(void)n;return -1; }
+int32_t ew_fetch_image(const char*u,uint32_t c,unsigned char**o,int(*s)(void),char*v,char*e,unsigned n) {
+  (void)u;(void)c;(void)s;(void)v;(void)e;(void)n;*o=0;return -1; }
 void ew_rect(int x,int y,int w,int h,int c) {(void)x;(void)y;(void)w;(void)h;(void)c;}
 void ew_glyph(int x,int y,unsigned char c,int f,int b) {(void)x;(void)y;(void)c;(void)f;(void)b;}
 int ew_body_char_width(unsigned char c,int bold) {(void)c;(void)bold;return 8;}
