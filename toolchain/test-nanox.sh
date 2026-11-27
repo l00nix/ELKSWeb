@@ -19,3 +19,9 @@ for test in nanox_events_test nanox_text_test; do
         "$discard" -o "$out/$test"
     "$out/$test"
 done
+"$cc" -O1 -g -Wall -Wextra -DELKSWEB_NANOX=1 \
+    -ffunction-sections -fdata-sections \
+    -I"$MWDIR/src/include" -Iplatform -Ifont \
+    platform/tests/nanox_image_test.c platform/elks_nanox.c font/font.c font/body_font.c image/gif.c \
+    "$discard" -o "$out/nanox_image_test"
+"$out/nanox_image_test"

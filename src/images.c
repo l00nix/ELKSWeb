@@ -12,6 +12,7 @@
 #define IMAGE_LIMIT 8
 /* One display row of packed colour pixels, plus the odd-start nibble. */
 #define EW_TANDY_LINE 321
+#define EW_MONO_LINE ((EW_GIF_MAX_WIDTH+7)/8)
 static struct ew_gif images[IMAGE_LIMIT];
 static unsigned image_count;
 static unsigned natural_width[IMAGE_LIMIT], natural_height[IMAGE_LIMIT];
@@ -455,13 +456,23 @@ void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bot
               start_sx,(int)(last_col-first_col),inverse);
       goto next_row;
     }
-    for (col=first_col;col<last_col;++col,++screen_x) {
+    /* The colour-row scratch buffer also fits three monochrome rows: keep
+     * the sampled source at its start and pack destination bits and coverage
+     * after it. This avoids extra image storage and per-pixel Nano-X requests.
+     * Sampling and dithering still use the original image-relative phase. */
+    memset(bits+EW_MONO_LINE,0,2*EW_MONO_LINE);
+    for (col=first_col;col<last_col;++col) {
+      unsigned at=col-first_col;
+      unsigned char mask=0x80U>>(at&7);
       if (reduce) {
         color=reduced_pixel(image,sx,sy,
                             sx+x_step+(x_error>=r->n-x_remainder),end_y,col,row);
-        if (color>=0) ew_pixel(screen_x,screen_y,color^inverse);
-      } else if (opacity[sx>>3] & (0x80U>>(sx&7)))
-        ew_pixel(screen_x,screen_y,!!(bits[sx>>3] & (0x80U>>(sx&7))) ^ inverse);
+      } else color=(opacity[sx>>3] & (0x80U>>(sx&7))) ?
+                    !!(bits[sx>>3] & (0x80U>>(sx&7))) : -1;
+      if (color>=0) {
+        bits[2*EW_MONO_LINE+(at>>3)]|=mask;
+        if (color) bits[EW_MONO_LINE+(at>>3)]|=mask;
+      }
       sx+=x_step;
       /* Subtract before adding so even a 65535-pixel destination cannot
        * overflow the native unsigned 16-bit remainder accumulator. */
@@ -470,6 +481,8 @@ void ew_image_draw(const struct ew_run EW_FAR *r, int x, int y, int top, int bot
         ++sx;
       } else x_error+=x_remainder;
     }
+    ew_row1(screen_x,screen_y,bits+EW_MONO_LINE,bits+2*EW_MONO_LINE,
+            0,(int)(last_col-first_col),inverse);
 next_row:
     sy+=y_step;
     if (y_error>=r->w-y_remainder) {
