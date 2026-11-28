@@ -197,5 +197,4 @@ IBM emulator and PPC/HP results separately. Takahiro Yamada subsequently
 physical PC-9801RX](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7167416434),
 launching from nxterm after nxstart with XMS enabled and httpd/ftpd stopped.
 That validates the reported configuration, not every earlier startup path;
-no special shutdown behaviour has been added to mask failures. His FrogFind
-photo shows an image placeholder, and download verification remains pending.
+no special shutdown behaviour has been added to mask failures. His later [0.6.1dev test](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7223112379) confirms the frog appears on the first load and the Ctrl-key controls work. Download verification remains pending.
