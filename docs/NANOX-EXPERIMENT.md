@@ -1,19 +1,16 @@
 # ELKSWeb and WebNX
 
-Nightly **0.6.1dev** adds control-key alternatives and offline keyboard help.
-Install with `ept install -n elksweb`; press Ctrl-G for help. See
-[0.6.1dev notes](RELEASE-0.6.1dev.md). Stable/general remains **0.6**.
-The release 0.6 description and migration instructions below still apply.
+Release **0.7** includes control-key alternatives, offline help, synchronous Nano-X event polling and packed-row GIF repainting. See the [release notes](RELEASE-0.7.md). The PPC screen-copy experiment is excluded; scrolling repaints cached content.
 
 One `elksweb` package contains the direct `/bin/elksweb` browser, the optional
 `/bin/webnx` Nano-X client, and shared pages/images under `/lib/web/`.
-Both executables report **0.6** and open `/lib/web/welcome.htm` by default,
+Both executables report **0.7** and open `/lib/web/welcome.htm` by default,
 including in native colour modes. The page shows both logos, common controls,
 and the differences between direct-console and Nano-X browsing. Colour tests
 are linked from the welcome page. This follows ghaerr's PR #5 guidance.
 
 The Nano-X contribution and WebNX branding are from astrobleem's PRs #5/#6.
-The rendering, GIF, HP/PPC and 0.5 performance fixes are retained. Release 0.6 is available in general and nightly; no EMS/kernel support is added.
+The rendering, GIF, HP/PPC and 0.5 performance fixes are retained. Release 0.7 is available in general and nightly; no EMS/kernel support is added.
 
 ## First-load image redraw (0.6)
 
@@ -59,8 +56,8 @@ elksweb --version
 webnx --version
 ```
 
-Both version commands should report **0.6**. The main mirror's general and
-nightly catalogues contain the combined **0.6** release; `/local` is not required.
+Both version commands should report **0.7**. The main mirror's general and
+nightly catalogues contain the combined **0.7** release; `/local` is not required.
 Use `ept install -n elksweb` to select nightly instead of general.
 The old `/local` address still works for compatibility, including instructions
 inside previously published packages. A first-time install, or an upgrade from
@@ -91,7 +88,7 @@ elksweb --version
 webnx --version
 ```
 
-Both should report 0.6. Do not remove the old packages after installing
+Both should report 0.7. Do not remove the old packages after installing
 the combined one: older EPT clients retain their file ownership records and
 could delete its files. If this happened, remove the remaining old package
 records and reinstall `elksweb` using the command above. Do not hand-edit the

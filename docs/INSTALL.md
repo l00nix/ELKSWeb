@@ -1,4 +1,4 @@
-> For **release 0.6**, use the [release installation instructions](RELEASE-0.6.md#install)
+> For **release 0.7**, use the [release installation instructions](RELEASE-0.7.md#install)
 > and [combined-package migration guide](NANOX-EXPERIMENT.md#install-and-migrate).
 > Install with `ept install elksweb`. Both browsers and shared `/lib/web/` assets
 > are included. The sections below describe historical comparison packages.
