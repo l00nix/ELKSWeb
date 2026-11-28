@@ -5,21 +5,21 @@
   <img src="artwork/elksweb-wordmark-yellow-globe.png" alt="ELKSWeb logo" width="640">
 </p>
 
-# ELKSWeb 0.6
+# ELKSWeb 0.7
 
 An experimental graphical web browser for [ELKS Linux](https://github.com/ghaerr/elks), written in C with the native ELKS IA16 toolchain and targeting 8088-compatible machines.
 
 Inspired by [the ELKS graphical-browser discussion (#2185)](https://github.com/ghaerr/elks/discussions/2185) and [MicroWeb](https://github.com/jhhoward/MicroWeb). ELKSWeb is an original implementation.
 
-**Nightly 0.6.1dev:** adds Ctrl-R reload, Ctrl-D redraw, Ctrl-V theme, Ctrl-T bars and Ctrl-G offline keyboard help, while keeping Ctrl-L for the address and the existing function keys. Ctrl-B/F navigate history; Ctrl-N/W select the next/previous control. Install with `ept install -n elksweb` from `REPO=http://ept.8088retro.com`. Stable 0.6 remains in general. [Shortcut details and test scope](docs/RELEASE-0.6.1dev.md).
+**New in 0.7:** control-key shortcuts and offline help, safer and faster image loading, row-based GIF repainting, and Nano-X event/startup fixes. Both browsers retain the shared welcome page and HP/PPC fixes. The external ELKS build now prepares both clients and shared `/lib/web` assets. Thanks to astrobleem for the image-loading contributions, ghaerr for integration and keyboard guidance, and Takahiro Yamada for PC-98 testing. [Release notes and known limitations](docs/RELEASE-0.7.md).
 
-**New in 0.6:** Fixes images remaining as placeholders after mouse-click navigation in ELKSWeb and WebNX. The frog now appears on the first load on the physical PPC with the fixed test build, without F2 or F5. The HP/PPC fixes, colour and scrolling support, shared package, and astrobleem's form/download fixes are retained. Install with `ept install elksweb` from `REPO=http://ept.8088retro.com`. PC-98 verification of this redraw fix and issue #7 download verification remain open. [0.5 remains available for comparison](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5).
+Install with `ept install elksweb` from `REPO=http://ept.8088retro.com`. The PPC's experimental Nano-X screen-copy optimization is excluded because of hardware corruption; scrolling repaints the existing page without fetching it again. [0.5 remains available for comparison](https://github.com/l00nix/ELKSWeb/releases/tag/v0.5).
 
 General IBM PC compatibility remains the goal.
 
 ## Shared welcome page in 0.6.2dev
 
-The [0.6.2dev shared-page update](https://github.com/l00nix/ELKSWeb/tree/dev/0.6-nanox) combines `elksweb` and `webnx` in one EPT package. Both open `/lib/web/welcome.htm`, showing both logos, common controls and the direct-console/Nano-X launch options, following [ghaerr's suggestion](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7112604032). Thanks to [astrobleem](https://github.com/astrobleem) for the colour support, Nano-X contribution and WebNX artwork. Release 0.6 is available in both general and nightly.
+The [0.6.2dev shared-page update](https://github.com/l00nix/ELKSWeb/tree/dev/0.6-nanox) combines `elksweb` and `webnx` in one EPT package. Both open `/lib/web/welcome.htm`, showing both logos, common controls and the direct-console/Nano-X launch options, following [ghaerr's suggestion](https://github.com/l00nix/ELKSWeb/pull/5#issuecomment-7112604032). Thanks to [astrobleem](https://github.com/astrobleem) for the colour support, Nano-X contribution and WebNX artwork. Release 0.7 is available in the general catalogue.
 
 **Physical Amstrad PPC 512 with PicoMEM 2:** the shared welcome page and both GIF logos, captured from the CGA framebuffer with inverted colours. The 640×200 pixels are enlarged for readability. This checks welcome-page rendering in the current configuration, not stock 512 KB or Nano-X operation.
 
@@ -175,7 +175,7 @@ This colour mode is experimental. The supplied implementation was exercised in 8
 
 ## How to install a release
 
-Download the [0.6 runtime package](https://github.com/l00nix/ELKSWeb/releases/tag/v0.6) on a modern computer, verify its checksum, and transfer it to an existing ELKS installation. Copy the archive’s `bin/` and `lib/` contents to `/bin/` and `/lib/`, preserving executable permissions. Both browsers use `/lib/web/welcome.htm`. The executable is always named `elksweb`. Keep the included notices and corresponding-source archive available.
+Download the [0.7 runtime package](https://github.com/l00nix/ELKSWeb/releases/tag/v0.7) on a modern computer, verify its checksum, and transfer it to an existing ELKS installation. Copy the archive’s `bin/` and `lib/` contents to `/bin/` and `/lib/`, preserving executable permissions. Both browsers use `/lib/web/welcome.htm`. The executable is always named `elksweb`. Keep the included notices and corresponding-source archive available.
 
 ```sh
 chmod 755 /bin/elksweb
@@ -183,13 +183,13 @@ elksweb --version
 elksweb
 ```
 
-The version reports **0.6**. Choose a detected display mode to open the local welcome page. Configure native ELKS networking and run `net start` before using HTTP. Enter a hostname such as `68knews.8088retro.com` in the address field or an explicit URL.
+The version reports **0.7**. Choose a detected display mode to open the local welcome page. Configure native ELKS networking and run `net start` before using HTTP. Enter a hostname such as `68knews.8088retro.com` in the address field or an explicit URL.
 
-See the [0.6 installation notes](docs/RELEASE-0.6.md#install) and [migration guide](docs/NANOX-EXPERIMENT.md#install-and-migrate) for file paths and upgrades; [INSTALL.md](docs/INSTALL.md) retains checksum and mouse guidance. The runtime is a standalone application package, not an ELKS disk image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
+See the [0.7 installation notes](docs/RELEASE-0.7.md#install) and [migration guide](docs/NANOX-EXPERIMENT.md#install-and-migrate) for file paths and upgrades; [INSTALL.md](docs/INSTALL.md) retains checksum and mouse guidance. The runtime is a standalone application package, not an ELKS disk image. [BUILDING.md](docs/BUILDING.md) describes both source-build workflows.
 
 ### Optional Nano-X browser
 
-The 0.6 package includes both **ELKSWeb 0.6** and **WebNX 0.6**.
+The 0.7 package includes both **ELKSWeb 0.7** and **WebNX 0.7**.
 Choose the direct `elksweb` executable or `webnx`, which uses a compatible
 Nano-X server for the hardware, including PC-98 or IBM-compatible servers.
 Both open `/lib/web/welcome.htm`, with common instructions and both logos.
@@ -207,7 +207,7 @@ The Nano-X client uses `GrOpen` and `GrClose`; its library can start an installe
 server, and the server controls shutdown and console restoration. The server
 is not included. [PC-9801RX startup, browsing and closing passed a reported
 0.6.4dev hardware test](#nec-pc-9801rx--webnx-064dev) under the conditions above;
-broader console testing and PC-98 verification of the 0.6 redraw fix continue.
+broader console testing continues. Takahiro confirmed the first-load image fix in 0.6.1dev.
 
 ## Low-memory systems
 
@@ -235,7 +235,7 @@ These projects are credited for their respective work; no endorsement or affilia
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). See the [0.6 release notes](docs/RELEASE-0.6.md) and [development integration record](docs/DEVELOPMENT-0.5.md). Historical checks remain in STATUS; broader compatibility and performance feedback are welcome. Testers and feedback are welcome.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [beta testing checklist](docs/BETA-TESTING.md). See the [0.7 release notes](docs/RELEASE-0.7.md) and [development integration record](docs/DEVELOPMENT-0.5.md). Historical checks remain in STATUS; broader compatibility and performance feedback are welcome. Testers and feedback are welcome.
 
 ## License and attribution
 

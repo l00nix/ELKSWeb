@@ -226,3 +226,14 @@ python3 image/tests/test_dimensions.py
 ```
 
 The image scripts require Pillow in the selected Python environment. The font tests require the host C compiler but no Pillow.
+
+## ELKS external builds (0.7)
+
+`ELKSWEB_ELKS=/path/to/built-elks MWDIR=/path/to/microwindows sh toolchain/build-external.sh`
+builds `build/elksweb` and `build/nanox/webnx`, then stages the shared pages and
+compatibility paths in `build/runtime/lib`. MWDIR defaults to
+`$ELKSWEB_ELKS/extapps/microwindows`; a missing source dependency is an error.
+Use the companion ELKS buildext/ExtApplications patch to install both clients
+and the shared `/lib/web` data in HD images. No EPT operation is involved.
+The Nano-X client must match the server protocol. Real-mode validation remains
+required; this build route does not itself validate protected-mode execution.

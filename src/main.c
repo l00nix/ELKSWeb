@@ -1391,7 +1391,9 @@ int main(int argc, char **argv) {
   signal(SIGTERM, stopped);
   strcpy(ew_doc.title, EW_APP_NAME " " EW_VERSION);
   strcpy(status, "Starting...");
+#ifndef ELKSWEB_NANOX
   draw();
+#endif
   load(url, NULL, 1);
   while (!stopping) {
 #ifdef ELKSWEB_NANOX

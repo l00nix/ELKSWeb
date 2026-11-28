@@ -91,10 +91,12 @@ int ew_platform_init(const char *mode)
         return -1;
     }
     GrSetGCUseBackground(gc, GR_FALSE);
+    /* The initial draw covers the new window; avoid queuing a duplicate
+     * map exposure, but handle all subsequent exposures normally. */
+    GrMapWindow(window);
     GrSelectEvents(window, GR_EVENT_MASK_EXPOSURE | GR_EVENT_MASK_KEY_DOWN |
                    GR_EVENT_MASK_MOUSE_POSITION | GR_EVENT_MASK_BUTTON_DOWN |
                    GR_EVENT_MASK_BUTTON_UP | GR_EVENT_MASK_CLOSE_REQ);
-    GrMapWindow(window);
     GrSetFocus(window);
     lifecycle_log("window ready", -1);
     return 0;
